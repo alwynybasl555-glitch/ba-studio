@@ -61271,7 +61271,7 @@ import net from "node:net";
 import os from "node:os";
 import path2 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.2.2";
+var APP_VERSION = "0.2.3";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -62568,6 +62568,25 @@ function findClaude(env = process.env) {
   }
   return desktopBundled()[0] ?? null;
 }
+function claudeVersion(file2) {
+  return new Promise((resolve) => {
+    const isCmd = /\.(cmd|bat)$/i.test(file2);
+    let out = "";
+    let child;
+    try {
+      child = spawn3(isCmd ? `"${file2}"` : file2, ["--version"], { windowsHide: true, shell: isCmd, stdio: ["ignore", "pipe", "ignore"] });
+    } catch {
+      return resolve(null);
+    }
+    const timer = setTimeout(() => child.kill(), 15e3);
+    child.stdout?.setEncoding("utf8").on("data", (c) => out += c);
+    child.on("error", () => resolve(null));
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      resolve(code === 0 ? out.trim().split(/\s+/)[0] ?? null : null);
+    });
+  });
+}
 function findMcpEntry() {
   if (process.env.BA_MCP_ENTRY) return process.env.BA_MCP_ENTRY;
   let dir = path10.dirname(fileURLToPath2(import.meta.url));
@@ -62602,8 +62621,7 @@ var AgentService = class {
     const file2 = findClaude();
     let version2 = null;
     if (file2) {
-      const res = await runTool(file2, ["--version"], { timeoutMs: 15e3 }).catch(() => null);
-      version2 = res?.code === 0 ? res.stdout.trim().split(/\s+/)[0] ?? null : null;
+      version2 = await claudeVersion(file2);
     }
     this.availability = { available: Boolean(file2 && version2), path: file2, version: version2 };
     return this.availability;
@@ -63606,7 +63624,7 @@ async function buildApp(opts) {
     reply.header("referrer-policy", "no-referrer");
     reply.header(
       "content-security-policy",
-      "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'"
+      "default-src 'self'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'"
     );
   });
   app.setErrorHandler((err, req, reply) => {
