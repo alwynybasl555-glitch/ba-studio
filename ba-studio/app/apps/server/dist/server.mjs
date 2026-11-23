@@ -61271,7 +61271,7 @@ import net from "node:net";
 import os from "node:os";
 import path2 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.2.0";
+var APP_VERSION = "0.2.1";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -61374,6 +61374,35 @@ function pidAlive(pid) {
     return true;
   } catch (e) {
     return e.code === "EPERM";
+  }
+}
+var lockFile = (p) => path2.join(p.root, "server.lock");
+function acquireStartLock(p, force = false) {
+  const file2 = lockFile(p);
+  for (let i = 0; i < 2; i++) {
+    try {
+      fs3.writeFileSync(file2, String(process.pid), { flag: "wx" });
+      return true;
+    } catch (e) {
+      if (e.code !== "EEXIST") throw e;
+      let owner = 0;
+      let age = Infinity;
+      try {
+        owner = Number(fs3.readFileSync(file2, "utf8")) || 0;
+        age = Date.now() - fs3.statSync(file2).mtimeMs;
+      } catch {
+      }
+      const ownerAlive = owner ? owner !== process.pid && pidAlive(owner) : age < 5e3;
+      if (ownerAlive && !force) return false;
+      fs3.rmSync(file2, { force: true });
+    }
+  }
+  return false;
+}
+function releaseStartLock(p) {
+  try {
+    if (Number(fs3.readFileSync(lockFile(p), "utf8")) === process.pid) fs3.rmSync(lockFile(p), { force: true });
+  } catch {
   }
 }
 async function findRunningInstance(p, instanceId) {
@@ -63678,7 +63707,14 @@ async function main() {
     if (values["launch-json"]) process.stdout.write(`${JSON.stringify(obj)}
 `);
   };
-  const running = await findRunningInstance(paths, config2.instanceId);
+  let running = await findRunningInstance(paths, config2.instanceId);
+  if (!running && !acquireStartLock(paths)) {
+    for (let i = 0; i < 30 && !running; i++) {
+      await new Promise((r) => setTimeout(r, 500));
+      running = await findRunningInstance(paths, config2.instanceId);
+    }
+    if (!running) acquireStartLock(paths, true);
+  }
   if (running) {
     const url2 = await mintLaunchUrl(running);
     console.error(`${APP_NAME} is already running on port ${running.port} (pid ${running.pid}).`);
@@ -63737,11 +63773,16 @@ async function main() {
   console.error(`  Sign-in:  ${launchUrl}  (one-time link, valid 2 minutes)`);
   emit({ event: "ready", url: launchUrl, port, existing: false });
   if (values.open) openInBrowser(launchUrl);
+  setInterval(() => {
+    const s = readSession(paths);
+    if (s && s.pid !== process.pid && pidAlive(s.pid)) void shutdown("another studio took over");
+  }, 15e3).unref();
   async function shutdown(reason) {
     if (shuttingDown) return;
     shuttingDown = true;
     console.error(`Shutting down (${reason})...`);
     clearSession(paths, process.pid);
+    releaseStartLock(paths);
     const force = setTimeout(() => process.exit(0), 5e3);
     force.unref();
     await app.close().catch(() => void 0);
@@ -63750,7 +63791,10 @@ async function main() {
   process.on("SIGINT", () => void shutdown("SIGINT"));
   process.on("SIGTERM", () => void shutdown("SIGTERM"));
   process.on("SIGBREAK", () => void shutdown("SIGBREAK"));
-  process.on("exit", () => clearSession(paths, process.pid));
+  process.on("exit", () => {
+    clearSession(paths, process.pid);
+    releaseStartLock(paths);
+  });
 }
 main().catch((e) => {
   console.error(`Failed to start: ${e.message}`);
