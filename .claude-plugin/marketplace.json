@@ -1,0 +1,13 @@
+{
+  "name": "ba-studio",
+  "description": "Ba Studio: استوديو مونتاج فيديو عربي يعمل على جهازك مع Claude",
+  "owner": { "name": "Ba Studio" },
+  "plugins": [
+    {
+      "name": "ba-studio",
+      "source": "./ba-studio",
+      "description": "استوديو مونتاج فيديو عربي يعمل على جهازك، ويخلي Claude يقص ويرتّب ويضيف نصوص وموسيقى ويصدّر الفيديو معك.",
+      "version": "0.1.0"
+    }
+  ]
+}
