@@ -2726,8 +2726,8 @@ var require_server = __commonJS({
     var http = __require("node:http");
     var https = __require("node:https");
     var http2 = __require("node:http2");
-    var dns = __require("node:dns");
-    var os4 = __require("node:os");
+    var dns2 = __require("node:dns");
+    var os5 = __require("node:os");
     var { kState, kOptions, kServerBindings, kHttp2ServerSessions } = require_symbols2();
     var { FSTWRN003 } = require_warnings();
     var { onListenHookRunner } = require_hooks();
@@ -2839,7 +2839,7 @@ var require_server = __commonJS({
     }
     function multipleBindings(mainServer, httpHandler, serverOpts, listenOptions, onListen) {
       this[kState].listening = false;
-      dns.lookup(listenOptions.host, { all: true }, (dnsErr, addresses) => {
+      dns2.lookup(listenOptions.host, { all: true }, (dnsErr, addresses) => {
         if (dnsErr || this[kState].aborted) {
           onListen();
           return;
@@ -2989,7 +2989,7 @@ var require_server = __commonJS({
     }
     function getAddresses(address) {
       if (address.address === "0.0.0.0") {
-        return Object.values(os4.networkInterfaces()).flatMap((iface) => {
+        return Object.values(os5.networkInterfaces()).flatMap((iface) => {
           return iface.filter((iface2) => iface2.family === "IPv4");
         }).sort((iface) => {
           return iface.internal ? -1 : 1;
@@ -6367,8 +6367,8 @@ var require_req = __commonJS({
       if (req.originalUrl) {
         _req.url = req.originalUrl;
       } else {
-        const path12 = req.path;
-        _req.url = typeof path12 === "string" ? path12 : req.url ? req.url.path || req.url : void 0;
+        const path16 = req.path;
+        _req.url = typeof path16 === "string" ? path16 : req.url ? req.url.path || req.url : void 0;
       }
       if (req.query) {
         _req.query = req.query;
@@ -6538,14 +6538,14 @@ var require_redact = __commonJS({
       }
       return obj;
     }
-    function parsePath(path12) {
+    function parsePath(path16) {
       const parts = [];
       let current = "";
       let inBrackets = false;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path12.length; i++) {
-        const char = path12[i];
+      for (let i = 0; i < path16.length; i++) {
+        const char = path16[i];
         if (!inBrackets && char === ".") {
           if (current) {
             parts.push(current);
@@ -6676,10 +6676,10 @@ var require_redact = __commonJS({
       return current;
     }
     function redactPaths(obj, paths, censor, remove = false) {
-      for (const path12 of paths) {
-        const parts = parsePath(path12);
+      for (const path16 of paths) {
+        const parts = parsePath(path16);
         if (parts.includes("*")) {
-          redactWildcardPath(obj, parts, censor, path12, remove);
+          redactWildcardPath(obj, parts, censor, path16, remove);
         } else {
           if (remove) {
             removeKey(obj, parts);
@@ -6764,8 +6764,8 @@ var require_redact = __commonJS({
           }
         } else {
           if (afterWildcard.includes("*")) {
-            const wrappedCensor = typeof censor === "function" ? (value, path12) => {
-              const fullPath = [...pathArray.slice(0, pathLength), ...path12];
+            const wrappedCensor = typeof censor === "function" ? (value, path16) => {
+              const fullPath = [...pathArray.slice(0, pathLength), ...path16];
               return censor(value, fullPath);
             } : censor;
             redactWildcardPath(current, afterWildcard, wrappedCensor, originalPath, remove);
@@ -6800,8 +6800,8 @@ var require_redact = __commonJS({
         return null;
       }
       const pathStructure = /* @__PURE__ */ new Map();
-      for (const path12 of pathsToClone) {
-        const parts = parsePath(path12);
+      for (const path16 of pathsToClone) {
+        const parts = parsePath(path16);
         let current = pathStructure;
         for (let i = 0; i < parts.length; i++) {
           const part = parts[i];
@@ -6853,24 +6853,24 @@ var require_redact = __commonJS({
       }
       return cloneSelectively(obj, pathStructure);
     }
-    function validatePath(path12) {
-      if (typeof path12 !== "string") {
+    function validatePath(path16) {
+      if (typeof path16 !== "string") {
         throw new Error("Paths must be (non-empty) strings");
       }
-      if (path12 === "") {
+      if (path16 === "") {
         throw new Error("Invalid redaction path ()");
       }
-      if (path12.includes("..")) {
-        throw new Error(`Invalid redaction path (${path12})`);
+      if (path16.includes("..")) {
+        throw new Error(`Invalid redaction path (${path16})`);
       }
-      if (path12.includes(",")) {
-        throw new Error(`Invalid redaction path (${path12})`);
+      if (path16.includes(",")) {
+        throw new Error(`Invalid redaction path (${path16})`);
       }
       let bracketCount = 0;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path12.length; i++) {
-        const char = path12[i];
+      for (let i = 0; i < path16.length; i++) {
+        const char = path16[i];
         if ((char === '"' || char === "'") && bracketCount > 0) {
           if (!inQuotes) {
             inQuotes = true;
@@ -6884,20 +6884,20 @@ var require_redact = __commonJS({
         } else if (char === "]" && !inQuotes) {
           bracketCount--;
           if (bracketCount < 0) {
-            throw new Error(`Invalid redaction path (${path12})`);
+            throw new Error(`Invalid redaction path (${path16})`);
           }
         }
       }
       if (bracketCount !== 0) {
-        throw new Error(`Invalid redaction path (${path12})`);
+        throw new Error(`Invalid redaction path (${path16})`);
       }
     }
     function validatePaths(paths) {
       if (!Array.isArray(paths)) {
         throw new TypeError("paths must be an array");
       }
-      for (const path12 of paths) {
-        validatePath(path12);
+      for (const path16 of paths) {
+        validatePath(path16);
       }
     }
     function slowRedact(options = {}) {
@@ -7067,8 +7067,8 @@ var require_redaction = __commonJS({
         if (shape[k] === null) {
           o[k] = (value) => topCensor(value, [k]);
         } else {
-          const wrappedCensor = typeof censor === "function" ? (value, path12) => {
-            return censor(value, [k, ...path12]);
+          const wrappedCensor = typeof censor === "function" ? (value, path16) => {
+            return censor(value, [k, ...path16]);
           } : censor;
           o[k] = Redact({
             paths: shape[k],
@@ -7286,10 +7286,10 @@ var require_atomic_sleep = __commonJS({
 var require_sonic_boom = __commonJS({
   "../../node_modules/sonic-boom/index.js"(exports, module) {
     "use strict";
-    var fs12 = __require("fs");
+    var fs15 = __require("fs");
     var EventEmitter = __require("events");
     var inherits = __require("util").inherits;
-    var path12 = __require("path");
+    var path16 = __require("path");
     var sleep = require_atomic_sleep();
     var assert2 = __require("assert");
     var BUSY_WRITE_TIMEOUT = 100;
@@ -7343,20 +7343,20 @@ var require_sonic_boom = __commonJS({
       const mode = sonic.mode;
       if (sonic.sync) {
         try {
-          if (sonic.mkdir) fs12.mkdirSync(path12.dirname(file2), { recursive: true });
-          const fd = fs12.openSync(file2, flags, mode);
+          if (sonic.mkdir) fs15.mkdirSync(path16.dirname(file2), { recursive: true });
+          const fd = fs15.openSync(file2, flags, mode);
           fileOpened(null, fd);
         } catch (err) {
           fileOpened(err);
           throw err;
         }
       } else if (sonic.mkdir) {
-        fs12.mkdir(path12.dirname(file2), { recursive: true }, (err) => {
+        fs15.mkdir(path16.dirname(file2), { recursive: true }, (err) => {
           if (err) return fileOpened(err);
-          fs12.open(file2, flags, mode, fileOpened);
+          fs15.open(file2, flags, mode, fileOpened);
         });
       } else {
-        fs12.open(file2, flags, mode, fileOpened);
+        fs15.open(file2, flags, mode, fileOpened);
       }
     }
     function SonicBoom(opts) {
@@ -7397,8 +7397,8 @@ var require_sonic_boom = __commonJS({
         this.flush = flushBuffer;
         this.flushSync = flushBufferSync;
         this._actualWrite = actualWriteBuffer;
-        fsWriteSync = () => fs12.writeSync(this.fd, this._writingBuf);
-        fsWrite = () => fs12.write(this.fd, this._writingBuf, this.release);
+        fsWriteSync = () => fs15.writeSync(this.fd, this._writingBuf);
+        fsWrite = () => fs15.write(this.fd, this._writingBuf, this.release);
       } else if (contentMode === void 0 || contentMode === kContentModeUtf8) {
         this._writingBuf = "";
         this.write = write;
@@ -7407,15 +7407,15 @@ var require_sonic_boom = __commonJS({
         this._actualWrite = actualWrite;
         fsWriteSync = () => {
           if (Buffer.isBuffer(this._writingBuf)) {
-            return fs12.writeSync(this.fd, this._writingBuf);
+            return fs15.writeSync(this.fd, this._writingBuf);
           }
-          return fs12.writeSync(this.fd, this._writingBuf, "utf8");
+          return fs15.writeSync(this.fd, this._writingBuf, "utf8");
         };
         fsWrite = () => {
           if (Buffer.isBuffer(this._writingBuf)) {
-            return fs12.write(this.fd, this._writingBuf, this.release);
+            return fs15.write(this.fd, this._writingBuf, this.release);
           }
-          return fs12.write(this.fd, this._writingBuf, "utf8", this.release);
+          return fs15.write(this.fd, this._writingBuf, "utf8", this.release);
         };
       } else {
         throw new Error(`SonicBoom supports "${kContentModeUtf8}" and "${kContentModeBuffer}", but passed ${contentMode}`);
@@ -7431,7 +7431,7 @@ var require_sonic_boom = __commonJS({
       if (this.minLength >= this.maxWrite) {
         throw new Error(`minLength should be smaller than maxWrite (${this.maxWrite})`);
       }
-      this.release = (err, n2) => {
+      this.release = (err, n3) => {
         if (err) {
           if ((err.code === "EAGAIN" || err.code === "EBUSY") && this.retryEAGAIN(err, this._writingBuf.length, this._len - this._writingBuf.length)) {
             if (this.sync) {
@@ -7450,8 +7450,8 @@ var require_sonic_boom = __commonJS({
           }
           return;
         }
-        this.emit("write", n2);
-        const releasedBufObj = releaseWritingBuf(this._writingBuf, this._len, n2);
+        this.emit("write", n3);
+        const releasedBufObj = releaseWritingBuf(this._writingBuf, this._len, n3);
         this._len = releasedBufObj.len;
         this._writingBuf = releasedBufObj.writingBuf;
         if (this._writingBuf.length) {
@@ -7461,8 +7461,8 @@ var require_sonic_boom = __commonJS({
           }
           try {
             do {
-              const n3 = fsWriteSync();
-              const releasedBufObj2 = releaseWritingBuf(this._writingBuf, this._len, n3);
+              const n4 = fsWriteSync();
+              const releasedBufObj2 = releaseWritingBuf(this._writingBuf, this._len, n4);
               this._len = releasedBufObj2.len;
               this._writingBuf = releasedBufObj2.writingBuf;
             } while (this._writingBuf.length);
@@ -7472,7 +7472,7 @@ var require_sonic_boom = __commonJS({
           }
         }
         if (this._fsync) {
-          fs12.fsyncSync(this.fd);
+          fs15.fsyncSync(this.fd);
         }
         const len = this._len;
         if (this._reopening) {
@@ -7510,12 +7510,12 @@ var require_sonic_boom = __commonJS({
         this._periodicFlushTimer.unref();
       }
     }
-    function releaseWritingBuf(writingBuf, len, n2) {
+    function releaseWritingBuf(writingBuf, len, n3) {
       if (typeof writingBuf === "string") {
         writingBuf = Buffer.from(writingBuf);
       }
-      len = Math.max(len - n2, 0);
-      writingBuf = writingBuf.subarray(n2);
+      len = Math.max(len - n3, 0);
+      writingBuf = writingBuf.subarray(n3);
       return { writingBuf, len };
     }
     function emitDrain(sonic) {
@@ -7586,7 +7586,7 @@ var require_sonic_boom = __commonJS({
       const onDrain = () => {
         if (!this._fsync) {
           try {
-            fs12.fsync(this.fd, (err) => {
+            fs15.fsync(this.fd, (err) => {
               this._flushPending = false;
               cb(err);
             });
@@ -7688,7 +7688,7 @@ var require_sonic_boom = __commonJS({
       const fd = this.fd;
       this.once("ready", () => {
         if (fd !== this.fd) {
-          fs12.close(fd, (err) => {
+          fs15.close(fd, (err) => {
             if (err) {
               return this.emit("error", err);
             }
@@ -7737,8 +7737,8 @@ var require_sonic_boom = __commonJS({
           buf = this._bufs[0];
         }
         try {
-          const n2 = Buffer.isBuffer(buf) ? fs12.writeSync(this.fd, buf) : fs12.writeSync(this.fd, buf, "utf8");
-          const releasedBufObj = releaseWritingBuf(buf, this._len, n2);
+          const n3 = Buffer.isBuffer(buf) ? fs15.writeSync(this.fd, buf) : fs15.writeSync(this.fd, buf, "utf8");
+          const releasedBufObj = releaseWritingBuf(buf, this._len, n3);
           buf = releasedBufObj.writingBuf;
           this._len = releasedBufObj.len;
           if (buf.length <= 0) {
@@ -7753,7 +7753,7 @@ var require_sonic_boom = __commonJS({
         }
       }
       try {
-        fs12.fsyncSync(this.fd);
+        fs15.fsyncSync(this.fd);
       } catch {
       }
     }
@@ -7774,9 +7774,9 @@ var require_sonic_boom = __commonJS({
           buf = mergeBuf(this._bufs[0], this._lens[0]);
         }
         try {
-          const n2 = fs12.writeSync(this.fd, buf);
-          buf = buf.subarray(n2);
-          this._len = Math.max(this._len - n2, 0);
+          const n3 = fs15.writeSync(this.fd, buf);
+          buf = buf.subarray(n3);
+          this._len = Math.max(this._len - n3, 0);
           if (buf.length <= 0) {
             this._bufs.shift();
             this._lens.shift();
@@ -7802,13 +7802,13 @@ var require_sonic_boom = __commonJS({
       this._writingBuf = this._writingBuf.length ? this._writingBuf : this._bufs.shift() || "";
       if (this.sync) {
         try {
-          const written = Buffer.isBuffer(this._writingBuf) ? fs12.writeSync(this.fd, this._writingBuf) : fs12.writeSync(this.fd, this._writingBuf, "utf8");
+          const written = Buffer.isBuffer(this._writingBuf) ? fs15.writeSync(this.fd, this._writingBuf) : fs15.writeSync(this.fd, this._writingBuf, "utf8");
           release(null, written);
         } catch (err) {
           release(err);
         }
       } else {
-        fs12.write(this.fd, this._writingBuf, release);
+        fs15.write(this.fd, this._writingBuf, release);
       }
     }
     function actualWriteBuffer() {
@@ -7817,7 +7817,7 @@ var require_sonic_boom = __commonJS({
       this._writingBuf = this._writingBuf.length ? this._writingBuf : mergeBuf(this._bufs.shift(), this._lens.shift());
       if (this.sync) {
         try {
-          const written = fs12.writeSync(this.fd, this._writingBuf);
+          const written = fs15.writeSync(this.fd, this._writingBuf);
           release(null, written);
         } catch (err) {
           release(err);
@@ -7826,7 +7826,7 @@ var require_sonic_boom = __commonJS({
         if (kCopyBuffer) {
           this._writingBuf = Buffer.from(this._writingBuf);
         }
-        fs12.write(this.fd, this._writingBuf, release);
+        fs15.write(this.fd, this._writingBuf, release);
       }
     }
     function actualClose(sonic) {
@@ -7842,12 +7842,12 @@ var require_sonic_boom = __commonJS({
       sonic._lens = [];
       assert2(typeof sonic.fd === "number", `sonic.fd must be a number, got ${typeof sonic.fd}`);
       try {
-        fs12.fsync(sonic.fd, closeWrapped);
+        fs15.fsync(sonic.fd, closeWrapped);
       } catch {
       }
       function closeWrapped() {
         if (sonic.fd !== 1 && sonic.fd !== 2) {
-          fs12.close(sonic.fd, done);
+          fs15.close(sonic.fd, done);
         } else {
           done();
         }
@@ -8682,7 +8682,7 @@ var require_transport = __commonJS({
     var { existsSync } = __require("node:fs");
     var getCallers = require_caller();
     var { join, isAbsolute, sep } = __require("node:path");
-    var { fileURLToPath: fileURLToPath3 } = __require("node:url");
+    var { fileURLToPath: fileURLToPath4 } = __require("node:url");
     var sleep = require_atomic_sleep();
     var onExit = require_on_exit_leak_free();
     var ThreadStream = require_thread_stream();
@@ -8746,15 +8746,15 @@ var require_transport = __commonJS({
       if (!unquoted) {
         return false;
       }
-      let path12 = unquoted;
-      if (path12.startsWith("file://")) {
+      let path16 = unquoted;
+      if (path16.startsWith("file://")) {
         try {
-          path12 = fileURLToPath3(path12);
+          path16 = fileURLToPath4(path16);
         } catch {
           return false;
         }
       }
-      return isAbsolute(path12) && !existsSync(path12);
+      return isAbsolute(path16) && !existsSync(path16);
     }
     function stripQuotes(value) {
       const first = value[0];
@@ -8945,7 +8945,7 @@ var require_tools = __commonJS({
       return function hookWrappedLog(...args) {
         hook.call(this, args, LOG, level);
       };
-      function LOG(o, ...n2) {
+      function LOG(o, ...n3) {
         if (typeof o === "object") {
           let msg = o;
           if (o !== null) {
@@ -8956,22 +8956,22 @@ var require_tools = __commonJS({
             }
           }
           let formatParams;
-          if (msg === null && n2.length === 0) {
+          if (msg === null && n3.length === 0) {
             formatParams = [null];
           } else {
-            msg = n2.shift();
-            formatParams = n2;
+            msg = n3.shift();
+            formatParams = n3;
           }
           if (typeof this[msgPrefixSym] === "string" && msg !== void 0 && msg !== null) {
             msg = this[msgPrefixSym] + msg;
           }
           this[writeSym](o, format(msg, formatParams, this[formatOptsSym]), level);
         } else {
-          let msg = o === void 0 ? n2.shift() : o;
+          let msg = o === void 0 ? n3.shift() : o;
           if (typeof this[msgPrefixSym] === "string" && msg !== void 0 && msg !== null) {
             msg = this[msgPrefixSym] + msg;
           }
-          this[writeSym](null, format(msg, n2, this[formatOptsSym]), level);
+          this[writeSym](null, format(msg, n3, this[formatOptsSym]), level);
         }
       }
     }
@@ -9528,7 +9528,7 @@ var require_proto = __commonJS({
       get levelVal() {
         return this[levelValSym];
       },
-      set levelVal(n2) {
+      set levelVal(n3) {
         throw Error("levelVal is read-only");
       },
       get msgPrefix() {
@@ -10458,7 +10458,7 @@ var require_multistream = __commonJS({
 var require_pino = __commonJS({
   "../../node_modules/pino/pino.js"(exports, module) {
     "use strict";
-    var os4 = __require("node:os");
+    var os5 = __require("node:os");
     var stdSerializers = require_pino_std_serializers();
     var caller = require_caller();
     var redaction = require_redaction();
@@ -10506,7 +10506,7 @@ var require_pino = __commonJS({
     } = symbols;
     var { epochTime, nullTime } = time3;
     var { pid } = process;
-    var hostname3 = os4.hostname();
+    var hostname3 = os5.hostname();
     var defaultErrorSerializer = stdSerializers.err;
     var defaultOptions = {
       level: "info",
@@ -14874,17 +14874,17 @@ var require_codegen = __commonJS({
         this.nodes = nodes;
       }
       render(opts) {
-        return this.nodes.reduce((code, n2) => code + n2.render(opts), "");
+        return this.nodes.reduce((code, n3) => code + n3.render(opts), "");
       }
       optimizeNodes() {
         const { nodes } = this;
         let i = nodes.length;
         while (i--) {
-          const n2 = nodes[i].optimizeNodes();
-          if (Array.isArray(n2))
-            nodes.splice(i, 1, ...n2);
-          else if (n2)
-            nodes[i] = n2;
+          const n3 = nodes[i].optimizeNodes();
+          if (Array.isArray(n3))
+            nodes.splice(i, 1, ...n3);
+          else if (n3)
+            nodes[i] = n3;
           else
             nodes.splice(i, 1);
         }
@@ -14894,16 +14894,16 @@ var require_codegen = __commonJS({
         const { nodes } = this;
         let i = nodes.length;
         while (i--) {
-          const n2 = nodes[i];
-          if (n2.optimizeNames(names, constants))
+          const n3 = nodes[i];
+          if (n3.optimizeNames(names, constants))
             continue;
-          subtractNames(names, n2.names);
+          subtractNames(names, n3.names);
           nodes.splice(i, 1);
         }
         return nodes.length > 0 ? this : void 0;
       }
       get names() {
-        return this.nodes.reduce((names, n2) => addNames(names, n2.names), {});
+        return this.nodes.reduce((names, n3) => addNames(names, n3.names), {});
       }
     };
     var BlockNode = class extends ParentNode {
@@ -15314,8 +15314,8 @@ var require_codegen = __commonJS({
       endFunc() {
         return this._endBlockNode(Func);
       }
-      optimize(n2 = 1) {
-        while (n2-- > 0) {
+      optimize(n3 = 1) {
+        while (n3-- > 0) {
           this._root.optimizeNodes();
           this._root.optimizeNames(this._root.names, this._constants);
         }
@@ -15329,19 +15329,19 @@ var require_codegen = __commonJS({
         this._nodes.push(node2);
       }
       _endBlockNode(N1, N2) {
-        const n2 = this._currNode;
-        if (n2 instanceof N1 || N2 && n2 instanceof N2) {
+        const n3 = this._currNode;
+        if (n3 instanceof N1 || N2 && n3 instanceof N2) {
           this._nodes.pop();
           return this;
         }
         throw new Error(`CodeGen: not in block "${N2 ? `${N1.kind}/${N2.kind}` : N1.kind}"`);
       }
       _elseNode(node2) {
-        const n2 = this._currNode;
-        if (!(n2 instanceof If)) {
+        const n3 = this._currNode;
+        if (!(n3 instanceof If)) {
           throw new Error('CodeGen: "else" without "if"');
         }
-        this._currNode = n2.else = node2;
+        this._currNode = n3.else = node2;
         return this;
       }
       get _root() {
@@ -15358,8 +15358,8 @@ var require_codegen = __commonJS({
     };
     exports.CodeGen = CodeGen;
     function addNames(names, from) {
-      for (const n2 in from)
-        names[n2] = (names[n2] || 0) + (from[n2] || 0);
+      for (const n3 in from)
+        names[n3] = (names[n3] || 0) + (from[n3] || 0);
       return names;
     }
     function addExprNames(names, from) {
@@ -15379,11 +15379,11 @@ var require_codegen = __commonJS({
           items.push(c);
         return items;
       }, []));
-      function replaceName(n2) {
-        const c = constants[n2.str];
-        if (c === void 0 || names[n2.str] !== 1)
-          return n2;
-        delete names[n2.str];
+      function replaceName(n3) {
+        const c = constants[n3.str];
+        if (c === void 0 || names[n3.str] !== 1)
+          return n3;
+        delete names[n3.str];
         return c;
       }
       function canOptimize(e) {
@@ -15391,8 +15391,8 @@ var require_codegen = __commonJS({
       }
     }
     function subtractNames(names, from) {
-      for (const n2 in from)
-        names[n2] = (names[n2] || 0) - (from[n2] || 0);
+      for (const n3 in from)
+        names[n3] = (names[n3] || 0) - (from[n3] || 0);
     }
     function not(x) {
       return typeof x == "boolean" || typeof x == "number" || x === null ? !x : (0, code_1._)`!${par(x)}`;
@@ -17627,8 +17627,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path12) {
-      let input2 = path12;
+    function removeDotSegments(path16) {
+      let input2 = path16;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -17702,11 +17702,11 @@ var require_utils = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path12) {
-      if (path12 === "" || path12[0] === "/") {
-        return removeDotSegments(path12);
+    function removeDotSegmentsRelative(path16) {
+      if (path16 === "" || path16[0] === "/") {
+        return removeDotSegments(path16);
       }
-      const segments = path12.split("/");
+      const segments = path16.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -17748,9 +17748,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decodeUnreserved && isUnreserved(decoded)) {
               output2 += decoded;
@@ -17770,9 +17770,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decoded !== "." && isUnreserved(decoded)) {
               output2 += decoded;
@@ -17812,9 +17812,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -17850,9 +17850,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -17897,9 +17897,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (isUnreserved(decoded)) {
               output2 += decoded;
@@ -17937,9 +17937,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -18069,8 +18069,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path12 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path12 && path12 !== "/" ? path12 : void 0;
+        const path16 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path16 && path16 !== "/" ? path16 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -22882,10 +22882,10 @@ var require_parse = __commonJS({
     }
     function tryParseToken(cxt, tok, fail, success2) {
       const { gen } = cxt;
-      const n2 = tok.length;
+      const n3 = tok.length;
       skipWhitespace(cxt);
-      gen.if((0, codegen_1._)`${jsonSlice(n2)} === ${tok}`, () => {
-        gen.add(names_1.default.jsonPos, n2);
+      gen.if((0, codegen_1._)`${jsonSlice(n3)} === ${tok}`, () => {
+        gen.add(names_1.default.jsonPos, n3);
         success2 === null || success2 === void 0 ? void 0 : success2(cxt);
       }, () => fail(cxt));
     }
@@ -23148,8 +23148,8 @@ var require_utils2 = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path12) {
-      let input2 = path12;
+    function removeDotSegments(path16) {
+      let input2 = path16;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -23223,11 +23223,11 @@ var require_utils2 = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path12) {
-      if (path12 === "" || path12[0] === "/") {
-        return removeDotSegments(path12);
+    function removeDotSegmentsRelative(path16) {
+      if (path16 === "" || path16[0] === "/") {
+        return removeDotSegments(path16);
       }
-      const segments = path12.split("/");
+      const segments = path16.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -23271,9 +23271,9 @@ var require_utils2 = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decodeUnreserved && isUnreserved(decoded)) {
               output2 += decoded;
@@ -23312,9 +23312,9 @@ var require_utils2 = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decoded !== "." && isUnreserved(decoded)) {
               output2 += decoded;
@@ -23354,9 +23354,9 @@ var require_utils2 = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -23392,9 +23392,9 @@ var require_utils2 = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (isUnreserved(decoded)) {
               output2 += decoded;
@@ -23433,9 +23433,9 @@ var require_utils2 = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -23477,9 +23477,9 @@ var require_utils2 = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -23647,8 +23647,8 @@ var require_schemes2 = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path12 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path12 && path12 !== "/" ? path12 : void 0;
+        const path16 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path16 && path16 !== "/" ? path16 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -24829,12 +24829,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs12, exportName) {
+    function addFormats(ajv, list, fs15, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs12[f]);
+        ajv.addFormat(f, fs15[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -24936,12 +24936,12 @@ var require_standalone = __commonJS({
       }
       function funcExportCode(source) {
         const usedValues = {};
-        const n2 = source === null || source === void 0 ? void 0 : source.validateName;
+        const n3 = source === null || source === void 0 ? void 0 : source.validateName;
         const vCode = validateCode(usedValues, source);
         if (ajv.opts.code.esm) {
-          return `"use strict";${_n}export const validate = ${n2};${_n}export default ${n2};${_n}${vCode}`;
+          return `"use strict";${_n}export const validate = ${n3};${_n}export default ${n3};${_n}${vCode}`;
         }
-        return `"use strict";${_n}module.exports = ${n2};${_n}module.exports.default = ${n2};${_n}${vCode}`;
+        return `"use strict";${_n}module.exports = ${n3};${_n}module.exports.default = ${n3};${_n}${vCode}`;
       }
       function multiExportsCode(schemas, getValidateFunc) {
         var _a3;
@@ -24966,18 +24966,18 @@ var require_standalone = __commonJS({
         const scopeCode = ajv.scope.scopeCode(s.scopeValues, usedValues, refValidateCode);
         const code = new code_1._Code(`${scopeCode}${_n}${s.validateCode}`);
         return s.evaluated ? (0, code_1._)`${code}${s.validateName}.evaluated = ${s.evaluated};${_n}` : code;
-        function refValidateCode(n2) {
+        function refValidateCode(n3) {
           var _a3;
-          const vRef = (_a3 = n2.value) === null || _a3 === void 0 ? void 0 : _a3.ref;
-          if (n2.prefix === "validate" && typeof vRef == "function") {
+          const vRef = (_a3 = n3.value) === null || _a3 === void 0 ? void 0 : _a3.ref;
+          if (n3.prefix === "validate" && typeof vRef == "function") {
             const v = vRef;
             return validateCode(usedValues, v.source);
-          } else if ((n2.prefix === "root" || n2.prefix === "wrapper") && typeof vRef == "object") {
+          } else if ((n3.prefix === "root" || n3.prefix === "wrapper") && typeof vRef == "object") {
             const { validate: validate2, validateName } = vRef;
             if (!validateName)
               throw new Error("ajv internal error");
             const def = ajv.opts.code.es5 ? scope_1.varKinds.var : scope_1.varKinds.const;
-            const wrapper = (0, code_1._)`${def} ${n2} = {validate: ${validateName}};`;
+            const wrapper = (0, code_1._)`${def} ${n3} = {validate: ${validateName}};`;
             if (usedState(validateName) === scope_1.UsedValueState.Started)
               return wrapper;
             const vCode = validateCode(usedValues, validate2 === null || validate2 === void 0 ? void 0 : validate2.source);
@@ -26190,14 +26190,14 @@ var require_projection = __commonJS({
       }
       fillArray(schema, src, pool, out, indent, pointer, holder, slotFields) {
         const items = schema.items;
-        const n2 = this.id("n");
+        const n3 = this.id("n");
         const i = this.id("i");
         out.push(`${indent}if (${src} === null) {`);
         out.push(`${indent}  ${pool}.length = 0`);
         out.push(`${indent}} else {`);
         out.push(`${indent}  if (!Array.isArray(${src})) typeMismatch(${this.pointerIndex(pointer)})`);
-        out.push(`${indent}  const ${n2} = ${src}.length`);
-        out.push(`${indent}  ${pool}.length = ${n2}`);
+        out.push(`${indent}  const ${n3} = ${src}.length`);
+        out.push(`${indent}  ${pool}.length = ${n3}`);
         if (items.type === "object" || items.type === "array") {
           const slots = this.allocArray(holder, slotFields);
           const factory = this.id("makeSlot");
@@ -26207,15 +26207,15 @@ var require_projection = __commonJS({
           const inner = [];
           const expr = this.valueExpr(items, el, inner, indent + "    ", `${pointer}/items`, innerHolder, innerFields);
           this.decls.push(`function ${factory} () { return { ${innerFields.map(([f, lit]) => `${f}: ${lit}`).join(", ")} } }`);
-          out.push(`${indent}  for (let ${i} = ${slots}.length; ${i} < ${n2}; ${i}++) ${slots}[${i}] = ${factory}()`);
-          out.push(`${indent}  for (let ${i} = 0; ${i} < ${n2}; ${i}++) {`);
+          out.push(`${indent}  for (let ${i} = ${slots}.length; ${i} < ${n3}; ${i}++) ${slots}[${i}] = ${factory}()`);
+          out.push(`${indent}  for (let ${i} = 0; ${i} < ${n3}; ${i}++) {`);
           out.push(`${indent}    const ${el} = ${src}[${i}]`);
           out.push(`${indent}    const ${innerHolder} = ${slots}[${i}]`);
           out.push(...inner);
           out.push(`${indent}    ${pool}[${i}] = ${expr}`);
           out.push(`${indent}  }`);
         } else {
-          out.push(`${indent}  for (let ${i} = 0; ${i} < ${n2}; ${i}++) {`);
+          out.push(`${indent}  for (let ${i} = 0; ${i} < ${n3}; ${i}++) {`);
           out.push(`${indent}    ${pool}[${i}] = ${primitiveExpr(items, `${src}[${i}]`, this.pointerIndex(`${pointer}/items`))}`);
           out.push(`${indent}  }`);
         }
@@ -27560,7 +27560,7 @@ const asInteger = serializer.asInteger.bind(serializer)
       if (typeof schema !== "object" || schema === null) return false;
       const values = [schema];
       const depths = [0];
-      const path12 = [];
+      const path16 = [];
       let hasRef = false;
       while (values.length > 0) {
         const value = values.pop();
@@ -27568,11 +27568,11 @@ const asInteger = serializer.asInteger.bind(serializer)
         if (depth > maxDepth * 2) {
           throw schemaDepthError(maxDepth, name);
         }
-        path12.length = depth;
-        if (path12.includes(value)) {
+        path16.length = depth;
+        if (path16.includes(value)) {
           throw new Error("schema contains a circular object reference; use $ref instead");
         }
-        path12.push(value);
+        path16.push(value);
         for (const key in value) {
           const child = value[key];
           if (key === "$ref" && typeof child === "string") {
@@ -33551,8 +33551,8 @@ var require_node = __commonJS({
         return matchSingleCharPrefix;
       }
       if (prefix.length >= LONG_PREFIX_MIN_LENGTH) {
-        return function matchLongPrefix(path12, i) {
-          return path12.indexOf(prefix, i) === i;
+        return function matchLongPrefix(path16, i) {
+          return path16.indexOf(prefix, i) === i;
         };
       }
       const lines = [];
@@ -33603,13 +33603,13 @@ return ${lines.join(" && ")}`);
           this.staticChildrenNodes[index] = node2;
         }
       }
-      findStaticMatchingChild(path12, pathIndex) {
-        const charCode = path12.charCodeAt(pathIndex);
+      findStaticMatchingChild(path16, pathIndex) {
+        const charCode = path16.charCodeAt(pathIndex);
         const charCodes = this.staticChildrenCharCodes;
         for (let i = 0; i < charCodes.length; i++) {
           if (charCodes[i] === charCode) {
             const staticChild = this.staticChildrenNodes[i];
-            if (staticChild.matchPrefix(path12, pathIndex)) {
+            if (staticChild.matchPrefix(path16, pathIndex)) {
               return staticChild;
             }
             return null;
@@ -33617,34 +33617,34 @@ return ${lines.join(" && ")}`);
         }
         return null;
       }
-      getStaticChild(path12, pathIndex = 0) {
-        if (path12.length === pathIndex) {
+      getStaticChild(path16, pathIndex = 0) {
+        if (path16.length === pathIndex) {
           return this;
         }
-        const staticChild = this.findStaticMatchingChild(path12, pathIndex);
+        const staticChild = this.findStaticMatchingChild(path16, pathIndex);
         if (staticChild) {
-          return staticChild.getStaticChild(path12, pathIndex + staticChild.prefix.length);
+          return staticChild.getStaticChild(path16, pathIndex + staticChild.prefix.length);
         }
         return null;
       }
-      createStaticChild(path12) {
-        if (path12.length === 0) {
+      createStaticChild(path16) {
+        if (path16.length === 0) {
           return this;
         }
-        const childIndex = this.staticChildrenCharCodes.indexOf(path12.charCodeAt(0));
+        const childIndex = this.staticChildrenCharCodes.indexOf(path16.charCodeAt(0));
         let staticChild = childIndex === -1 ? void 0 : this.staticChildrenNodes[childIndex];
         if (staticChild) {
           let i = 1;
           for (; i < staticChild.prefix.length; i++) {
-            if (path12.charCodeAt(i) !== staticChild.prefix.charCodeAt(i)) {
+            if (path16.charCodeAt(i) !== staticChild.prefix.charCodeAt(i)) {
               staticChild = staticChild.split(this, i);
               break;
             }
           }
-          return staticChild.createStaticChild(path12.slice(i));
+          return staticChild.createStaticChild(path16.slice(i));
         }
-        const node2 = createStaticNode(path12);
-        this.setStaticChild(path12.charAt(0), node2);
+        const node2 = createStaticNode(path16);
+        this.setStaticChild(path16.charAt(0), node2);
         return node2;
       }
       getParametricChild(regex) {
@@ -33692,8 +33692,8 @@ return ${lines.join(" && ")}`);
       // static child, then the first parametric child, then the wildcard. Every
       // sibling that is skipped over is pushed on nodeStack as a flat triple
       // (node, pathIndex, paramsCount) so lookup can backtrack to it later.
-      getNextNode(path12, pathIndex, nodeStack, paramsCount) {
-        let node2 = this.findStaticMatchingChild(path12, pathIndex);
+      getNextNode(path16, pathIndex, nodeStack, paramsCount) {
+        let node2 = this.findStaticMatchingChild(path16, pathIndex);
         let parametricBrotherNodeIndex = 0;
         if (node2 === null) {
           if (this.parametricChildren.length === 0) {
@@ -33776,62 +33776,62 @@ var require_url_sanitizer = __commonJS({
       return String.fromCharCode(charCode);
     }
     var MIN_NATIVE_SCAN_LENGTH = 12;
-    function safeDecodeURI(path12, useSemicolonDelimiter) {
-      if (path12.length >= MIN_NATIVE_SCAN_LENGTH) {
-        return safeDecodeURINativeScan(path12, useSemicolonDelimiter);
+    function safeDecodeURI(path16, useSemicolonDelimiter) {
+      if (path16.length >= MIN_NATIVE_SCAN_LENGTH) {
+        return safeDecodeURINativeScan(path16, useSemicolonDelimiter);
       }
-      return safeDecodeURICharScan(path12, useSemicolonDelimiter, 1);
+      return safeDecodeURICharScan(path16, useSemicolonDelimiter, 1);
     }
-    function safeDecodeURINativeScan(path12, useSemicolonDelimiter) {
-      const percentIndex = path12.indexOf("%", 1);
-      let delimIndex = path12.indexOf("?", 1);
-      const hashIndex = path12.indexOf("#", 1);
+    function safeDecodeURINativeScan(path16, useSemicolonDelimiter) {
+      const percentIndex = path16.indexOf("%", 1);
+      let delimIndex = path16.indexOf("?", 1);
+      const hashIndex = path16.indexOf("#", 1);
       if (hashIndex !== -1 && (delimIndex === -1 || hashIndex < delimIndex)) {
         delimIndex = hashIndex;
       }
       if (useSemicolonDelimiter) {
-        const semicolonIndex = path12.indexOf(";", 1);
+        const semicolonIndex = path16.indexOf(";", 1);
         if (semicolonIndex !== -1 && (delimIndex === -1 || semicolonIndex < delimIndex)) {
           delimIndex = semicolonIndex;
         }
       }
       if (percentIndex === -1 || delimIndex !== -1 && percentIndex > delimIndex) {
         if (delimIndex === -1) {
-          return { path: path12, querystring: "", shouldDecodeParam: false };
+          return { path: path16, querystring: "", shouldDecodeParam: false };
         }
         return {
-          path: path12.slice(0, delimIndex),
-          querystring: path12.slice(delimIndex + 1),
+          path: path16.slice(0, delimIndex),
+          querystring: path16.slice(delimIndex + 1),
           shouldDecodeParam: false
         };
       }
-      return safeDecodeURIPercentScan(path12, useSemicolonDelimiter, percentIndex);
+      return safeDecodeURIPercentScan(path16, useSemicolonDelimiter, percentIndex);
     }
-    function safeDecodeURICharScan(path12, useSemicolonDelimiter, startIndex) {
-      for (let i = startIndex; i < path12.length; i++) {
-        const charCode = path12.charCodeAt(i);
+    function safeDecodeURICharScan(path16, useSemicolonDelimiter, startIndex) {
+      for (let i = startIndex; i < path16.length; i++) {
+        const charCode = path16.charCodeAt(i);
         if (charCode === 37) {
-          return safeDecodeURIPercentScan(path12, useSemicolonDelimiter, i);
+          return safeDecodeURIPercentScan(path16, useSemicolonDelimiter, i);
         } else if (charCode === 63 || charCode === 35 || charCode === 59 && useSemicolonDelimiter) {
           return {
-            path: path12.slice(0, i),
-            querystring: path12.slice(i + 1),
+            path: path16.slice(0, i),
+            querystring: path16.slice(i + 1),
             shouldDecodeParam: false
           };
         }
       }
-      return { path: path12, querystring: "", shouldDecodeParam: false };
+      return { path: path16, querystring: "", shouldDecodeParam: false };
     }
-    function safeDecodeURIPercentScan(path12, useSemicolonDelimiter, startIndex) {
+    function safeDecodeURIPercentScan(path16, useSemicolonDelimiter, startIndex) {
       let shouldDecode = false;
       let shouldDecodeParam = false;
       let querystring = "";
       let percentIndexes = null;
       let pathEnd = -1;
-      for (let i = startIndex; i < path12.length; i++) {
-        const charCode = path12.charCodeAt(i);
+      for (let i = startIndex; i < path16.length; i++) {
+        const charCode = path16.charCodeAt(i);
         if (charCode === 37) {
-          const componentCharCode = decodeComponentCharCode(path12.charCodeAt(i + 1), path12.charCodeAt(i + 2));
+          const componentCharCode = decodeComponentCharCode(path16.charCodeAt(i + 1), path16.charCodeAt(i + 2));
           if (componentCharCode === 0) {
             shouldDecode = true;
           } else {
@@ -33844,22 +33844,22 @@ var require_url_sanitizer = __commonJS({
             i += 2;
           }
         } else if (charCode === 63 || charCode === 35 || charCode === 59 && useSemicolonDelimiter) {
-          querystring = path12.slice(i + 1);
+          querystring = path16.slice(i + 1);
           pathEnd = i;
           break;
         }
       }
       let decodedPath;
       if (percentIndexes === null) {
-        decodedPath = pathEnd === -1 ? path12 : path12.slice(0, pathEnd);
+        decodedPath = pathEnd === -1 ? path16 : path16.slice(0, pathEnd);
       } else {
         const parts = [];
         let last = 0;
         for (const index of percentIndexes) {
-          parts.push(path12.slice(last, index), "%2525");
+          parts.push(path16.slice(last, index), "%2525");
           last = index + 3;
         }
-        parts.push(path12.slice(last, pathEnd === -1 ? path12.length : pathEnd));
+        parts.push(path16.slice(last, pathEnd === -1 ? path16.length : pathEnd));
         decodedPath = parts.join("");
       }
       if (shouldDecode) decodedPath = decodeURI(decodedPath);
@@ -34377,14 +34377,14 @@ var require_compiler = __commonJS({
     }
     function compileTree(router, root) {
       const sanitized = new TreeCompiler(router, false).compile(root, null);
-      const slow = function findSanitized(path12, derivedConstraints) {
-        return router._findSanitized(sanitized, path12, derivedConstraints);
+      const slow = function findSanitized(path16, derivedConstraints) {
+        return router._findSanitized(sanitized, path16, derivedConstraints);
       };
       if (!supportsRawMatching(router, root)) {
         return {
           find: slow,
-          lookup: function lookupSanitized(path12, derivedConstraints, req, res, ctx) {
-            return router.callHandler(slow(path12, derivedConstraints), req, res, ctx);
+          lookup: function lookupSanitized(path16, derivedConstraints, req, res, ctx) {
+            return router.callHandler(slow(path16, derivedConstraints), req, res, ctx);
           }
         };
       }
@@ -34784,7 +34784,7 @@ var require_find_my_way = __commonJS({
       const byPattern = router._routesByMethodAndPattern.get(method);
       return byPattern === void 0 ? void 0 : byPattern.get(pattern);
     }
-    Router.prototype.on = function on(method, path12, opts, handler, store) {
+    Router.prototype.on = function on(method, path16, opts, handler, store) {
       if (typeof opts === "function") {
         if (handler !== void 0) {
           store = handler;
@@ -34792,34 +34792,34 @@ var require_find_my_way = __commonJS({
         handler = opts;
         opts = {};
       }
-      assert2(typeof path12 === "string", "Path should be a string");
-      assert2(path12.length > 0, "The path could not be empty");
-      assert2(path12[0] === "/" || path12[0] === "*", "The first character of a path should be `/` or `*`");
+      assert2(typeof path16 === "string", "Path should be a string");
+      assert2(path16.length > 0, "The path could not be empty");
+      assert2(path16[0] === "/" || path16[0] === "*", "The first character of a path should be `/` or `*`");
       assert2(typeof handler === "function", "Handler should be a function");
-      const optionalParamMatch = path12.match(OPTIONAL_PARAM_REGEXP);
+      const optionalParamMatch = path16.match(OPTIONAL_PARAM_REGEXP);
       if (optionalParamMatch) {
-        assert2(path12.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
-        const pathFull = path12.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
-        const pathOptional = path12.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
+        assert2(path16.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
+        const pathFull = path16.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
+        const pathOptional = path16.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
         this.on(method, pathFull, opts, handler, store);
         this.on(method, pathOptional, opts, handler, store);
         return;
       }
-      const route = path12;
+      const route = path16;
       if (this.ignoreDuplicateSlashes) {
-        path12 = removeDuplicateSlashes(path12);
+        path16 = removeDuplicateSlashes(path16);
       }
       if (this.ignoreTrailingSlash) {
-        path12 = trimLastSlash(path12);
+        path16 = trimLastSlash(path16);
       }
       const methods = Array.isArray(method) ? method : [method];
       for (const method2 of methods) {
         assert2(typeof method2 === "string", "Method should be a string");
         assert2(httpMethods.includes(method2), `Method '${method2}' is not an http method.`);
-        this._on(method2, path12, opts, handler, store, route);
+        this._on(method2, path16, opts, handler, store, route);
       }
     };
-    Router.prototype._on = function _on(method, path12, opts, handler, store) {
+    Router.prototype._on = function _on(method, path16, opts, handler, store) {
       let constraints = {};
       if (opts.constraints !== void 0) {
         assert2(typeof opts.constraints === "object" && opts.constraints !== null, "Constraints should be an object");
@@ -34834,7 +34834,7 @@ var require_find_my_way = __commonJS({
       if (this.trees[method] === void 0) {
         this.trees[method] = createStaticNode("/");
       }
-      let pattern = path12;
+      let pattern = path16;
       if (pattern === "*" && this.trees[method].prefix.length !== 0) {
         const currentRoot = this.trees[method];
         this.trees[method] = createStaticNode("");
@@ -34949,7 +34949,7 @@ var require_find_my_way = __commonJS({
           }
         }
       }
-      const route = { method, path: path12, pattern, params, opts, handler, store };
+      const route = { method, path: path16, pattern, params, opts, handler, store };
       this.routes.push(route);
       if (sameRoutes !== void 0) {
         sameRoutes.push(route);
@@ -34963,21 +34963,21 @@ var require_find_my_way = __commonJS({
       }
       currentNode.addRoute(route, this.constrainer);
     };
-    Router.prototype.hasRoute = function hasRoute(method, path12, constraints) {
-      const route = this.findRoute(method, path12, constraints);
+    Router.prototype.hasRoute = function hasRoute(method, path16, constraints) {
+      const route = this.findRoute(method, path16, constraints);
       return route !== null;
     };
-    Router.prototype.findRoute = function findNode(method, path12, constraints = {}) {
+    Router.prototype.findRoute = function findNode(method, path16, constraints = {}) {
       if (this.trees[method] === void 0) {
         return null;
       }
       if (this.ignoreDuplicateSlashes) {
-        path12 = removeDuplicateSlashes(path12);
+        path16 = removeDuplicateSlashes(path16);
       }
       if (this.ignoreTrailingSlash) {
-        path12 = trimLastSlash(path12);
+        path16 = trimLastSlash(path16);
       }
-      let pattern = path12;
+      let pattern = path16;
       let currentNode = this.trees[method];
       let parentNodePathIndex = currentNode.prefix.length;
       const params = [];
@@ -35105,39 +35105,39 @@ var require_find_my_way = __commonJS({
       this.routes = [];
       this._routesByMethodAndPattern = /* @__PURE__ */ new Map();
     };
-    Router.prototype.off = function off(method, path12, constraints) {
-      assert2(typeof path12 === "string", "Path should be a string");
-      assert2(path12.length > 0, "The path could not be empty");
-      assert2(path12[0] === "/" || path12[0] === "*", "The first character of a path should be `/` or `*`");
+    Router.prototype.off = function off(method, path16, constraints) {
+      assert2(typeof path16 === "string", "Path should be a string");
+      assert2(path16.length > 0, "The path could not be empty");
+      assert2(path16[0] === "/" || path16[0] === "*", "The first character of a path should be `/` or `*`");
       assert2(
         typeof constraints === "undefined" || typeof constraints === "object" && !Array.isArray(constraints) && constraints !== null,
         "Constraints should be an object or undefined."
       );
-      const optionalParamMatch = path12.match(OPTIONAL_PARAM_REGEXP);
+      const optionalParamMatch = path16.match(OPTIONAL_PARAM_REGEXP);
       if (optionalParamMatch) {
-        assert2(path12.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
-        const pathFull = path12.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
-        const pathOptional = path12.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
+        assert2(path16.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
+        const pathFull = path16.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
+        const pathOptional = path16.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
         this.off(method, pathFull, constraints);
         this.off(method, pathOptional, constraints);
         return;
       }
       if (this.ignoreDuplicateSlashes) {
-        path12 = removeDuplicateSlashes(path12);
+        path16 = removeDuplicateSlashes(path16);
       }
       if (this.ignoreTrailingSlash) {
-        path12 = trimLastSlash(path12);
+        path16 = trimLastSlash(path16);
       }
       const methods = Array.isArray(method) ? method : [method];
       for (const method2 of methods) {
-        this._off(method2, path12, constraints);
+        this._off(method2, path16, constraints);
       }
     };
-    Router.prototype._off = function _off(method, path12, constraints) {
+    Router.prototype._off = function _off(method, path16, constraints) {
       assert2(typeof method === "string", "Method should be a string");
       assert2(httpMethods.includes(method), `Method '${method}' is not an http method.`);
       function matcherWithoutConstraints(route) {
-        return method !== route.method || path12 !== route.path;
+        return method !== route.method || path16 !== route.path;
       }
       function matcherWithConstraints(route) {
         return matcherWithoutConstraints(route) || !deepEqual(constraints, route.opts.constraints || {});
@@ -35174,40 +35174,40 @@ var require_find_my_way = __commonJS({
       if (handle === null) return this._defaultRoute(req, res, ctx);
       return ctx === void 0 ? handle.handler(req, res, handle.params, handle.store, handle.searchParams) : handle.handler.call(ctx, req, res, handle.params, handle.store, handle.searchParams);
     };
-    Router.prototype.find = function find(method, path12, derivedConstraints) {
+    Router.prototype.find = function find(method, path16, derivedConstraints) {
       let currentNode = method === "GET" ? this._treeGET : this.trees[method];
       if (currentNode == null) return null;
-      if (path12.charCodeAt(0) !== 47) {
-        const absolutePath = getPathFromAbsoluteUrl(path12);
+      if (path16.charCodeAt(0) !== 47) {
+        const absolutePath = getPathFromAbsoluteUrl(path16);
         if (absolutePath === null) {
-          return this._onBadUrl(path12);
+          return this._onBadUrl(path16);
         }
-        path12 = absolutePath;
+        path16 = absolutePath;
       }
       let sanitizedUrl;
       let querystring2;
       let shouldDecodeParam;
       try {
-        sanitizedUrl = path12.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path12, this.useSemicolonDelimiter) : safeDecodeURICharScan(path12, this.useSemicolonDelimiter, 1);
-        path12 = sanitizedUrl.path;
+        sanitizedUrl = path16.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path16, this.useSemicolonDelimiter) : safeDecodeURICharScan(path16, this.useSemicolonDelimiter, 1);
+        path16 = sanitizedUrl.path;
         querystring2 = sanitizedUrl.querystring;
         shouldDecodeParam = sanitizedUrl.shouldDecodeParam;
       } catch (error62) {
-        return this._onBadUrl(path12);
+        return this._onBadUrl(path16);
       }
       if (this.ignoreDuplicateSlashes) {
-        path12 = removeDuplicateSlashes(path12);
+        path16 = removeDuplicateSlashes(path16);
       }
       if (this.ignoreTrailingSlash) {
-        path12 = trimLastSlash(path12);
+        path16 = trimLastSlash(path16);
       }
-      const originPath = path12;
+      const originPath = path16;
       if (this.caseSensitive === false) {
-        path12 = path12.toLowerCase();
+        path16 = path16.toLowerCase();
       }
       const maxParamLength = this.maxParamLength;
       let pathIndex = currentNode.prefix.length;
-      const pathLen = path12.length;
+      const pathLen = path16.length;
       let paramsCount = 0;
       let param0, param1, param2, param3;
       let extraParams = null;
@@ -35225,7 +35225,7 @@ var require_find_my_way = __commonJS({
             };
           }
         }
-        let node2 = currentNode.getNextNode(path12, pathIndex, brothersNodesStack, paramsCount);
+        let node2 = currentNode.getNextNode(path16, pathIndex, brothersNodesStack, paramsCount);
         if (node2 === null) {
           if (brothersNodesStack.length === 0) {
             if (maxParamLengthExceeded && this.onMaxParamLength) {
@@ -35339,13 +35339,13 @@ var require_find_my_way = __commonJS({
       }
       return compiled;
     };
-    Router.prototype._findCompiled = function _findCompiled(method, path12, derivedConstraints) {
+    Router.prototype._findCompiled = function _findCompiled(method, path16, derivedConstraints) {
       let compiled = method === "GET" ? this._compiledGET : this._compiledTrees[method];
       if (compiled == null) {
         compiled = this._compileTree(method);
         if (compiled === null) return null;
       }
-      return compiled.find(path12, derivedConstraints);
+      return compiled.find(path16, derivedConstraints);
     };
     Router.prototype._lookupCompiled = function _lookupCompiled(req, res, ctx, done) {
       if (typeof ctx === "function" || done !== void 0) {
@@ -35360,42 +35360,42 @@ var require_find_my_way = __commonJS({
       }
       return compiled.lookup(req.url, derivedConstraints, req, res, ctx);
     };
-    Router.prototype._findSanitized = function _findSanitized(matcher, path12, derivedConstraints) {
-      if (path12.charCodeAt(0) !== 47) {
-        const absolutePath = getPathFromAbsoluteUrl(path12);
+    Router.prototype._findSanitized = function _findSanitized(matcher, path16, derivedConstraints) {
+      if (path16.charCodeAt(0) !== 47) {
+        const absolutePath = getPathFromAbsoluteUrl(path16);
         if (absolutePath === null) {
-          return this._onBadUrl(path12);
+          return this._onBadUrl(path16);
         }
-        path12 = absolutePath;
+        path16 = absolutePath;
       }
       let sanitizedUrl;
       let querystring2;
       let shouldDecodeParam;
       try {
-        sanitizedUrl = path12.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path12, this.useSemicolonDelimiter) : safeDecodeURICharScan(path12, this.useSemicolonDelimiter, 1);
-        path12 = sanitizedUrl.path;
+        sanitizedUrl = path16.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path16, this.useSemicolonDelimiter) : safeDecodeURICharScan(path16, this.useSemicolonDelimiter, 1);
+        path16 = sanitizedUrl.path;
         querystring2 = sanitizedUrl.querystring;
         shouldDecodeParam = sanitizedUrl.shouldDecodeParam;
       } catch (error62) {
-        return this._onBadUrl(path12);
+        return this._onBadUrl(path16);
       }
       if (this.ignoreDuplicateSlashes) {
-        path12 = removeDuplicateSlashes(path12);
+        path16 = removeDuplicateSlashes(path16);
       }
       if (this.ignoreTrailingSlash) {
-        path12 = trimLastSlash(path12);
+        path16 = trimLastSlash(path16);
       }
-      const originPath = path12;
+      const originPath = path16;
       if (this.caseSensitive === false) {
-        path12 = path12.toLowerCase();
+        path16 = path16.toLowerCase();
       }
-      return matcher(path12, originPath, shouldDecodeParam, derivedConstraints, querystring2);
+      return matcher(path16, originPath, shouldDecodeParam, derivedConstraints, querystring2);
     };
     Router.prototype._rebuild = function(routes) {
       this.reset();
       for (const route of routes) {
-        const { method, path: path12, opts, handler, store } = route;
-        this._on(method, path12, opts, handler, store);
+        const { method, path: path16, opts, handler, store } = route;
+        this._on(method, path16, opts, handler, store);
       }
     };
     Router.prototype._defaultRoute = function(req, res, ctx) {
@@ -35406,24 +35406,24 @@ var require_find_my_way = __commonJS({
         res.end();
       }
     };
-    Router.prototype._onBadUrl = function(path12) {
+    Router.prototype._onBadUrl = function(path16) {
       if (this.onBadUrl === null) {
         return null;
       }
       const onBadUrl = this.onBadUrl;
       return {
-        handler: (req, res, ctx) => onBadUrl(path12, req, res),
+        handler: (req, res, ctx) => onBadUrl(path16, req, res),
         params: {},
         store: null
       };
     };
-    Router.prototype._onMaxParamLength = function(path12) {
+    Router.prototype._onMaxParamLength = function(path16) {
       if (this.onMaxParamLength === null) {
         return null;
       }
       const onMaxParamLength = this.onMaxParamLength;
       return {
-        handler: (req, res, ctx) => onMaxParamLength(path12, req, res),
+        handler: (req, res, ctx) => onMaxParamLength(path16, req, res),
         params: {},
         store: null
       };
@@ -35455,12 +35455,12 @@ var require_find_my_way = __commonJS({
       if (!httpMethods.hasOwnProperty(i)) continue;
       const m = httpMethods[i];
       const methodName = m.toLowerCase();
-      Router.prototype[methodName] = function(path12, handler, store) {
-        return this.on(m, path12, handler, store);
+      Router.prototype[methodName] = function(path16, handler, store) {
+        return this.on(m, path16, handler, store);
       };
     }
-    Router.prototype.all = function(path12, handler, store) {
-      this.on(httpMethods, path12, handler, store);
+    Router.prototype.all = function(path16, handler, store) {
+      this.on(httpMethods, path16, handler, store);
     };
     Router.sanitizeUrlPath = function sanitizeUrlPath(url2, useSemicolonDelimiter) {
       const decoded = safeDecodeURI(url2, useSemicolonDelimiter);
@@ -35512,14 +35512,14 @@ var require_find_my_way = __commonJS({
       }
       return url2.slice(pathStart);
     }
-    function removeDuplicateSlashes(path12) {
-      return path12.indexOf("//") !== -1 ? path12.replace(REMOVE_DUPLICATE_SLASHES_REGEXP, "/") : path12;
+    function removeDuplicateSlashes(path16) {
+      return path16.indexOf("//") !== -1 ? path16.replace(REMOVE_DUPLICATE_SLASHES_REGEXP, "/") : path16;
     }
-    function trimLastSlash(path12) {
-      if (path12.length > 1 && path12.charCodeAt(path12.length - 1) === 47) {
-        return path12.slice(0, -1);
+    function trimLastSlash(path16) {
+      if (path16.length > 1 && path16.charCodeAt(path16.length - 1) === 47) {
+        return path16.slice(0, -1);
       }
-      return path12;
+      return path16;
     }
     function trimRegExpStartAndEnd(regexString) {
       if (regexString.charCodeAt(1) === 94) {
@@ -35530,22 +35530,22 @@ var require_find_my_way = __commonJS({
       }
       return regexString;
     }
-    function getClosingParenthensePosition(path12, idx) {
+    function getClosingParenthensePosition(path16, idx) {
       let parentheses = 1;
-      while (idx < path12.length) {
+      while (idx < path16.length) {
         idx++;
-        if (path12.charCodeAt(idx) === 92) {
+        if (path16.charCodeAt(idx) === 92) {
           idx++;
           continue;
         }
-        if (path12.charCodeAt(idx) === 41) {
+        if (path16.charCodeAt(idx) === 41) {
           parentheses--;
-        } else if (path12.charCodeAt(idx) === 40) {
+        } else if (path16.charCodeAt(idx) === 40) {
           parentheses++;
         }
         if (!parentheses) return idx;
       }
-      throw new TypeError('Invalid regexp expression in "' + path12 + '"');
+      throw new TypeError('Invalid regexp expression in "' + path16 + '"');
     }
     function defaultBuildPrettyMeta(route) {
       if (!route) return {};
@@ -35781,12 +35781,12 @@ var require_route = __commonJS({
       function route({ options: options2, isFastify }) {
         throwIfAlreadyStarted("Cannot add route!");
         const opts = { ...options2 };
-        const path12 = opts.url || opts.path || "";
+        const path16 = opts.url || opts.path || "";
         if (!opts.handler) {
-          throw new FST_ERR_ROUTE_MISSING_HANDLER(opts.method, path12);
+          throw new FST_ERR_ROUTE_MISSING_HANDLER(opts.method, path16);
         }
         if (opts.errorHandler !== void 0 && typeof opts.errorHandler !== "function") {
-          throw new FST_ERR_ROUTE_HANDLER_NOT_FN(opts.method, path12);
+          throw new FST_ERR_ROUTE_HANDLER_NOT_FN(opts.method, path16);
         }
         validateBodyLimitOption(opts.bodyLimit);
         validateHandlerTimeoutOption(opts.handlerTimeout);
@@ -35796,22 +35796,22 @@ var require_route = __commonJS({
         if (Array.isArray(opts.method)) {
           for (let i = 0; i < opts.method.length; ++i) {
             opts.method[i] = normalizeAndValidateMethod.call(this, opts.method[i]);
-            validateSchemaBodyOption.call(this, opts.method[i], path12, opts.schema);
+            validateSchemaBodyOption.call(this, opts.method[i], path16, opts.schema);
             isGetRoute = opts.method.includes("GET");
             isHeadRoute = opts.method.includes("HEAD");
           }
         } else {
           opts.method = normalizeAndValidateMethod.call(this, opts.method);
-          validateSchemaBodyOption.call(this, opts.method, path12, opts.schema);
+          validateSchemaBodyOption.call(this, opts.method, path16, opts.schema);
           isGetRoute = opts.method === "GET";
           isHeadRoute = opts.method === "HEAD";
         }
         const headOpts = shouldExposeHead && isGetRoute ? { ...options2 } : null;
         const prefix = this[kRoutePrefix];
-        if (path12 === "/" && prefix.length > 0 && opts.method !== "HEAD") {
+        if (path16 === "/" && prefix.length > 0 && opts.method !== "HEAD") {
           switch (opts.prefixTrailingSlash) {
             case "slash":
-              addNewRoute.call(this, { path: path12, isFastify });
+              addNewRoute.call(this, { path: path16, isFastify });
               break;
             case "no-slash":
               addNewRoute.call(this, { path: "", isFastify });
@@ -35820,20 +35820,20 @@ var require_route = __commonJS({
             default:
               addNewRoute.call(this, { path: "", isFastify });
               if (ignoreTrailingSlash !== true && (ignoreDuplicateSlashes !== true || !prefix.endsWith("/"))) {
-                addNewRoute.call(this, { path: path12, prefixing: true, isFastify });
+                addNewRoute.call(this, { path: path16, prefixing: true, isFastify });
               }
           }
-        } else if (path12[0] === "/" && prefix.endsWith("/")) {
-          addNewRoute.call(this, { path: path12.slice(1), isFastify });
+        } else if (path16[0] === "/" && prefix.endsWith("/")) {
+          addNewRoute.call(this, { path: path16.slice(1), isFastify });
         } else {
-          addNewRoute.call(this, { path: path12, isFastify });
+          addNewRoute.call(this, { path: path16, isFastify });
         }
         return this;
-        function addNewRoute({ path: path13, prefixing = false, isFastify: isFastify2 = false }) {
-          const url2 = prefix + path13;
+        function addNewRoute({ path: path17, prefixing = false, isFastify: isFastify2 = false }) {
+          const url2 = prefix + path17;
           opts.url = url2;
           opts.path = url2;
-          opts.routePath = path13;
+          opts.routePath = path17;
           opts.prefix = prefix;
           opts.logLevel = opts.logLevel || this[kLogLevel];
           validateLogLevelOption(opts.logLevel, opts.method, opts.url, logger);
@@ -35966,7 +35966,7 @@ var require_route = __commonJS({
           });
           if (shouldExposeHead && isGetRoute && !isHeadRoute && !hasHEADHandler) {
             const onSendHandlers = parseHeadOnSendHandlers(headOpts.onSend);
-            prepareRoute.call(this, { method: "HEAD", url: path13, options: { ...headOpts, onSend: onSendHandlers }, isFastify: true });
+            prepareRoute.call(this, { method: "HEAD", url: path17, options: { ...headOpts, onSend: onSendHandlers }, isFastify: true });
           }
         }
       }
@@ -36100,9 +36100,9 @@ var require_route = __commonJS({
       }
       return method;
     }
-    function validateSchemaBodyOption(method, path12, schema) {
+    function validateSchemaBodyOption(method, path16, schema) {
       if (this[kSupportedHTTPMethods].bodyless.has(method) && schema?.body) {
-        throw new FST_ERR_ROUTE_BODY_VALIDATION_SCHEMA_NOT_SUPPORTED(method, path12);
+        throw new FST_ERR_ROUTE_BODY_VALIDATION_SCHEMA_NOT_SUPPORTED(method, path16);
       }
     }
     function validateBodyLimitOption(bodyLimit) {
@@ -36117,11 +36117,11 @@ var require_route = __commonJS({
         throw new FST_ERR_ROUTE_HANDLER_TIMEOUT_OPTION_NOT_INT(handlerTimeout);
       }
     }
-    function validateLogLevelOption(logLevel, method, path12, logger) {
+    function validateLogLevelOption(logLevel, method, path16, logger) {
       if (logLevel == null || logLevel === "") return;
       if (logger?.levels?.values == null) return;
       if (typeof logLevel !== "string" || logger.levels.values[logLevel] === void 0) {
-        throw new FST_ERR_ROUTE_LOG_LEVEL_INVALID(method, path12, logLevel);
+        throw new FST_ERR_ROUTE_LOG_LEVEL_INVALID(method, path16, logLevel);
       }
     }
     function runPreParsing(err, request, reply) {
@@ -36766,14 +36766,14 @@ var require_cookies = __commonJS({
     "use strict";
     var { stringifySetCookie: stringifySetCookie2 } = (init_dist(), __toCommonJS(dist_exports));
     function cookiePathMatches(cookiePath, requestPath) {
-      const path12 = cookiePath || "/";
-      if (requestPath === path12) {
+      const path16 = cookiePath || "/";
+      if (requestPath === path16) {
         return true;
       }
-      if (!requestPath.startsWith(path12)) {
+      if (!requestPath.startsWith(path16)) {
         return false;
       }
-      return path12.endsWith("/") || requestPath.charAt(path12.length) === "/";
+      return path16.endsWith("/") || requestPath.charAt(path16.length) === "/";
     }
     function listCookies(cookies) {
       if (Array.isArray(cookies)) {
@@ -36845,7 +36845,7 @@ var require_form_data = __commonJS({
   "../../node_modules/light-my-request/lib/form-data.js"(exports, module) {
     "use strict";
     var { randomUUID } = __require("node:crypto");
-    var { Readable } = __require("node:stream");
+    var { Readable: Readable2 } = __require("node:stream");
     var textEncoder;
     function isFormDataLike(payload) {
       return payload && typeof payload === "object" && typeof payload.append === "function" && typeof payload.delete === "function" && typeof payload.get === "function" && typeof payload.getAll === "function" && typeof payload.has === "function" && typeof payload.set === "function" && payload[Symbol.toStringTag] === "FormData";
@@ -36884,7 +36884,7 @@ Content-Type: ${value.type || "application/octet-stream"}\r
         }
         yield textEncoder.encode(`--${boundary}--`);
       }
-      const stream = Readable.from(asyncIterator());
+      const stream = Readable2.from(asyncIterator());
       return {
         stream,
         contentType: `multipart/form-data; boundary=${boundary}`
@@ -36899,7 +36899,7 @@ Content-Type: ${value.type || "application/octet-stream"}\r
 var require_request2 = __commonJS({
   "../../node_modules/light-my-request/lib/request.js"(exports, module) {
     "use strict";
-    var { Readable, addAbortSignal } = __require("node:stream");
+    var { Readable: Readable2, addAbortSignal } = __require("node:stream");
     var util = __require("node:util");
     var assert2 = __require("node:assert");
     var { createDeprecation } = require_process_warning();
@@ -36966,7 +36966,7 @@ var require_request2 = __commonJS({
       }
     }
     function Request(options) {
-      Readable.call(this, {
+      Readable2.call(this, {
         autoDestroy: false
       });
       const parsedURL = parseURL(options.url || options.path, options.query);
@@ -37123,7 +37123,7 @@ var require_request2 = __commonJS({
         }
       });
     }
-    util.inherits(Request, Readable);
+    util.inherits(Request, Readable2);
     util.inherits(CustomRequest, Request);
     Request.prototype.destroy = function(error62) {
       if (this.destroyed || this._lightMyRequest.isDone) return;
@@ -37380,7 +37380,7 @@ var require_response = __commonJS({
   "../../node_modules/light-my-request/lib/response.js"(exports, module) {
     "use strict";
     var http = __require("node:http");
-    var { Writable, Readable, addAbortSignal } = __require("node:stream");
+    var { Writable, Readable: Readable2, addAbortSignal } = __require("node:stream");
     var util = __require("node:util");
     var setCookie = require_set_cookie();
     function Response(req, onEnd, reject) {
@@ -37388,7 +37388,7 @@ var require_response = __commonJS({
       this.isLightMyRequest = true;
       if (req._lightMyRequest?.payloadAsStream) {
         const read = this.emit.bind(this, "drain");
-        this._lightMyRequest = { headers: null, trailers: {}, stream: new Readable({ read }) };
+        this._lightMyRequest = { headers: null, trailers: {}, stream: new Readable2({ read }) };
         const signal = req._lightMyRequest.signal;
         if (signal) {
           addAbortSignal(signal, this._lightMyRequest.stream);
@@ -37544,7 +37544,7 @@ var require_response = __commonJS({
         if (response._lightMyRequest.stream) {
           return response._lightMyRequest.stream;
         }
-        return Readable.from(response._lightMyRequest.payloadChunks);
+        return Readable2.from(response._lightMyRequest.payloadChunks);
       };
       return res;
     }
@@ -39299,19 +39299,19 @@ var require_fastify = __commonJS({
         }
         fourOhFour.router.lookup(req, res);
       }
-      function onBadUrl(path12, req, res) {
+      function onBadUrl(path16, req, res) {
         if (options.frameworkErrors) {
           const id = getGenReqId(routeEventContext.server, req);
           const childLogger = createChildLogger(routeEventContext, options.logger, req, id);
           const request = new Request(id, null, req, null, childLogger, routeEventContext);
           const reply = new Reply(res, request, childLogger);
           routeEventContext.server[kLogController].incomingRequest(request, reply);
-          return options.frameworkErrors(new FST_ERR_BAD_URL(path12), request, reply);
+          return options.frameworkErrors(new FST_ERR_BAD_URL(path16), request, reply);
         }
         const body = JSON.stringify({
           error: "Bad Request",
           code: "FST_ERR_BAD_URL",
-          message: `'${path12}' is not a valid url component`,
+          message: `'${path16}' is not a valid url component`,
           statusCode: 400
         });
         res.writeHead(400, {
@@ -39320,19 +39320,19 @@ var require_fastify = __commonJS({
         });
         res.end(body);
       }
-      function onMaxParamLength(path12, req, res) {
+      function onMaxParamLength(path16, req, res) {
         if (options.frameworkErrors) {
           const id = getGenReqId(routeEventContext.server, req);
           const childLogger = createChildLogger(routeEventContext, options.logger, req, id);
           const request = new Request(id, null, req, null, childLogger, routeEventContext);
           const reply = new Reply(res, request, childLogger);
           routeEventContext.server[kLogController].incomingRequest(request, reply);
-          return options.frameworkErrors(new FST_ERR_MAX_PARAM_LENGTH(path12), request, reply);
+          return options.frameworkErrors(new FST_ERR_MAX_PARAM_LENGTH(path16), request, reply);
         }
         const body = JSON.stringify({
           error: "Bad Request",
           code: "FST_ERR_MAX_PARAM_LENGTH",
-          message: `'${path12}' is exceeding the max param length`,
+          message: `'${path16}' is exceeding the max param length`,
           statusCode: 414
         });
         res.writeHead(414, {
@@ -39589,15 +39589,15 @@ ${body}`);
 });
 
 // src/main.ts
-import { spawn as spawn3 } from "node:child_process";
-import fs11 from "node:fs";
-import path11 from "node:path";
-import { fileURLToPath as fileURLToPath2 } from "node:url";
+import { spawn as spawn4 } from "node:child_process";
+import fs14 from "node:fs";
+import path15 from "node:path";
+import { fileURLToPath as fileURLToPath3 } from "node:url";
 import { parseArgs } from "node:util";
 
 // src/app.ts
 var import_fastify = __toESM(require_fastify(), 1);
-import crypto6 from "node:crypto";
+import crypto8 from "node:crypto";
 
 // ../../node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -40416,10 +40416,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path12) {
-  if (!path12)
+function getElementAtPath(obj, path16) {
+  if (!path16)
     return obj;
-  return path12.reduce((acc, key) => acc?.[key], obj);
+  return path16.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -40759,11 +40759,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path12, issues) {
+function prefixIssues(path16, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path12);
+    iss.path.unshift(path16);
     return iss;
   });
 }
@@ -40903,8 +40903,8 @@ function base64urlToUint8Array(base64url3) {
 function uint8ArrayToBase64url(bytes) {
   return uint8ArrayToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
-function hexToUint8Array(hex4) {
-  const cleanHex = hex4.replace(/^0x/, "");
+function hexToUint8Array(hex5) {
+  const cleanHex = hex5.replace(/^0x/, "");
   if (cleanHex.length % 2 !== 0) {
     throw new Error("Invalid hex string length");
   }
@@ -41225,16 +41225,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path12 = []) => {
+  const processError = (error63, path16 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path12, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path16, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path12, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path16, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path12, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path16, ...issue2.path]);
       } else {
-        const fullpath = [...path12, ...issue2.path];
+        const fullpath = [...path16, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -41273,17 +41273,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path12 = []) => {
+  const processError = (error63, path16 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path12, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path16, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path12, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path16, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path12, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path16, ...issue2.path]);
       } else {
-        const fullpath = [...path12, ...issue2.path];
+        const fullpath = [...path16, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -41322,8 +41322,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path12 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path12) {
+  const path16 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path16) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -42965,10 +42965,10 @@ function capSize(inst, size) {
   const cap = Math.min(...caps.map((c) => c[0]));
   const parse3 = inst._zod.parse;
   inst._zod.parse = (payload, ctx) => {
-    const n2 = size(payload.value);
-    if (n2 > cap && !ctx?.skipChecks && ctx?.direction !== "backward") {
+    const n3 = size(payload.value);
+    if (n3 > cap && !ctx?.skipChecks && ctx?.direction !== "backward") {
       for (const [max, ch] of sizeCaps(inst._zod.def.checks)) {
-        if (n2 > max && ch._zod.def.when(payload)) {
+        if (n3 > max && ch._zod.def.when(payload)) {
           const start = payload.issues.length;
           ch._zod.check(payload);
           payload.issues[start].continue = false;
@@ -57634,17 +57634,17 @@ var ZodArray = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
   inst._zod.processJSONSchema = (ctx, json2, params) => arrayProcessor(inst, ctx, json2, params);
   inst.element = def.element;
 }, {
-  min(n2, params) {
-    return this.check(_minLength(n2, params));
+  min(n3, params) {
+    return this.check(_minLength(n3, params));
   },
   nonempty(params) {
     return this.check(_minLength(1, params));
   },
-  max(n2, params) {
-    return this.check(_maxLength(n2, params));
+  max(n3, params) {
+    return this.check(_maxLength(n3, params));
   },
-  length(n2, params) {
-    return this.check(_length(n2, params));
+  length(n3, params) {
+    return this.check(_length(n3, params));
   },
   unwrap() {
     return this.element;
@@ -58461,13 +58461,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path12 = ref.slice(1).split("/").filter(Boolean);
-  if (path12.length === 0) {
+  const path16 = ref.slice(1).split("/").filter(Boolean);
+  if (path16.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path12[0] === defsKey) {
-    const key = path12[1] === void 0 ? void 0 : decodeJSONPointerSegment(path12[1]);
+  if (path16[0] === defsKey) {
+    const key = path16[1] === void 0 ? void 0 : decodeJSONPointerSegment(path16[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -58601,8 +58601,8 @@ function containsRef(value) {
     return Object.values(sub).some(containsRef);
   });
 }
-function plural(n2) {
-  return n2 === 1 ? "element" : "elements";
+function plural(n3) {
+  return n3 === 1 ? "element" : "elements";
 }
 function checkArrayGuards(arraySchema, guards) {
   const guard = z.transform((value) => value).check((payload) => {
@@ -59377,9 +59377,9 @@ function tailError(stderr, lines = 4) {
 // ../../packages/video-engine/src/probe.ts
 function parseRate(rate) {
   if (!rate) return null;
-  const [n2, d] = rate.split("/").map(Number);
-  if (!n2 || !Number.isFinite(n2)) return null;
-  const value = d ? n2 / d : n2;
+  const [n3, d] = rate.split("/").map(Number);
+  if (!n3 || !Number.isFinite(n3)) return null;
+  const value = d ? n3 / d : n3;
   if (!Number.isFinite(value) || value <= 0 || value > 1e3) return null;
   return Math.round(value * 1e3) / 1e3;
 }
@@ -59628,7 +59628,7 @@ var MediaClip = external_exports.object({
   x: external_exports.number().min(-2).max(2).default(0),
   y: external_exports.number().min(-2).max(2).default(0)
 });
-var TextFont = external_exports.enum(["sans", "serif", "mono", "arabic"]);
+var TextFont = external_exports.enum(["sans", "serif", "mono", "arabic", "thmanyah"]);
 var TextClip = external_exports.object({
   ...ClipBase,
   type: external_exports.literal("text"),
@@ -59671,8 +59671,8 @@ function normalizeTimeline(data) {
 
 // ../../packages/timeline/src/time.ts
 var EPS = 1e-6;
-function round6(n2) {
-  return Math.round(n2 * 1e6) / 1e6;
+function round6(n3) {
+  return Math.round(n3 * 1e6) / 1e6;
 }
 function clipDuration(c) {
   return c.type === "text" ? c.duration : round6((c.out - c.in) / c.speed);
@@ -59830,9 +59830,9 @@ function trackEnd(t, trackId) {
 }
 function nextTrackName(t, kind) {
   const prefix = kind === "video" ? "V" : "A";
-  let n2 = t.tracks.filter((x) => x.kind === kind).length + 1;
-  while (t.tracks.some((x) => x.name === `${prefix}${n2}`)) n2++;
-  return `${prefix}${n2}`;
+  let n3 = t.tracks.filter((x) => x.kind === kind).length + 1;
+  while (t.tracks.some((x) => x.name === `${prefix}${n3}`)) n3++;
+  return `${prefix}${n3}`;
 }
 function addTrack(t, kind, newId, name) {
   if (t.tracks.length >= 32) throw new TimelineError("too_many_tracks", "A project can have at most 32 tracks.");
@@ -60344,14 +60344,14 @@ function compileRender({ timeline, media, settings, fonts }) {
       const dur = clipDuration(clip);
       const { fadeIn, fadeOut } = effectiveFades(timeline, clip);
       const label = `v${layer}`;
-      const chain = [];
+      const chain2 = [];
       let x = 0;
       let y = 0;
       if (clip.type === "text") {
         const tc = clip;
         const file2 = `text_${layer}.txt`;
         textFiles.push({ name: file2, content: prepareDrawText(tc.text) });
-        const fontPath = tc.font === "arabic" || hasArabic(tc.text) ? fonts.arabic : fonts[tc.font];
+        const fontPath = tc.font === "thmanyah" ? fonts.thmanyah ?? fonts.arabic : tc.font === "arabic" || hasArabic(tc.text) ? fonts.arabic : fonts[tc.font];
         const size = Math.max(8, Math.round(tc.size * H));
         const opts = [
           `textfile=${filterValue(file2)}`,
@@ -60364,7 +60364,7 @@ function compileRender({ timeline, media, settings, fonts }) {
           `y=${n(tc.y)}*h-th/2`,
           ...tc.box ? ["box=1", `boxcolor=0x${tc.boxColor.slice(1)}@${n(tc.boxOpacity, 3)}`, `boxborderw=${Math.round(size * 0.35)}`] : []
         ];
-        chain.push(`color=c=black@0.0:s=${W}x${H}:r=${n(fps)}:d=${n(dur)}`, "format=yuva420p", `drawtext=${opts.join(":")}`);
+        chain2.push(`color=c=black@0.0:s=${W}x${H}:r=${n(fps)}:d=${n(dur)}`, "format=yuva420p", `drawtext=${opts.join(":")}`);
       } else {
         const m = mediaFor(clip);
         if (m.kind === "audio") continue;
@@ -60389,24 +60389,24 @@ function compileRender({ timeline, media, settings, fonts }) {
         th = even(th);
         x = Math.round((W - tw) / 2 + clip.x * W);
         y = Math.round((H - th) / 2 + clip.y * H);
-        chain.push(`[${idx}:v]setpts=PTS-STARTPTS`);
-        if (clip.reverse && m.kind === "video") chain.push("reverse");
-        if (m.kind === "video" && clip.speed !== 1) chain.push(`setpts=PTS/${n(clip.speed)}`);
-        chain.push(`fps=${n(fps)}`, `trim=duration=${n(dur)}`, "setpts=PTS-STARTPTS");
+        chain2.push(`[${idx}:v]setpts=PTS-STARTPTS`);
+        if (clip.reverse && m.kind === "video") chain2.push("reverse");
+        if (m.kind === "video" && clip.speed !== 1) chain2.push(`setpts=PTS/${n(clip.speed)}`);
+        chain2.push(`fps=${n(fps)}`, `trim=duration=${n(dur)}`, "setpts=PTS-STARTPTS");
         if (left || right || top || bottom) {
-          chain.push(`crop=iw*${n(1 - left - right)}:ih*${n(1 - top - bottom)}:iw*${n(left)}:ih*${n(top)}`);
+          chain2.push(`crop=iw*${n(1 - left - right)}:ih*${n(1 - top - bottom)}:iw*${n(left)}:ih*${n(top)}`);
         }
-        if (clip.rotate === 90) chain.push("transpose=1");
-        else if (clip.rotate === 270) chain.push("transpose=2");
-        else if (clip.rotate === 180) chain.push("hflip", "vflip");
-        if (clip.flipH) chain.push("hflip");
-        chain.push(`scale=${tw}:${th}:flags=bicubic`, "setsar=1", "format=yuva420p");
+        if (clip.rotate === 90) chain2.push("transpose=1");
+        else if (clip.rotate === 270) chain2.push("transpose=2");
+        else if (clip.rotate === 180) chain2.push("hflip", "vflip");
+        if (clip.flipH) chain2.push("hflip");
+        chain2.push(`scale=${tw}:${th}:flags=bicubic`, "setsar=1", "format=yuva420p");
       }
-      if (clip.opacity < 1) chain.push(`colorchannelmixer=aa=${n(clip.opacity, 4)}`);
-      if (fadeIn > 0) chain.push(`fade=t=in:st=0:d=${n(fadeIn)}:alpha=1`);
-      if (fadeOut > 0) chain.push(`fade=t=out:st=${n(dur - fadeOut)}:d=${n(fadeOut)}:alpha=1`);
-      chain.push(`setpts=PTS+${n(clip.start)}/TB`);
-      graph.push(`${chain.join(",")}[${label}]`);
+      if (clip.opacity < 1) chain2.push(`colorchannelmixer=aa=${n(clip.opacity, 4)}`);
+      if (fadeIn > 0) chain2.push(`fade=t=in:st=0:d=${n(fadeIn)}:alpha=1`);
+      if (fadeOut > 0) chain2.push(`fade=t=out:st=${n(dur - fadeOut)}:d=${n(fadeOut)}:alpha=1`);
+      chain2.push(`setpts=PTS+${n(clip.start)}/TB`);
+      graph.push(`${chain2.join(",")}[${label}]`);
       const next = `c${layer}`;
       graph.push(`[${current}][${label}]overlay=x=${x}:y=${y}:eof_action=pass:repeatlast=0:format=auto[${next}]`);
       current = next;
@@ -60424,16 +60424,16 @@ function compileRender({ timeline, media, settings, fonts }) {
     const dur = clipDuration(clip);
     const fadeIn = Math.min(dur, Math.max(clip.fadeIn, clip.transitionIn?.duration ?? 0));
     const fadeOut = Math.min(dur, audioFadeOut(timeline, clip, effectiveFades(timeline, clip).fadeOut));
-    const chain = [`[${idx}:a]asetpts=PTS-STARTPTS`];
-    if (clip.reverse) chain.push("areverse");
-    chain.push(...atempoChain(clip.speed));
-    chain.push("aresample=48000", "aformat=sample_fmts=fltp:channel_layouts=stereo", `atrim=duration=${n(dur)}`, "asetpts=PTS-STARTPTS");
+    const chain2 = [`[${idx}:a]asetpts=PTS-STARTPTS`];
+    if (clip.reverse) chain2.push("areverse");
+    chain2.push(...atempoChain(clip.speed));
+    chain2.push("aresample=48000", "aformat=sample_fmts=fltp:channel_layouts=stereo", `atrim=duration=${n(dur)}`, "asetpts=PTS-STARTPTS");
     const gain = clip.volume * track.volume;
-    if (gain !== 1) chain.push(`volume=${n(gain, 4)}`);
-    if (fadeIn > 0) chain.push(`afade=t=in:st=0:d=${n(fadeIn)}`);
-    if (fadeOut > 0) chain.push(`afade=t=out:st=${n(dur - fadeOut)}:d=${n(fadeOut)}`);
-    chain.push(`adelay=delays=${Math.round(clip.start * 1e3)}:all=1`);
-    graph.push(`${chain.join(",")}[a${a}]`);
+    if (gain !== 1) chain2.push(`volume=${n(gain, 4)}`);
+    if (fadeIn > 0) chain2.push(`afade=t=in:st=0:d=${n(fadeIn)}`);
+    if (fadeOut > 0) chain2.push(`afade=t=out:st=${n(dur - fadeOut)}:d=${n(fadeOut)}`);
+    chain2.push(`adelay=delays=${Math.round(clip.start * 1e3)}:all=1`);
+    graph.push(`${chain2.join(",")}[a${a}]`);
     audioLabels.push(`[a${a}]`);
     a++;
   }
@@ -60594,6 +60594,325 @@ async function analyzeAudio(tools, file2, durationSec, opts = {}) {
   );
   if (res.code !== 0) throw new Error(`Audio analysis failed: ${tailError(res.stderr)}`);
   return parseAudioOutput(res.stderr, durationSec);
+}
+
+// ../../packages/video-engine/src/motion.ts
+var hex4 = external_exports.string().regex(/^#[0-9a-fA-F]{6}$/, "Colors are #rrggbb");
+var frac = external_exports.number().min(0).max(1);
+var Enter = external_exports.enum(["none", "fade", "slide-up", "slide-down", "slide-left", "slide-right", "typewriter", "words"]);
+var Exit = external_exports.enum(["none", "fade", "slide-up", "slide-down", "slide-left", "slide-right"]);
+var timing = {
+  start: external_exports.number().min(0).default(0),
+  /** Defaults to the end of the scene. */
+  end: external_exports.number().min(0).optional(),
+  enter: Enter.default("fade"),
+  exit: Exit.default("fade"),
+  enterDuration: external_exports.number().min(0.05).max(5).default(0.6),
+  exitDuration: external_exports.number().min(0.05).max(5).default(0.35)
+};
+var FontChoice = external_exports.enum(["thmanyah", "arabic", "sans", "serif", "mono"]);
+var FontWeight = external_exports.enum(["light", "regular", "bold", "black"]);
+var TextLayer = external_exports.object({
+  type: external_exports.literal("text"),
+  text: external_exports.string().min(1).max(400),
+  font: FontChoice.default("thmanyah"),
+  weight: FontWeight.default("bold"),
+  /** Font size as a fraction of frame height. */
+  size: external_exports.number().min(0.01).max(0.4).default(0.07),
+  color: hex4.default("#ffffff"),
+  /** Centre of the text, as fractions of the frame. */
+  x: frac.default(0.5),
+  y: frac.default(0.5),
+  box: external_exports.object({ color: hex4, opacity: frac.default(0.7), padding: external_exports.number().min(0).max(0.1).default(0.02) }).optional(),
+  shadow: external_exports.boolean().default(false),
+  ...timing
+});
+var ShapeLayer = external_exports.object({
+  type: external_exports.literal("shape"),
+  /** Rectangles cover bars, lines (thin rects), frames and blocks. */
+  shape: external_exports.literal("rect").default("rect"),
+  color: hex4,
+  opacity: frac.default(1),
+  x: frac.default(0.5),
+  y: frac.default(0.5),
+  w: external_exports.number().min(2e-3).max(1),
+  h: external_exports.number().min(2e-3).max(1),
+  ...timing
+});
+var CounterLayer = external_exports.object({
+  type: external_exports.literal("counter"),
+  from: external_exports.number().default(0),
+  to: external_exports.number(),
+  decimals: external_exports.number().int().min(0).max(2).default(0),
+  prefix: external_exports.string().max(20).default(""),
+  suffix: external_exports.string().max(20).default(""),
+  font: FontChoice.default("thmanyah"),
+  weight: FontWeight.default("black"),
+  size: external_exports.number().min(0.01).max(0.4).default(0.12),
+  color: hex4.default("#ffffff"),
+  x: frac.default(0.5),
+  y: frac.default(0.5),
+  ...timing
+});
+var ImageLayer = external_exports.object({
+  type: external_exports.literal("image"),
+  mediaId: external_exports.string().min(1),
+  /** Width as a fraction of the frame width. */
+  scale: external_exports.number().min(0.05).max(1.5).default(0.5),
+  x: frac.default(0.5),
+  y: frac.default(0.5),
+  ...timing
+});
+var MotionLayer = external_exports.discriminatedUnion("type", [TextLayer, ShapeLayer, CounterLayer, ImageLayer]);
+var MotionBackground = external_exports.discriminatedUnion("type", [
+  external_exports.object({ type: external_exports.literal("solid"), color: hex4 }),
+  external_exports.object({
+    type: external_exports.literal("gradient"),
+    colors: external_exports.array(hex4).min(2).max(6),
+    direction: external_exports.enum(["vertical", "horizontal", "diagonal", "radial"]).default("diagonal"),
+    /** Slowly drifting colors. */
+    animate: external_exports.boolean().default(true)
+  }),
+  external_exports.object({
+    type: external_exports.literal("media"),
+    mediaId: external_exports.string().min(1),
+    motion: external_exports.enum(["none", "ken-burns"]).default("ken-burns"),
+    /** Darken so text reads well (0..0.9). */
+    dim: external_exports.number().min(0).max(0.9).default(0.35),
+    blur: external_exports.number().min(0).max(40).default(0)
+  })
+]);
+var MotionSpec = external_exports.object({
+  durationSec: external_exports.number().min(0.5).max(60),
+  background: MotionBackground,
+  /** Film grain amount (0..1): a subtle 0.2–0.4 avoids the sterile digital look. */
+  grain: frac.default(0),
+  vignette: external_exports.boolean().default(false),
+  layers: external_exports.array(MotionLayer).max(40).default([])
+});
+var n2 = (v) => Number(v.toFixed(5)).toString();
+var even2 = (v) => Math.max(2, Math.round(v / 2) * 2);
+var clip01 = (expr) => `min(max(${expr},0),1)`;
+var easeOut = (S, D) => `(1-pow(1-${clip01(`(t-${n2(S)})/${n2(D)}`)},3))`;
+var easeIn = (S, D) => `pow(${clip01(`(t-${n2(S)})/${n2(D)}`)},3)`;
+function resolveFont(fonts, font, weight) {
+  if (font === "thmanyah") {
+    const t = fonts.thmanyah;
+    const order = weight === "black" ? ["black", "bold", "regular", "light"] : weight === "bold" ? ["bold", "black", "regular", "light"] : weight === "light" ? ["light", "regular", "bold", "black"] : ["regular", "bold", "light", "black"];
+    for (const w of order) if (t[w]) return t[w];
+    return fonts.arabic;
+  }
+  return fonts[font];
+}
+function animation(layer, S, E, W, H) {
+  const D = Math.min(layer.enterDuration, Math.max(0.05, (E - S) / 2));
+  const X = Math.min(layer.exitDuration, Math.max(0.05, (E - S) / 2));
+  const parts = [];
+  const dx = [];
+  const dy = [];
+  if (layer.enter !== "none" && layer.enter !== "typewriter" && layer.enter !== "words") parts.push(clip01(`(t-${n2(S)})/${n2(D)}`));
+  const inE = easeOut(S, D);
+  if (layer.enter === "slide-up") dy.push(`${n2(H * 0.06)}*(1-${inE})`);
+  if (layer.enter === "slide-down") dy.push(`-${n2(H * 0.06)}*(1-${inE})`);
+  if (layer.enter === "slide-left") dx.push(`${n2(W * 0.08)}*(1-${inE})`);
+  if (layer.enter === "slide-right") dx.push(`-${n2(W * 0.08)}*(1-${inE})`);
+  if (layer.exit !== "none") {
+    parts.push(clip01(`(${n2(E)}-t)/${n2(X)}`));
+    const outE = easeIn(E - X, X);
+    if (layer.exit === "slide-up") dy.push(`-${n2(H * 0.06)}*${outE}`);
+    if (layer.exit === "slide-down") dy.push(`${n2(H * 0.06)}*${outE}`);
+    if (layer.exit === "slide-left") dx.push(`-${n2(W * 0.08)}*${outE}`);
+    if (layer.exit === "slide-right") dx.push(`${n2(W * 0.08)}*${outE}`);
+  }
+  return { alpha: parts.length ? parts.join("*") : "1", dx: dx.length ? dx.join("+") : "0", dy: dy.length ? dy.join("+") : "0" };
+}
+function fadeFilters(layer, S, E) {
+  const D = Math.min(layer.enterDuration, (E - S) / 2);
+  const X = Math.min(layer.exitDuration, (E - S) / 2);
+  const out = [];
+  if (layer.enter !== "none") out.push(`fade=t=in:st=${n2(S)}:d=${n2(D)}:alpha=1`);
+  if (layer.exit !== "none") out.push(`fade=t=out:st=${n2(E - X)}:d=${n2(X)}:alpha=1`);
+  return out;
+}
+function hexColor(c, opacity = 1) {
+  return `0x${c.slice(1)}${opacity < 1 ? `@${n2(opacity)}` : ""}`;
+}
+function compileMotion(specInput, opts) {
+  const spec = MotionSpec.parse(specInput);
+  const W = even2(opts.width);
+  const H = even2(opts.height);
+  const fps = opts.fps;
+  const T = spec.durationSec;
+  const inputs = [];
+  const graph = [];
+  const textFiles = [];
+  let inputIdx = 0;
+  let fileIdx = 0;
+  const mediaInput = (mediaId) => {
+    const m = opts.media.get(mediaId);
+    if (!m || m.kind === "audio") throw new Error(`Media ${mediaId} is not an image or video in this project.`);
+    if (m.kind === "image") inputs.push("-loop", "1", "-framerate", n2(fps), "-t", n2(T), "-i", m.path);
+    else inputs.push("-stream_loop", "-1", "-t", n2(T), "-i", m.path);
+    return { idx: inputIdx++, m };
+  };
+  const bg = spec.background;
+  if (bg.type === "solid") {
+    graph.push(`color=c=${hexColor(bg.color)}:s=${W}x${H}:r=${n2(fps)}:d=${n2(T)},format=yuv420p[l0]`);
+  } else if (bg.type === "gradient") {
+    const coords = bg.direction === "vertical" ? `x0=${W / 2}:y0=0:x1=${W / 2}:y1=${H}` : bg.direction === "horizontal" ? `x0=0:y0=${H / 2}:x1=${W}:y1=${H / 2}` : bg.direction === "radial" ? `x0=${W / 2}:y0=${H / 2}:x1=${W}:y1=${H}` : `x0=0:y0=0:x1=${W}:y1=${H}`;
+    const colors = bg.colors.map((c, i) => `c${i}=0x${c.slice(1)}`).join(":");
+    graph.push(
+      `gradients=s=${W}x${H}:r=${n2(fps)}:d=${n2(T)}:${colors}:nb_colors=${bg.colors.length}:${coords}:type=${bg.direction === "radial" ? "radial" : "linear"}:speed=${bg.animate ? "0.015" : "0"},format=yuv420p[l0]`
+    );
+  } else {
+    const { idx } = mediaInput(bg.mediaId);
+    const chain2 = [`[${idx}:v]setpts=PTS-STARTPTS`, `scale=${W}:${H}:force_original_aspect_ratio=increase`, `crop=${W}:${H}`];
+    if (bg.motion === "ken-burns") {
+      chain2.push(`scale=${even2(W * 1.15)}:-2`, `zoompan=z='min(1+on*${n2(0.12 / (T * fps))},1.12)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${W}x${H}:fps=${n2(fps)}`);
+    } else chain2.push(`fps=${n2(fps)}`);
+    if (bg.blur > 0) chain2.push(`gblur=sigma=${n2(bg.blur)}`);
+    if (bg.dim > 0) chain2.push(`drawbox=x=0:y=0:w=iw:h=ih:color=black@${n2(bg.dim)}:t=fill`);
+    chain2.push(`trim=duration=${n2(T)}`, "setpts=PTS-STARTPTS", "format=yuv420p");
+    graph.push(`${chain2.join(",")}[l0]`);
+  }
+  let cur = "l0";
+  let k = 0;
+  const next = () => `l${++k}`;
+  for (const layer of spec.layers) {
+    const S = Math.min(layer.start, T);
+    const E = Math.min(layer.end ?? T, T);
+    if (E - S < 0.05) continue;
+    const a = animation(layer, S, E, W, H);
+    const enable = `enable='between(t,${n2(S)},${n2(E)})'`;
+    if (layer.type === "text" || layer.type === "counter") {
+      const size = Math.max(8, Math.round(layer.size * H));
+      const font = filterValue(resolveFont(opts.fonts, layer.font, layer.weight));
+      const base = (file2, extraEnable) => {
+        const o = [
+          `textfile=${filterValue(file2)}`,
+          `fontfile=${font}`,
+          `fontsize=${size}`,
+          `fontcolor=${hexColor(layer.color)}`,
+          `text_align=C`,
+          `line_spacing=${Math.round(size * 0.25)}`,
+          `x='${n2(layer.x)}*w-tw/2+(${a.dx})'`,
+          `y='${n2(layer.y)}*h-th/2+(${a.dy})'`,
+          `alpha='${a.alpha}'`,
+          extraEnable ?? enable
+        ];
+        if (layer.type === "text" && layer.box) {
+          o.push("box=1", `boxcolor=${hexColor(layer.box.color, layer.box.opacity)}`, `boxborderw=${Math.round(layer.box.padding * H)}`);
+        }
+        if (layer.type === "text" && layer.shadow) o.push("shadowcolor=black@0.45", `shadowx=${Math.max(1, Math.round(size * 0.04))}`, `shadowy=${Math.max(1, Math.round(size * 0.06))}`);
+        return `drawtext=${o.join(":")}`;
+      };
+      const addText = (content, extraEnable) => {
+        const file2 = `m_${fileIdx++}.txt`;
+        textFiles.push({ name: file2, content: prepareDrawText(content) });
+        const out2 = next();
+        graph.push(`[${cur}]${base(file2, extraEnable)}[${out2}]`);
+        cur = out2;
+      };
+      if (layer.type === "counter") {
+        const countEnd = S + Math.max(0.4, (E - S) * 0.6);
+        const steps = Math.min(60, Math.max(8, Math.round((countEnd - S) * fps / 2)));
+        for (let i = 0; i <= steps; i++) {
+          const p = i / steps;
+          const eased = 1 - Math.pow(1 - p, 3);
+          const value = layer.from + (layer.to - layer.from) * eased;
+          const t0 = S + (countEnd - S) * p;
+          const t1 = i === steps ? E : S + (countEnd - S) * ((i + 1) / steps);
+          const label = `${layer.prefix}${value.toLocaleString("en-US", { minimumFractionDigits: layer.decimals, maximumFractionDigits: layer.decimals })}${layer.suffix}`;
+          addText(label, `enable='between(t,${n2(t0)},${n2(t1)})'`);
+        }
+      } else if (layer.enter === "typewriter" || layer.enter === "words") {
+        const units = layer.enter === "words" ? layer.text.split(/(\s+)/).filter((u) => u.length) : Array.from(layer.text);
+        const meaningful = layer.enter === "words" ? units.filter((u) => u.trim()).length : units.length;
+        const steps = Math.min(meaningful, 80);
+        const reveal = Math.min(E - S, Math.max(layer.enterDuration, steps * (layer.enter === "words" ? 0.22 : 0.045)));
+        let shown = 0;
+        for (let i = 1; i <= steps; i++) {
+          let count = 0;
+          let end = 0;
+          const target = Math.ceil(i * meaningful / steps);
+          while (end < units.length && count < target) {
+            if (layer.enter !== "words" || units[end].trim()) count++;
+            end++;
+          }
+          if (end <= shown) continue;
+          shown = end;
+          const t0 = S + reveal * ((i - 1) / steps);
+          const t1 = i === steps ? E : S + reveal * (i / steps);
+          addText(units.slice(0, end).join(""), `enable='between(t,${n2(t0)},${n2(t1)})'`);
+        }
+      } else {
+        addText(layer.text);
+      }
+      continue;
+    }
+    if (layer.type === "shape") {
+      const sw = even2(layer.w * W);
+      const sh = even2(layer.h * H);
+      const src2 = `s${k}`;
+      const chain2 = [`color=c=${hexColor(layer.color)}:s=${sw}x${sh}:r=${n2(fps)}:d=${n2(T)}`, "format=yuva420p"];
+      if (layer.opacity < 1) chain2.push(`colorchannelmixer=aa=${n2(layer.opacity)}`);
+      chain2.push(...fadeFilters(layer, S, E));
+      graph.push(`${chain2.join(",")}[${src2}]`);
+      const out2 = next();
+      graph.push(
+        `[${cur}][${src2}]overlay=x='${n2(layer.x * W - sw / 2)}+(${a.dx})':y='${n2(layer.y * H - sh / 2)}+(${a.dy})':eval=frame:format=auto:${enable}[${out2}]`
+      );
+      cur = out2;
+      continue;
+    }
+    const { idx } = mediaInput(layer.mediaId);
+    const iw = even2(layer.scale * W);
+    const src = `i${k}`;
+    const fades = fadeFilters(layer, S, E);
+    graph.push(`[${idx}:v]setpts=PTS-STARTPTS,fps=${n2(fps)},scale=${iw}:-2,format=yuva420p${fades.length ? `,${fades.join(",")}` : ""}[${src}]`);
+    const out = next();
+    graph.push(`[${cur}][${src}]overlay=x='${n2(layer.x * W)}-w/2+(${a.dx})':y='${n2(layer.y * H)}-h/2+(${a.dy})':eval=frame:format=auto:${enable}[${out}]`);
+    cur = out;
+  }
+  const finish = [];
+  if (spec.grain > 0) finish.push(`noise=alls=${Math.round(4 + spec.grain * 22)}:allf=t`);
+  if (spec.vignette) finish.push("vignette=PI/5");
+  finish.push("format=yuv420p");
+  graph.push(`[${cur}]${finish.join(",")}[vout]`);
+  graph.push(`anullsrc=r=48000:cl=stereo,atrim=duration=${n2(T)}[aout]`);
+  const encoder = opts.encoder ?? "libx264";
+  const enc = encoder === "libx264" ? ["-c:v", "libx264", "-preset", "medium", "-crf", "18"] : ["-c:v", encoder, "-b:v", "12M"];
+  const args = [
+    "-hide_banner",
+    "-y",
+    "-v",
+    "error",
+    "-nostats",
+    "-progress",
+    "pipe:1",
+    ...inputs,
+    "-/filter_complex",
+    "{FILTER_SCRIPT}",
+    "-map",
+    "[vout]",
+    "-map",
+    "[aout]",
+    ...enc,
+    "-pix_fmt",
+    "yuv420p",
+    "-r",
+    n2(fps),
+    "-c:a",
+    "aac",
+    "-b:a",
+    "128k",
+    "-movflags",
+    "+faststart",
+    "-t",
+    n2(T),
+    "{OUTPUT}"
+  ];
+  return { args, filterScript: graph.join(";\n"), textFiles, durationSec: T };
 }
 
 // src/db/database.ts
@@ -60884,8 +61203,8 @@ var MediaRepo = class {
     this.db.prepare("DELETE FROM media WHERE id = ?").run(id);
   }
   /** Whether another media record still references the same source file. */
-  countByPath(path12) {
-    const row = this.db.prepare("SELECT COUNT(*) AS n FROM media WHERE path = ?").get(path12);
+  countByPath(path16) {
+    const row = this.db.prepare("SELECT COUNT(*) AS n FROM media WHERE path = ?").get(path16);
     return row.n;
   }
 };
@@ -60916,11 +61235,11 @@ var FolderRepo = class {
   paths() {
     return this.list().map((f) => f.path);
   }
-  add(path12) {
-    const existing = this.list().find((f) => f.path.toLowerCase() === path12.toLowerCase());
+  add(path16) {
+    const existing = this.list().find((f) => f.path.toLowerCase() === path16.toLowerCase());
     if (existing) return existing;
     const id = crypto.randomUUID();
-    this.db.prepare("INSERT INTO approved_folders (id, path, created_at) VALUES (?, ?, ?)").run(id, path12, now());
+    this.db.prepare("INSERT INTO approved_folders (id, path, created_at) VALUES (?, ?, ?)").run(id, path16, now());
     return this.list().find((f) => f.id === id);
   }
   remove(id) {
@@ -60952,7 +61271,7 @@ import net from "node:net";
 import os from "node:os";
 import path2 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.1.0";
+var APP_VERSION = "0.2.0";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -61145,9 +61464,9 @@ function registerAiRoutes(app, s) {
     const approved = new Set(s.folders.paths().map((p) => p.toLowerCase()));
     const out = [];
     for (const root of roots) {
-      for (const n2 of names) {
-        const p = path3.join(root, n2);
-        if (fs4.existsSync(p) && fs4.statSync(p).isDirectory() && !approved.has(p.toLowerCase())) out.push({ path: p, name: root === home ? n2 : `OneDrive/${n2}` });
+      for (const n3 of names) {
+        const p = path3.join(root, n3);
+        if (fs4.existsSync(p) && fs4.statSync(p).isDirectory() && !approved.has(p.toLowerCase())) out.push({ path: p, name: root === home ? n3 : `OneDrive/${n3}` });
       }
     }
     return out;
@@ -61214,19 +61533,19 @@ var RelinkRequest = external_exports.object({ path: external_exports.string().mi
 var ApproveFolderRequest = external_exports.object({ path: external_exports.string().min(1).max(4096) });
 
 // ../../packages/shared/src/project.ts
-var even2 = (n2) => n2 % 2 === 0;
+var even3 = (n3) => n3 % 2 === 0;
 var CreateProjectRequest = external_exports.object({
   name: external_exports.string().trim().min(1).max(120),
   description: external_exports.string().trim().max(2e3).default(""),
-  width: external_exports.number().int().min(16).max(7680).refine(even2, "Width must be even"),
-  height: external_exports.number().int().min(16).max(7680).refine(even2, "Height must be even"),
+  width: external_exports.number().int().min(16).max(7680).refine(even3, "Width must be even"),
+  height: external_exports.number().int().min(16).max(7680).refine(even3, "Height must be even"),
   fps: external_exports.number().min(1).max(240)
 });
 var UpdateProjectRequest = external_exports.object({
   name: external_exports.string().trim().min(1).max(120),
   description: external_exports.string().trim().max(2e3),
-  width: external_exports.number().int().min(16).max(7680).refine(even2, "Width must be even"),
-  height: external_exports.number().int().min(16).max(7680).refine(even2, "Height must be even"),
+  width: external_exports.number().int().min(16).max(7680).refine(even3, "Width must be even"),
+  height: external_exports.number().int().min(16).max(7680).refine(even3, "Height must be even"),
   fps: external_exports.number().min(1).max(240)
 }).partial();
 
@@ -61256,6 +61575,18 @@ var ExportRequest = external_exports.object({
 }).refine((r) => CONTAINER_CODECS[r.container].includes(r.videoCodec), {
   message: "That codec is not supported in this container.",
   path: ["videoCodec"]
+});
+
+// ../../packages/shared/src/agent.ts
+var AgentMode = external_exports.enum(["create", "edit", "ideas"]);
+var AgentRunRequest = external_exports.object({
+  projectId: external_exports.string().uuid(),
+  mode: AgentMode,
+  prompt: external_exports.string().trim().max(4e3).default(""),
+  /** Apply the human-touch design guidance. */
+  humanTouch: external_exports.boolean().default(true),
+  /** The user confirmed sharing this project with Claude (starting a run from the studio is consent). */
+  grantAccess: external_exports.boolean().default(false)
 });
 
 // src/http/send-file.ts
@@ -61649,11 +61980,18 @@ function registerEditingRoutes(app, s) {
   });
 }
 
+// src/routes/generate.ts
+import crypto4 from "node:crypto";
+import fs10 from "node:fs";
+import fsp6 from "node:fs/promises";
+import os3 from "node:os";
+import path9 from "node:path";
+
 // src/services/export-service.ts
 import crypto3 from "node:crypto";
-import fs8 from "node:fs";
+import fs9 from "node:fs";
 import fsp5 from "node:fs/promises";
-import path7 from "node:path";
+import path8 from "node:path";
 import { spawn as spawn2 } from "node:child_process";
 
 // src/services/job-queue.ts
@@ -61706,6 +62044,59 @@ var JobQueue = class {
   }
 };
 
+// src/services/fonts.ts
+import fs8 from "node:fs";
+import path7 from "node:path";
+var THMANYAH_URL = "https://thmanyah.open.cx/en/line-eight-for-everyone";
+function fontDirs() {
+  if (process.platform === "win32") {
+    const dirs = [path7.join(process.env.WINDIR ?? "C:\\Windows", "Fonts")];
+    if (process.env.LOCALAPPDATA) dirs.push(path7.join(process.env.LOCALAPPDATA, "Microsoft", "Windows", "Fonts"));
+    return dirs;
+  }
+  const home = process.env.HOME ?? "";
+  return ["/Library/Fonts", path7.join(home, "Library", "Fonts"), "/usr/share/fonts", "/usr/local/share/fonts", path7.join(home, ".local", "share", "fonts"), path7.join(home, ".fonts")];
+}
+function weightOf(file2) {
+  const f = file2.toLowerCase();
+  if (/black|heavy|extrabold|ultrabold/.test(f)) return "black";
+  if (/bold|semibold|demibold/.test(f)) return "bold";
+  if (/light|thin|hairline/.test(f)) return "light";
+  return "regular";
+}
+function familyRank(file2) {
+  const f = file2.toLowerCase();
+  if (f.includes("sans")) return 0;
+  if (f.includes("text")) return 1;
+  return 2;
+}
+function detectThmanyah(dirs = fontDirs()) {
+  const found = [];
+  const walk = (dir, depth) => {
+    let entries;
+    try {
+      entries = fs8.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      const p = path7.join(dir, e.name);
+      if (e.isDirectory() && depth > 0) walk(p, depth - 1);
+      else if (e.isFile() && /thmanyah|ثمانية/i.test(e.name) && /\.(otf|ttf)$/i.test(e.name)) {
+        found.push({ file: p, weight: weightOf(e.name), rank: familyRank(e.name) });
+      }
+    }
+  };
+  for (const d of dirs) walk(d, process.platform === "win32" ? 0 : 3);
+  found.sort((a, b) => a.rank - b.rank || a.file.localeCompare(b.file));
+  const out = {};
+  for (const f of found) out[f.weight] ??= f.file;
+  return out;
+}
+function thmanyahTitleFont(files) {
+  return files.bold ?? files.black ?? files.regular ?? files.light ?? null;
+}
+
 // src/services/export-service.ts
 var SOFTWARE_ENCODER = { h264: "libx264", hevc: "libx265", av1: "libsvtav1", vp9: "libvpx-vp9" };
 var HW_PREFERENCE = ["nvenc", "qsv", "amf"];
@@ -61720,7 +62111,7 @@ function toItem(r) {
     progress: r.progress,
     etaSec: r.eta_sec,
     outputPath: r.output_path,
-    fileName: path7.basename(r.output_path),
+    fileName: path8.basename(r.output_path),
     encoder: r.encoder,
     width: s.width,
     height: s.height,
@@ -61737,13 +62128,13 @@ function toItem(r) {
 }
 function outputSize(projectW, projectH, shortSide) {
   if (shortSide === "project") return { width: projectW, height: projectH };
-  const even3 = (v) => Math.max(2, Math.round(v / 2) * 2);
-  return projectW <= projectH ? { width: even3(shortSide), height: even3(shortSide * projectH / projectW) } : { width: even3(shortSide * projectW / projectH), height: even3(shortSide) };
+  const even4 = (v) => Math.max(2, Math.round(v / 2) * 2);
+  return projectW <= projectH ? { width: even4(shortSide), height: even4(shortSide * projectH / projectW) } : { width: even4(shortSide * projectW / projectH), height: even4(shortSide) };
 }
 function resolveFonts() {
-  const dirs = process.platform === "win32" ? [path7.join(process.env.WINDIR ?? "C:\\Windows", "Fonts")] : ["/usr/share/fonts/truetype/dejavu", "/usr/share/fonts/TTF", "/Library/Fonts", "/System/Library/Fonts/Supplemental"];
+  const dirs = process.platform === "win32" ? [path8.join(process.env.WINDIR ?? "C:\\Windows", "Fonts")] : ["/usr/share/fonts/truetype/dejavu", "/usr/share/fonts/TTF", "/Library/Fonts", "/System/Library/Fonts/Supplemental"];
   const find = (...names) => {
-    for (const d of dirs) for (const n2 of names) if (fs8.existsSync(path7.join(d, n2))) return path7.join(d, n2);
+    for (const d of dirs) for (const n3 of names) if (fs9.existsSync(path8.join(d, n3))) return path8.join(d, n3);
     return null;
   };
   const sans = find("segoeui.ttf", "arial.ttf", "DejaVuSans.ttf", "Arial.ttf");
@@ -61752,7 +62143,8 @@ function resolveFonts() {
     sans,
     serif: find("times.ttf", "georgia.ttf", "DejaVuSerif.ttf", "Times New Roman.ttf") ?? sans,
     mono: find("consola.ttf", "cour.ttf", "DejaVuSansMono.ttf", "Courier New.ttf") ?? sans,
-    arabic: find("segoeui.ttf", "arial.ttf", "tahoma.ttf", "DejaVuSans.ttf", "Arial.ttf") ?? sans
+    arabic: find("segoeui.ttf", "arial.ttf", "tahoma.ttf", "DejaVuSans.ttf", "Arial.ttf") ?? sans,
+    thmanyah: thmanyahTitleFont(detectThmanyah())
   };
 }
 function chooseEncoder(codec2, requested, encoders) {
@@ -61786,10 +62178,10 @@ var ExportService = class {
   queue = new JobQueue(1);
   lastEmit = /* @__PURE__ */ new Map();
   get defaultDir() {
-    return path7.join(this.paths.root, "exports");
+    return path8.join(this.paths.root, "exports");
   }
   get previewDir() {
-    return path7.join(this.paths.root, "cache", "previews");
+    return path8.join(this.paths.root, "cache", "previews");
   }
   list(opts = {}) {
     const where = [];
@@ -61827,9 +62219,9 @@ var ExportService = class {
         (r) => r.output_path.toLowerCase()
       )
     );
-    const taken = (p) => fs8.existsSync(p) || reserved.has(p.toLowerCase());
-    let candidate = path7.join(dir, `${base}.${ext}`);
-    for (let i = 2; taken(candidate); i++) candidate = path7.join(dir, `${base} (${i}).${ext}`);
+    const taken = (p) => fs9.existsSync(p) || reserved.has(p.toLowerCase());
+    let candidate = path8.join(dir, `${base}.${ext}`);
+    for (let i = 2; taken(candidate); i++) candidate = path8.join(dir, `${base} (${i}).${ext}`);
     return candidate;
   }
   async create(projectId, req, opts = {}) {
@@ -61844,7 +62236,7 @@ var ExportService = class {
     for (const clip of timeline.clips) {
       if (clip.type !== "media" || mediaMap.has(clip.mediaId)) continue;
       const m = this.media.get(clip.mediaId);
-      if (!m || m.status === "missing" || !fs8.existsSync(m.path)) {
+      if (!m || m.status === "missing" || !fs9.existsSync(m.path)) {
         missing.push(m?.name ?? clip.mediaId);
         continue;
       }
@@ -61902,7 +62294,7 @@ var ExportService = class {
     const fontSet = fonts ?? { sans: "", serif: "", mono: "", arabic: "" };
     const attempt = async (encoder) => {
       const compiled = compileRender({ timeline, media, settings: { ...settings, encoder }, fonts: fontSet });
-      const work = path7.join(this.paths.root, "cache", "render", id);
+      const work = path8.join(this.paths.root, "cache", "render", id);
       return runRender(this.tools, compiled, work, output2, {
         signal,
         onProgress: (p) => this.update(id, { progress: Math.round(p.fraction * 1e3) / 1e3, eta_sec: p.etaSec }, false)
@@ -61961,7 +62353,7 @@ var ExportService = class {
   }
   reveal(id) {
     const item = this.get(id);
-    if (item.status !== "completed" || !fs8.existsSync(item.outputPath)) throw new HttpError(404, "file_missing", "The exported file no longer exists.");
+    if (item.status !== "completed" || !fs9.existsSync(item.outputPath)) throw new HttpError(404, "file_missing", "The exported file no longer exists.");
     if (process.platform !== "win32") throw new HttpError(501, "unsupported", "Revealing files is only supported on Windows for now.");
     spawn2("explorer.exe", [`/select,${item.outputPath}`], { detached: true, stdio: "ignore", windowsHide: false }).unref();
   }
@@ -61973,9 +62365,420 @@ var ExportService = class {
   }
 };
 
+// src/routes/generate.ts
+var IdParams4 = external_exports.object({ id: external_exports.string().uuid() });
+var AI4 = { config: { ai: true } };
+var chain = Promise.resolve();
+function serial(fn) {
+  const next = chain.then(fn, fn);
+  chain = next.catch(() => void 0);
+  return next;
+}
+function registerGenerateRoutes(app, s) {
+  app.get("/api/fonts/status", AI4, async () => {
+    const files = detectThmanyah();
+    return { thmanyah: { installed: Object.keys(files).length > 0, weights: Object.keys(files), downloadUrl: THMANYAH_URL } };
+  });
+  app.get("/api/fonts/thmanyah/:weight", async (req, reply) => {
+    const { weight } = external_exports.object({ weight: external_exports.enum(["light", "regular", "bold", "black"]) }).parse(req.params);
+    const files = detectThmanyah();
+    const order = {
+      light: ["light", "regular", "bold", "black"],
+      regular: ["regular", "light", "bold", "black"],
+      bold: ["bold", "black", "regular", "light"],
+      black: ["black", "bold", "regular", "light"]
+    };
+    const pick2 = order[weight].find((w) => files[w]);
+    const file2 = pick2 ? files[pick2] : void 0;
+    if (!file2) throw new HttpError(404, "font_missing", "Thmanyah is not installed.");
+    reply.header("cache-control", "private, max-age=3600");
+    return sendFile(req, reply, file2);
+  });
+  app.post("/api/projects/:id/motion", AI4, async (req, reply) => {
+    const { id } = IdParams4.parse(req.params);
+    const body = external_exports.object({ spec: MotionSpec, name: external_exports.string().trim().min(1).max(80).default("\u0645\u0648\u0634\u0646 \u062C\u0631\u0627\u0641\u064A\u0643") }).parse(req.body);
+    const project = s.projects.get(id);
+    if (!project) throw new HttpError(404, "project_not_found", "Project not found.");
+    const base = resolveFonts();
+    if (!base) throw new HttpError(422, "fonts_missing", "No usable system font was found for text.");
+    const fonts = { thmanyah: detectThmanyah(), arabic: base.arabic, sans: base.sans, serif: base.serif, mono: base.mono };
+    const media = /* @__PURE__ */ new Map();
+    for (const m of s.media.listByProject(id)) {
+      if ((m.kind === "image" || m.kind === "video") && fs10.existsSync(m.path)) media.set(m.id, { id: m.id, path: m.path, kind: m.kind });
+    }
+    let compiled;
+    try {
+      compiled = compileMotion(body.spec, { width: project.width, height: project.height, fps: project.fps, fonts, media });
+    } catch (e) {
+      if (e instanceof CompileError || e instanceof Error) throw new HttpError(422, "motion_invalid", e.message);
+      throw e;
+    }
+    const item = await serial(async () => {
+      const dir = await s.mediaService.projectMediaDir(id);
+      const file2 = path9.join(dir, `${crypto4.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
+      const work = await fsp6.mkdtemp(path9.join(os3.tmpdir(), "ba-motion-"));
+      try {
+        const res = await runRender(s.tools, compiled, work, file2);
+        return await s.mediaService.registerOwned(id, res.outputPath, `${body.name}.mp4`);
+      } catch (e) {
+        await fsp6.rm(file2, { force: true });
+        throw new HttpError(500, "render_failed", `Motion render failed: ${e.message.slice(0, 400)}`);
+      } finally {
+        await fsp6.rm(work, { recursive: true, force: true });
+      }
+    });
+    return reply.code(201).send({ media: item, usedThmanyah: Object.keys(fonts.thmanyah).length > 0 });
+  });
+  app.post("/api/projects/:id/media/import-url", AI4, async (req, reply) => {
+    const { id } = IdParams4.parse(req.params);
+    const body = external_exports.object({ url: external_exports.string().url().max(4e3), name: external_exports.string().trim().max(120).optional() }).parse(req.body);
+    return reply.code(201).send(await s.mediaService.importFromUrl(id, body.url, body.name));
+  });
+}
+
+// src/routes/agent.ts
+var IdParams5 = external_exports.object({ id: external_exports.string().uuid() });
+function registerAgentRoutes(app, s) {
+  app.get("/api/agent/status", async (req) => {
+    const { refresh } = external_exports.object({ refresh: external_exports.coerce.boolean().default(false) }).parse(req.query);
+    return s.agent.status(refresh);
+  });
+  app.get("/api/agent/runs", async (req) => {
+    const { projectId } = external_exports.object({ projectId: external_exports.string().uuid().optional() }).parse(req.query);
+    return s.agent.list(projectId);
+  });
+  app.get("/api/agent/runs/:id", async (req) => s.agent.get(IdParams5.parse(req.params).id));
+  app.post("/api/agent/runs", async (req, reply) => {
+    const body = AgentRunRequest.parse(req.body);
+    const project = s.projects.get(body.projectId);
+    if (!project) throw new HttpError(404, "project_not_found", "Project not found.");
+    if (!s.settings.aiEnabled || !project.aiAccess) {
+      if (!body.grantAccess) throw new HttpError(409, "access_needed", "Claude needs access to this project first.");
+      s.settings.set("ai.enabled", "true");
+      s.projects.setAiAccess(project.id, true);
+    }
+    return reply.code(202).send(await s.agent.start(body));
+  });
+  app.post("/api/agent/runs/:id/cancel", async (req) => s.agent.cancel(IdParams5.parse(req.params).id));
+}
+
+// src/services/agent-service.ts
+import crypto5 from "node:crypto";
+import fs11 from "node:fs";
+import fsp7 from "node:fs/promises";
+import path10 from "node:path";
+import { spawn as spawn3 } from "node:child_process";
+import { fileURLToPath as fileURLToPath2 } from "node:url";
+var MAX_TURNS = { create: 40, edit: 30, ideas: 6 };
+var MAX_LOG = 400;
+var MAX_RUNS = 20;
+var SERVER = "ba";
+var READ_ONLY_TOOLS = ["get_project_info", "list_media", "list_projects", "open_project", "get_system_status", "list_renders"];
+var BLOCKED_BUILTINS = ["Bash", "PowerShell", "Read", "Edit", "Write", "MultiEdit", "NotebookEdit", "Glob", "Grep", "WebFetch", "WebSearch", "Task", "Agent", "Skill"];
+var HUMAN_TOUCH = `Design with a human touch (this is about craft and taste, never about hiding that AI was used):
+- One restrained palette: a base (#14161a, #0f0f0f, #f4efe6 paper, #1b2a2f) + one accent (#d4af5f muted gold, #c8553d brick, #6c8f7a sage) + a neutral. No neon, no rainbow gradients; gradients use 2 close tones.
+- Editorial typography: Arabic text in font "thmanyah". One big title per scene (weight black/bold, size 0.07\u20130.11), small supporting text (regular, 0.03\u20130.045), a tiny label (0.025) like "\u0660\u0661".
+- Real margins (text within x 0.1\u20130.9), not everything dead centre. Staggered timing (layers 0.15\u20130.4 s apart). Titles slide-up/fade, sentences "words", quotes "typewriter", numbers "counter".
+- Texture: grain 0.15\u20130.35 and vignette. Thin accent lines (shape h 0.004) work well.
+- Avoid stock clich\xE9s, emoji spam, glow everywhere, text appearing all at once.`;
+function systemPrompt(mode, projectId, humanTouch, maxTurns) {
+  const common = `You are running inside Ba Studio's "\u0627\u0637\u0644\u0628 \u0645\u0646 Claude" panel, headless: the user cannot answer questions during this run. Do not ask questions; make sensible choices and mention them briefly at the end. The studio is already open, so never call open_studio. First call open_project with id ${projectId}, then get_project_info. You have at most ${maxTurns} turns: plan to finish well within them. Write your final message in Arabic (or the user's language), short: what you made and where it is on the timeline.`;
+  if (mode === "ideas") {
+    return `${common}
+This run is for IDEAS ONLY: do not change anything. Look at the project (its media and timeline), then reply with ONLY a JSON array of 6 ideas, no other text: [{"title": "short Arabic title", "prompt": "a complete Arabic instruction the user can send to you to make it"}]. Mix kinds: motion-graphics intro/outro, turning an existing clip into motion graphics (blurred/dimmed media background + typography), animated stats/quotes, lower thirds, a short promo cut from the footage, captions-style text. Only suggest what Ba Studio can do (local motion graphics, cutting/arranging media, text, transitions, music). If the project is empty, suggest ideas that need no footage.`;
+  }
+  const make = mode === "create" ? `Create new clips from the user's description, without needing footage: use create_motion_graphic for each scene (3\u20136 short scenes unless asked otherwise), placing them on the timeline in order (add_to_timeline_at), with soft transitions. Use project media as backgrounds when the user refers to them. Realistic AI video/images are not available in this run; if asked, explain that briefly and offer motion graphics.` : `Edit the open project as the user asks, using the editing tools. Prefer one editing plan (create_editing_plan then apply_editing_plan). Do not delete material unless the user clearly asked.`;
+  return `${common}
+${make}
+When done, call generate_preview so the user can watch the result.${humanTouch ? `
+
+${HUMAN_TOUCH}` : ""}`;
+}
+function cmpVersion(a, b) {
+  const pa = a.split(".").map((x) => Number.parseInt(x, 10) || 0);
+  const pb = b.split(".").map((x) => Number.parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pb[i] ?? 0) - (pa[i] ?? 0);
+  return 0;
+}
+function desktopBundled() {
+  const local = process.env.LOCALAPPDATA;
+  if (process.platform !== "win32" || !local) return [];
+  const out = [];
+  const ls = (d) => {
+    try {
+      return fs11.readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => path10.join(d, e.name));
+    } catch {
+      return [];
+    }
+  };
+  const codeDirs = [];
+  for (const root of ["Claude-Data", "Claude-3p", "AnthropicClaude"].map((n3) => path10.join(local, n3))) {
+    if (fs11.existsSync(path10.join(root, "claude-code"))) codeDirs.push(path10.join(root, "claude-code"));
+    for (const sub of ls(root)) if (fs11.existsSync(path10.join(sub, "claude-code"))) codeDirs.push(path10.join(sub, "claude-code"));
+  }
+  for (const cd of codeDirs) {
+    for (const vdir of ls(cd)) {
+      for (const hdir of ls(vdir)) {
+        const exe = path10.join(hdir, "claude.exe");
+        if (fs11.existsSync(exe)) out.push({ file: exe, version: path10.basename(vdir) });
+      }
+    }
+  }
+  return out.sort((a, b) => cmpVersion(a.version, b.version)).map((o) => o.file);
+}
+function findClaude(env = process.env) {
+  if (env.BA_CLAUDE_PATH) return fs11.existsSync(env.BA_CLAUDE_PATH) ? env.BA_CLAUDE_PATH : null;
+  const names = process.platform === "win32" ? ["claude.exe", "claude.cmd"] : ["claude"];
+  for (const dir of (env.PATH ?? env.Path ?? "").split(path10.delimiter).filter(Boolean)) {
+    for (const n3 of names) if (fs11.existsSync(path10.join(dir, n3))) return path10.join(dir, n3);
+  }
+  const home = env.USERPROFILE ?? env.HOME;
+  if (home) {
+    const native = path10.join(home, ".local", "bin", process.platform === "win32" ? "claude.exe" : "claude");
+    if (fs11.existsSync(native)) return native;
+  }
+  return desktopBundled()[0] ?? null;
+}
+function findMcpEntry() {
+  if (process.env.BA_MCP_ENTRY) return process.env.BA_MCP_ENTRY;
+  let dir = path10.dirname(fileURLToPath2(import.meta.url));
+  for (let i = 0; i < 6; i++) {
+    const p = path10.join(dir, "packages", "mcp-server", "dist", "mcp.mjs");
+    if (fs11.existsSync(p)) return p;
+    dir = path10.dirname(dir);
+  }
+  return null;
+}
+function parseIdeas(text) {
+  const start = text.indexOf("[");
+  const end = text.lastIndexOf("]");
+  if (start < 0 || end <= start) return [];
+  try {
+    const arr = JSON.parse(text.slice(start, end + 1));
+    return arr.filter((x) => typeof x === "object" && x !== null).map((x) => ({ title: String(x.title ?? "").slice(0, 80), prompt: String(x.prompt ?? "").slice(0, 1e3) })).filter((x) => x.title && x.prompt).slice(0, 10);
+  } catch {
+    return [];
+  }
+}
+var AgentService = class {
+  constructor(workDir, instanceName, events) {
+    this.workDir = workDir;
+    this.instanceName = instanceName;
+    this.events = events;
+  }
+  runs = /* @__PURE__ */ new Map();
+  availability = null;
+  async status(refresh = false) {
+    if (this.availability && !refresh) return this.availability;
+    const file2 = findClaude();
+    let version2 = null;
+    if (file2) {
+      const res = await runTool(file2, ["--version"], { timeoutMs: 15e3 }).catch(() => null);
+      version2 = res?.code === 0 ? res.stdout.trim().split(/\s+/)[0] ?? null : null;
+    }
+    this.availability = { available: Boolean(file2 && version2), path: file2, version: version2 };
+    return this.availability;
+  }
+  list(projectId) {
+    return [...this.runs.values()].map((l) => l.run).filter((r) => !projectId || r.projectId === projectId).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+  }
+  get(id) {
+    const l = this.runs.get(id);
+    if (!l) throw new HttpError(404, "run_not_found", "Run not found.");
+    return l.run;
+  }
+  publish(run) {
+    this.events.emit({ type: "agent.updated", run: { ...run, log: [] } });
+  }
+  log(l, entry) {
+    const e = { at: (/* @__PURE__ */ new Date()).toISOString(), ...entry, text: entry.text.slice(0, 2e3) };
+    l.run.log.push(e);
+    if (l.run.log.length > MAX_LOG) l.run.log.splice(0, l.run.log.length - MAX_LOG);
+    this.events.emit({ type: "agent.log", runId: l.run.id, entry: e });
+  }
+  async start(input2) {
+    if ([...this.runs.values()].some((l) => l.run.status === "running")) {
+      throw new HttpError(409, "agent_busy", "Claude is already working on a request. Wait for it or stop it first.");
+    }
+    if (input2.mode !== "ideas" && !input2.prompt.trim()) throw new HttpError(400, "empty_prompt", "Write what you want Claude to make.");
+    const avail = await this.status(true);
+    if (!avail.available || !avail.path) {
+      throw new HttpError(424, "claude_missing", "Claude Code was not found on this computer. Install the Claude desktop app or Claude Code and sign in.");
+    }
+    const mcp = findMcpEntry();
+    if (!mcp) throw new HttpError(500, "mcp_missing", "Ba Studio's Claude connector (mcp.mjs) is missing. Reinstall Ba Studio.");
+    const maxTurns = MAX_TURNS[input2.mode];
+    const run = {
+      id: crypto5.randomUUID(),
+      projectId: input2.projectId,
+      mode: input2.mode,
+      prompt: input2.prompt,
+      humanTouch: input2.humanTouch,
+      status: "running",
+      startedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      finishedAt: null,
+      log: [],
+      result: null,
+      error: null,
+      usage: null,
+      ideas: null,
+      maxTurns
+    };
+    const live = { run, child: null, cancelled: false };
+    this.runs.set(run.id, live);
+    this.trim();
+    await fsp7.mkdir(this.workDir, { recursive: true });
+    const mcpConfig = path10.join(this.workDir, "mcp.json");
+    const sysFile = path10.join(this.workDir, `system-${run.id}.txt`);
+    await fsp7.writeFile(mcpConfig, JSON.stringify({ mcpServers: { [SERVER]: { command: process.execPath, args: [mcp, "--instance", this.instanceName] } } }));
+    await fsp7.writeFile(sysFile, systemPrompt(input2.mode, input2.projectId, input2.humanTouch, maxTurns));
+    const allowed = input2.mode === "ideas" ? READ_ONLY_TOOLS.map((t) => `mcp__${SERVER}__${t}`) : [`mcp__${SERVER}`];
+    const args = [
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--max-turns",
+      String(maxTurns),
+      "--mcp-config",
+      mcpConfig,
+      "--strict-mcp-config",
+      "--permission-mode",
+      "dontAsk",
+      "--allowedTools",
+      ...allowed,
+      "--disallowedTools",
+      ...BLOCKED_BUILTINS,
+      "--append-system-prompt-file",
+      sysFile,
+      "--no-session-persistence"
+    ];
+    const userPrompt = input2.mode === "ideas" ? `\u0627\u0642\u062A\u0631\u062D \u0623\u0641\u0643\u0627\u0631\u0627\u064B \u0644\u0647\u0630\u0627 \u0627\u0644\u0645\u0634\u0631\u0648\u0639.${input2.prompt ? `
+\u0645\u0644\u0627\u062D\u0638\u0629 \u0645\u0646 \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645: ${input2.prompt}` : ""}` : input2.prompt;
+    this.log(live, { kind: "info", text: "started" });
+    this.publish(run);
+    const isCmd = /\.cmd$/i.test(avail.path);
+    const child = spawn3(isCmd ? `"${avail.path}"` : avail.path, isCmd ? args.map((a) => `"${a.replace(/"/g, '\\"')}"`) : args, {
+      cwd: this.workDir,
+      env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "ba-studio" },
+      stdio: ["pipe", "pipe", "pipe"],
+      windowsHide: true,
+      shell: isCmd
+    });
+    live.child = child;
+    child.stdin.end(userPrompt);
+    let buf = "";
+    let stderr = "";
+    let resultSeen = false;
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", (chunk) => {
+      buf += chunk;
+      let nl;
+      while ((nl = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (line) resultSeen = this.handleLine(live, line) || resultSeen;
+      }
+    });
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", (c) => {
+      stderr = (stderr + c).slice(-4e3);
+    });
+    child.on("error", (e) => this.finish(live, "failed", `Could not start Claude Code: ${e.message}`));
+    child.on("close", (code) => {
+      if (buf.trim()) resultSeen = this.handleLine(live, buf.trim()) || resultSeen;
+      void fsp7.rm(sysFile, { force: true });
+      if (live.cancelled) return this.finish(live, "cancelled", null);
+      if (run.status !== "running") return;
+      if (resultSeen && !run.error) return this.finish(live, "completed", null);
+      this.finish(live, "failed", run.error ?? (stderr.trim() || `Claude Code exited with code ${code}.`));
+    });
+    return run;
+  }
+  /** Parse one stream-json line. Returns true for the final result event. */
+  handleLine(l, line) {
+    let ev;
+    try {
+      ev = JSON.parse(line);
+    } catch {
+      return false;
+    }
+    const strip = (name) => name.replace(new RegExp(`^mcp__${SERVER}__`), "");
+    if (ev.type === "assistant") {
+      const content = ev.message?.content ?? [];
+      for (const c of content) {
+        if (c.type === "text" && typeof c.text === "string" && c.text.trim()) this.log(l, { kind: "text", text: c.text.trim() });
+        if (c.type === "tool_use") this.log(l, { kind: "tool", tool: strip(String(c.name)), text: JSON.stringify(c.input ?? {}).slice(0, 300) });
+      }
+      return false;
+    }
+    if (ev.type === "user") {
+      const content = ev.message?.content ?? [];
+      for (const c of content) {
+        if (c.type !== "tool_result") continue;
+        const body = Array.isArray(c.content) ? c.content.map((x) => x.text ?? "").join(" ") : String(c.content ?? "");
+        this.log(l, { kind: c.is_error ? "error" : "tool_result", text: body.slice(0, 400) });
+      }
+      return false;
+    }
+    if (ev.type === "result") {
+      const u = ev.usage ?? {};
+      const usage = {
+        inputTokens: u.input_tokens ?? 0,
+        outputTokens: u.output_tokens ?? 0,
+        cacheReadTokens: u.cache_read_input_tokens ?? 0,
+        cacheCreationTokens: u.cache_creation_input_tokens ?? 0,
+        costUsd: typeof ev.total_cost_usd === "number" ? ev.total_cost_usd : null,
+        turns: typeof ev.num_turns === "number" ? ev.num_turns : 0,
+        durationMs: typeof ev.duration_ms === "number" ? ev.duration_ms : null
+      };
+      l.run.usage = usage;
+      const text = typeof ev.result === "string" ? ev.result : "";
+      l.run.result = text || null;
+      if (l.run.mode === "ideas") l.run.ideas = parseIdeas(text);
+      if (ev.is_error || typeof ev.subtype === "string" && ev.subtype !== "success") {
+        l.run.error = ev.subtype === "error_max_turns" ? "max_turns" : text || String(ev.subtype ?? "error");
+      }
+      return true;
+    }
+    return false;
+  }
+  finish(l, status, error62) {
+    if (l.run.status !== "running") return;
+    l.run.status = status;
+    l.run.finishedAt = (/* @__PURE__ */ new Date()).toISOString();
+    if (error62) l.run.error = error62;
+    this.log(l, { kind: status === "completed" ? "info" : "error", text: status });
+    this.publish(l.run);
+  }
+  cancel(id) {
+    const l = this.runs.get(id);
+    if (!l) throw new HttpError(404, "run_not_found", "Run not found.");
+    if (l.run.status !== "running") return l.run;
+    l.cancelled = true;
+    const pid = l.child?.pid;
+    if (pid) {
+      if (process.platform === "win32") spawn3("taskkill", ["/pid", String(pid), "/T", "/F"], { windowsHide: true, stdio: "ignore" });
+      else l.child?.kill("SIGTERM");
+    }
+    if (!l.child) this.finish(l, "cancelled", null);
+    return l.run;
+  }
+  trim() {
+    const done = [...this.runs.values()].filter((l) => l.run.status !== "running").sort((a, b) => a.run.startedAt.localeCompare(b.run.startedAt));
+    while (this.runs.size > MAX_RUNS && done.length) this.runs.delete(done.shift().run.id);
+  }
+  close() {
+    for (const l of this.runs.values()) if (l.run.status === "running") this.cancel(l.run.id);
+  }
+};
+
+// src/app.ts
+import path14 from "node:path";
+
 // src/services/timeline-service.ts
-import fsp6 from "node:fs/promises";
-import path8 from "node:path";
+import fsp8 from "node:fs/promises";
+import path11 from "node:path";
 var HISTORY_LIMIT = 200;
 var BACKUP_LIMIT = 30;
 var AUTO_BACKUP_INTERVAL_MS = 5 * 6e4;
@@ -62098,30 +62901,30 @@ var TimelineService = class {
   }
   // ---- backups ---------------------------------------------------------------
   backupDir(projectId) {
-    return path8.join(this.paths.projectsDir, projectId, "backups");
+    return path11.join(this.paths.projectsDir, projectId, "backups");
   }
   async createBackup(projectId, label) {
     const project = this.projects.get(projectId);
     if (!project) throw new HttpError(404, "project_not_found", "Project not found.");
     const { timeline, revision } = this.load(projectId);
     const dir = this.backupDir(projectId);
-    await fsp6.mkdir(dir, { recursive: true });
+    await fsp8.mkdir(dir, { recursive: true });
     const createdAt = (/* @__PURE__ */ new Date()).toISOString();
     const name = `${createdAt.replace(/[:.]/g, "-")}.json`;
     const body = JSON.stringify({ format: "soezy-backup", version: 1, label, createdAt, revision, project, timeline }, null, 2);
-    await fsp6.writeFile(path8.join(dir, `${name}.tmp`), body, "utf8");
-    await fsp6.rename(path8.join(dir, `${name}.tmp`), path8.join(dir, name));
-    const all = (await fsp6.readdir(dir)).filter((f) => f.endsWith(".json")).sort();
-    for (const old of all.slice(0, Math.max(0, all.length - BACKUP_LIMIT))) await fsp6.rm(path8.join(dir, old), { force: true });
+    await fsp8.writeFile(path11.join(dir, `${name}.tmp`), body, "utf8");
+    await fsp8.rename(path11.join(dir, `${name}.tmp`), path11.join(dir, name));
+    const all = (await fsp8.readdir(dir)).filter((f) => f.endsWith(".json")).sort();
+    for (const old of all.slice(0, Math.max(0, all.length - BACKUP_LIMIT))) await fsp8.rm(path11.join(dir, old), { force: true });
     return { name, label, createdAt, sizeBytes: Buffer.byteLength(body) };
   }
   async listBackups(projectId) {
     const dir = this.backupDir(projectId);
-    const files = await fsp6.readdir(dir).catch(() => []);
+    const files = await fsp8.readdir(dir).catch(() => []);
     const out = [];
     for (const f of files.filter((x) => x.endsWith(".json")).sort().reverse()) {
       try {
-        const raw = await fsp6.readFile(path8.join(dir, f), "utf8");
+        const raw = await fsp8.readFile(path11.join(dir, f), "utf8");
         const data = JSON.parse(raw);
         out.push({ name: f, label: data.label ?? "Backup", createdAt: data.createdAt ?? "", sizeBytes: Buffer.byteLength(raw) });
       } catch {
@@ -62132,7 +62935,7 @@ var TimelineService = class {
   /** Restoring is an ordinary (undoable) timeline edit. */
   async restoreBackup(projectId, name) {
     if (!/^[\w-]+\.json$/.test(name)) throw new HttpError(400, "invalid_backup", "Invalid backup name.");
-    const raw = await fsp6.readFile(path8.join(this.backupDir(projectId), name), "utf8").catch(() => {
+    const raw = await fsp8.readFile(path11.join(this.backupDir(projectId), name), "utf8").catch(() => {
       throw new HttpError(404, "backup_not_found", "Backup not found.");
     });
     const data = JSON.parse(raw);
@@ -62149,31 +62952,31 @@ var TimelineService = class {
 };
 
 // src/routes/static.ts
-import fs9 from "node:fs";
-import path9 from "node:path";
+import fs12 from "node:fs";
+import path12 from "node:path";
 function registerStaticRoutes(app, root) {
   app.get("/*", async (req, reply) => {
-    if (!root || !fs9.existsSync(path9.join(root, "index.html"))) {
+    if (!root || !fs12.existsSync(path12.join(root, "index.html"))) {
       return reply.code(503).type("text/plain; charset=utf-8").send("Studio UI is not built. Run `npm run build` in the repository root.");
     }
     const urlPath = decodeURIComponent((req.url.split("?")[0] ?? "/").replace(/^\/+/, ""));
-    const candidate = path9.resolve(root, urlPath || "index.html");
-    if (isWithin(root, candidate) && fs9.existsSync(candidate) && fs9.statSync(candidate).isFile()) {
+    const candidate = path12.resolve(root, urlPath || "index.html");
+    if (isWithin(root, candidate) && fs12.existsSync(candidate) && fs12.statSync(candidate).isFile()) {
       const immutable = urlPath.startsWith("assets/");
       return sendFile(req, reply, candidate, { cache: immutable ? "public, max-age=31536000, immutable" : "no-cache" });
     }
     if (urlPath.startsWith("api/")) return reply.code(404).send({ error: "not_found", message: "Unknown API route." });
-    return sendFile(req, reply, path9.join(root, "index.html"));
+    return sendFile(req, reply, path12.join(root, "index.html"));
   });
 }
 
 // src/security/auth.ts
-import crypto4 from "node:crypto";
+import crypto6 from "node:crypto";
 var LAUNCH_CODE_TTL_MS = 2 * 6e4;
 var LaunchCodes = class {
   codes = /* @__PURE__ */ new Map();
   issue() {
-    const code = crypto4.randomBytes(24).toString("base64url");
+    const code = crypto6.randomBytes(24).toString("base64url");
     this.codes.set(code, Date.now() + LAUNCH_CODE_TTL_MS);
     return code;
   }
@@ -62221,7 +63024,7 @@ var LOCKED_PAGE = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset=
 <style>body{margin:0;height:100vh;display:grid;place-items:center;background:#0b0b0c;color:#e8e6e1;font:15px "Segoe UI",Tahoma,system-ui,sans-serif}
 main{max-width:460px;padding:32px;border:1px solid #26262b;border-radius:10px;background:#131315}
 h1{font-size:19px;margin:0 0 10px;color:#d4af5f}p{color:#9a9aa2;line-height:1.8;margin:0}code{color:#e8e6e1;direction:ltr;unicode-bidi:embed}</style></head>
-<body><main><h1>\u0627\u0644\u0627\u0633\u062A\u0648\u062F\u064A\u0648 \u0645\u0642\u0641\u0644</h1><p>\u0627\u0641\u062A\u062D Ba Studio \u0645\u0646 Claude Code \u0628\u0643\u062A\u0627\u0628\u0629 \u0627\u0644\u0623\u0645\u0631 <code>/ba-studio:open</code>. \u0643\u0644 \u0645\u0631\u0629 \u064A\u064F\u0641\u062A\u062D \u0641\u064A\u0647\u0627 \u0627\u0644\u0627\u0633\u062A\u0648\u062F\u064A\u0648 \u064A\u064F\u0646\u0634\u0623 \u0631\u0627\u0628\u0637 \u062F\u062E\u0648\u0644 \u062E\u0627\u0635 \u0644\u0645\u0631\u0629 \u0648\u0627\u062D\u062F\u0629\u060C \u064A\u0639\u0645\u0644 \u0639\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u062C\u0647\u0627\u0632 \u0641\u0642\u0637.</p></main></body></html>`;
+<body><main><img src="/logo.png" alt="Ba Studio" width="96" height="96" style="border-radius:16px;display:block;margin:0 auto 16px"><h1>\u0627\u0644\u0627\u0633\u062A\u0648\u062F\u064A\u0648 \u0645\u0642\u0641\u0644</h1><p>\u0627\u0641\u062A\u062D Ba Studio \u0645\u0646 Claude Code \u0628\u0643\u062A\u0627\u0628\u0629 \u0627\u0644\u0623\u0645\u0631 <code>/ba-studio:open</code>. \u0643\u0644 \u0645\u0631\u0629 \u064A\u064F\u0641\u062A\u062D \u0641\u064A\u0647\u0627 \u0627\u0644\u0627\u0633\u062A\u0648\u062F\u064A\u0648 \u064A\u064F\u0646\u0634\u0623 \u0631\u0627\u0628\u0637 \u062F\u062E\u0648\u0644 \u062E\u0627\u0635 \u0644\u0645\u0631\u0629 \u0648\u0627\u062D\u062F\u0629\u060C \u064A\u0639\u0645\u0644 \u0639\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u062C\u0647\u0627\u0632 \u0641\u0642\u0637.</p></main></body></html>`;
 function registerAuth(app, ctx, codes, aiGuard2 = () => void 0) {
   app.decorateRequest("scope", null);
   app.addHook("onRequest", async (req, reply) => {
@@ -62241,7 +63044,7 @@ function registerAuth(app, ctx, codes, aiGuard2 = () => void 0) {
       }
     }
     const url2 = req.url.split("?")[0] ?? "";
-    if (url2 === "/api/health" || url2 === "/auth" || url2 === "/favicon.svg") return;
+    if (url2 === "/api/health" || url2 === "/auth" || url2 === "/favicon.png" || url2 === "/logo.png") return;
     const scope = resolveScope(req, ctx);
     if (scope === "owner") {
       req.scope = scope;
@@ -62296,11 +63099,45 @@ var EventBus = class {
 };
 
 // src/services/media-service.ts
-import crypto5 from "node:crypto";
-import fs10 from "node:fs";
-import fsp7 from "node:fs/promises";
-import path10 from "node:path";
+import crypto7 from "node:crypto";
+import fs13 from "node:fs";
+import fsp9 from "node:fs/promises";
+import path13 from "node:path";
 import { pipeline } from "node:stream/promises";
+import { Readable, Transform } from "node:stream";
+import dns from "node:dns/promises";
+import net2 from "node:net";
+var MAX_DOWNLOAD = 2 * 1024 ** 3;
+var EXT_BY_TYPE = {
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+  "video/mp4": ".mp4",
+  "video/webm": ".webm",
+  "video/quicktime": ".mov",
+  "audio/mpeg": ".mp3",
+  "audio/wav": ".wav",
+  "audio/x-wav": ".wav",
+  "audio/mp4": ".m4a"
+};
+function isPrivateIp(ip) {
+  if (net2.isIPv4(ip)) {
+    const [a, b] = ip.split(".").map(Number);
+    return a === 0 || a === 10 || a === 127 || a === 100 && b >= 64 && b <= 127 || a === 169 && b === 254 || a === 172 && b >= 16 && b <= 31 || a === 192 && b === 168 || a >= 224;
+  }
+  const v = ip.toLowerCase();
+  if (v.startsWith("::ffff:")) return isPrivateIp(v.slice(7));
+  return v === "::" || v === "::1" || v.startsWith("fc") || v.startsWith("fd") || v.startsWith("fe80");
+}
+async function assertPublicHttps(url2) {
+  if (url2.protocol !== "https:") throw new HttpError(400, "bad_url", "Only https links can be imported.");
+  if (url2.username || url2.password) throw new HttpError(400, "bad_url", "Links with credentials are not allowed.");
+  const host = url2.hostname.replace(/^[|]$/g, "");
+  const addrs = net2.isIP(host) ? [{ address: host }] : await dns.lookup(host, { all: true }).catch(() => []);
+  if (!addrs.length) throw new HttpError(400, "bad_url", `Could not resolve ${host}.`);
+  if (addrs.some((a) => isPrivateIp(a.address))) throw new HttpError(400, "bad_url", "Links to local or private network addresses are not allowed.");
+}
 var MediaService = class {
   constructor(paths, tools, media, projects, folders, events) {
     this.paths = paths;
@@ -62331,20 +63168,20 @@ var MediaService = class {
     const name = sanitizeFileName(rawName);
     const kind = mediaKindFromName(name);
     if (!kind) throw new HttpError(415, "unsupported_type", `Unsupported file type: ${name}`);
-    const dir = path10.join(this.paths.projectsDir, projectId, "media");
-    await fsp7.mkdir(dir, { recursive: true });
-    const dest = path10.join(dir, `${crypto5.randomBytes(4).toString("hex")}-${name}`);
+    const dir = path13.join(this.paths.projectsDir, projectId, "media");
+    await fsp9.mkdir(dir, { recursive: true });
+    const dest = path13.join(dir, `${crypto7.randomBytes(4).toString("hex")}-${name}`);
     const part = `${dest}.part`;
     try {
-      await pipeline(body, fs10.createWriteStream(part, { flags: "wx" }));
-      await fsp7.rename(part, dest);
+      await pipeline(body, fs13.createWriteStream(part, { flags: "wx" }));
+      await fsp9.rename(part, dest);
     } catch (e) {
-      await fsp7.rm(part, { force: true });
+      await fsp9.rm(part, { force: true });
       throw new HttpError(400, "upload_failed", `Upload failed: ${e.message}`);
     }
-    const { size } = await fsp7.stat(dest);
+    const { size } = await fsp9.stat(dest);
     if (size === 0) {
-      await fsp7.rm(dest, { force: true });
+      await fsp9.rm(dest, { force: true });
       throw new HttpError(400, "empty_file", "The uploaded file is empty.");
     }
     const rec = this.media.insert({ projectId, kind, name, path: dest, storage: "uploaded", sizeBytes: size });
@@ -62368,7 +63205,7 @@ var MediaService = class {
           continue;
         }
         const { kind, size } = await assertMediaFile(real);
-        const rec = this.media.insert({ projectId, kind, name: path10.basename(real), path: real, storage: "linked", sizeBytes: size });
+        const rec = this.media.insert({ projectId, kind, name: path13.basename(real), path: real, storage: "linked", sizeBytes: size });
         existing.set(real.toLowerCase(), rec);
         this.publish(rec);
         this.analyze(rec.id);
@@ -62382,16 +63219,19 @@ var MediaService = class {
   }
   /** Queue metadata probe + thumbnail, then a preview proxy when the format needs one. */
   analyze(mediaId) {
-    this.analyzeQueue.enqueue({
-      key: mediaId,
-      run: async () => {
+    this.analyzeQueue.enqueue({ key: mediaId, run: () => this.analyzeNow(mediaId) });
+  }
+  /** Probe + thumbnail right away (used when the caller needs the duration before returning). */
+  async analyzeNow(mediaId) {
+    {
+      {
         const m = this.media.get(mediaId);
         if (!m) return;
         try {
           const probe = await probeMedia(this.tools, m.path);
           if (m.kind === "video" && !probe.hasVideo) throw new Error("File contains no video stream.");
           if (m.kind === "audio" && !probe.hasAudio) throw new Error("File contains no audio stream.");
-          const st = await fsp7.stat(m.path);
+          const st = await fsp9.stat(m.path);
           this.media.update(mediaId, {
             sizeBytes: st.size,
             durationSec: probe.durationSec,
@@ -62402,7 +63242,7 @@ var MediaService = class {
             audioCodec: probe.audioCodec,
             hasAudio: probe.hasAudio
           });
-          const thumb = path10.join(this.paths.thumbnailsDir, `${mediaId}.jpg`);
+          const thumb = path13.join(this.paths.thumbnailsDir, `${mediaId}.jpg`);
           try {
             await generateThumbnail(this.tools, m.kind, m.path, thumb, probe.durationSec);
             this.media.update(mediaId, { thumbnailPath: thumb });
@@ -62415,7 +63255,59 @@ var MediaService = class {
           this.publish(this.media.update(mediaId, { status: "error", error: e.message }));
         }
       }
+    }
+  }
+  /** A file Ba Studio created inside the project workspace (motion graphics, downloads). */
+  async registerOwned(projectId, filePath, displayName) {
+    this.requireProject(projectId);
+    const kind = mediaKindFromName(filePath);
+    if (!kind) throw new HttpError(415, "unsupported_type", `Unsupported file type: ${path13.basename(filePath)}`);
+    const { size } = await fsp9.stat(filePath);
+    const rec = this.media.insert({ projectId, kind, name: sanitizeFileName(displayName), path: filePath, storage: "uploaded", sizeBytes: size });
+    this.projects.touch(projectId);
+    this.publish(rec);
+    await this.analyzeNow(rec.id);
+    return toPublicMedia(this.requireMedia(rec.id));
+  }
+  /** Workspace folder for a project's own media. */
+  async projectMediaDir(projectId) {
+    const dir = path13.join(this.paths.projectsDir, projectId, "media");
+    await fsp9.mkdir(dir, { recursive: true });
+    return dir;
+  }
+  /**
+   * Download a public https file (for example an image or video made by an AI tool) into the project.
+   * Private and local network addresses are refused, every redirect is re-checked, and size is capped.
+   */
+  async importFromUrl(projectId, rawUrl, rawName) {
+    this.requireProject(projectId);
+    let url2 = new URL(rawUrl);
+    let res = null;
+    for (let hop = 0; hop < 5; hop++) {
+      await assertPublicHttps(url2);
+      res = await fetch(url2, { redirect: "manual", signal: AbortSignal.timeout(12e4) });
+      if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
+        url2 = new URL(res.headers.get("location"), url2);
+        continue;
+      }
+      break;
+    }
+    if (!res || !res.ok || !res.body) throw new HttpError(502, "download_failed", `Download failed (HTTP ${res?.status ?? "?"}).`);
+    const declared = Number(res.headers.get("content-length") ?? 0);
+    if (declared > MAX_DOWNLOAD) throw new HttpError(413, "too_large", "The file is larger than 2 GB.");
+    const type = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+    let name = sanitizeFileName(rawName || decodeURIComponent(path13.basename(url2.pathname)) || "download");
+    if (!mediaKindFromName(name) && EXT_BY_TYPE[type]) name = `${name.replace(/.[^.]*$/, "")}${EXT_BY_TYPE[type]}`;
+    if (!mediaKindFromName(name)) throw new HttpError(415, "unsupported_type", `The link is not a supported image, video or audio file (${type || "unknown type"}).`);
+    let seen = 0;
+    const limiter = new Transform({
+      transform(chunk, _enc, cb) {
+        seen += chunk.length;
+        cb(seen > MAX_DOWNLOAD ? new Error("The file is larger than 2 GB.") : null, chunk);
+      }
     });
+    const body = Readable.fromWeb(res.body).pipe(limiter);
+    return this.upload(projectId, name, body);
   }
   queueProxy(mediaId) {
     this.proxyQueue.enqueue({
@@ -62423,8 +63315,8 @@ var MediaService = class {
       run: async (signal) => {
         const m = this.media.get(mediaId);
         if (!m) return;
-        const out = path10.join(this.paths.proxiesDir, `${mediaId}.mp4`);
-        const tmp = path10.join(this.paths.proxiesDir, `${mediaId}.tmp.mp4`);
+        const out = path13.join(this.paths.proxiesDir, `${mediaId}.mp4`);
+        const tmp = path13.join(this.paths.proxiesDir, `${mediaId}.tmp.mp4`);
         this.publish(this.media.update(mediaId, { proxyStatus: "running", proxyProgress: 0 }));
         let lastEmit = 0;
         try {
@@ -62438,10 +63330,10 @@ var MediaService = class {
           });
           const check2 = await probeMedia(this.tools, tmp);
           if (!check2.hasVideo) throw new Error("Proxy verification failed: no video stream.");
-          await fsp7.rename(tmp, out);
+          await fsp9.rename(tmp, out);
           this.publish(this.media.update(mediaId, { proxyStatus: "ready", proxyPath: out, proxyProgress: 1 }));
         } catch (e) {
-          await fsp7.rm(tmp, { force: true });
+          await fsp9.rm(tmp, { force: true });
           if (!this.media.get(mediaId)) return;
           this.publish(this.media.update(mediaId, { proxyStatus: "failed", proxyProgress: null, error: e.message }));
         }
@@ -62453,7 +63345,7 @@ var MediaService = class {
     const list = this.media.listByProject(projectId);
     await Promise.all(
       list.map(async (m) => {
-        const exists = await fsp7.stat(m.path).then((s) => s.isFile()).catch(() => false);
+        const exists = await fsp9.stat(m.path).then((s) => s.isFile()).catch(() => false);
         if (!exists && m.status !== "missing") {
           this.publish(this.media.update(m.id, { status: "missing", error: "Source file not found on disk." }));
         } else if (exists && m.status === "missing") {
@@ -62481,7 +63373,7 @@ var MediaService = class {
     await this.removeCaches(m);
     const updated = this.media.update(mediaId, {
       path: real,
-      name: path10.basename(real),
+      name: path13.basename(real),
       storage: "linked",
       sizeBytes: size,
       status: "processing",
@@ -62505,15 +63397,15 @@ var MediaService = class {
     this.proxyQueue.cancel(mediaId);
     this.media.delete(mediaId);
     await this.removeCaches(m);
-    if (m.storage === "uploaded" && this.media.countByPath(m.path) === 0 && fs10.existsSync(m.path)) {
-      const dest = path10.join(this.paths.trashDir, `${Date.now()}-${path10.basename(m.path)}`);
-      await fsp7.rename(m.path, dest).catch(() => void 0);
+    if (m.storage === "uploaded" && this.media.countByPath(m.path) === 0 && fs13.existsSync(m.path)) {
+      const dest = path13.join(this.paths.trashDir, `${Date.now()}-${path13.basename(m.path)}`);
+      await fsp9.rename(m.path, dest).catch(() => void 0);
     }
     this.projects.touch(m.projectId);
     this.events.emit({ type: "media.deleted", projectId: m.projectId, mediaId });
   }
   async removeCaches(m) {
-    for (const p of [m.thumbnailPath, m.proxyPath]) if (p) await fsp7.rm(p, { force: true });
+    for (const p of [m.thumbnailPath, m.proxyPath]) if (p) await fsp9.rm(p, { force: true });
   }
   /** After a crash or restart, resume interrupted analysis and proxy jobs. */
   recover() {
@@ -62538,8 +63430,8 @@ var MediaService = class {
 };
 
 // src/services/system-service.ts
-import fsp8 from "node:fs/promises";
-import os3 from "node:os";
+import fsp10 from "node:fs/promises";
+import os4 from "node:os";
 async function detectGpus() {
   try {
     const res = await runTool("nvidia-smi", ["--query-gpu=name,memory.total", "--format=csv,noheader,nounits"], { timeoutMs: 5e3 });
@@ -62592,15 +63484,15 @@ var SystemService = class {
   }
   async status() {
     await this.ready;
-    const disk = await fsp8.statfs(this.paths.root).then(
+    const disk = await fsp10.statfs(this.paths.root).then(
       (s) => ({ path: this.paths.root, freeBytes: s.bavail * s.bsize, totalBytes: s.blocks * s.bsize }),
       () => null
     );
-    const cpus = os3.cpus();
+    const cpus = os4.cpus();
     return {
       app: { name: APP_NAME, version: APP_VERSION, instance: this.app.instance, dataDir: this.paths.root, port: this.app.port(), pid: process.pid },
       cpu: { model: cpus[0]?.model.trim() ?? "unknown", logicalCores: cpus.length },
-      memory: { totalBytes: os3.totalmem(), freeBytes: os3.freemem() },
+      memory: { totalBytes: os4.totalmem(), freeBytes: os4.freemem() },
       gpus: this.gpus,
       disk,
       ffmpeg: this.ffmpeg,
@@ -62654,7 +63546,7 @@ async function buildApp(opts) {
   const events = new EventBus();
   const auth = {
     token: opts.token,
-    aiToken: opts.aiToken ?? crypto6.randomBytes(32).toString("base64url"),
+    aiToken: opts.aiToken ?? crypto8.randomBytes(32).toString("base64url"),
     port: 0,
     devOrigins: opts.devOrigins ?? []
   };
@@ -62663,6 +63555,7 @@ async function buildApp(opts) {
     instanceName: opts.instanceName,
     instanceId: opts.instanceId,
     paths: opts.paths,
+    tools,
     db,
     projects,
     media,
@@ -62674,6 +63567,7 @@ async function buildApp(opts) {
     system,
     timelines: new TimelineService(db, opts.paths, projects, media, events),
     exports: new ExportService(db, opts.paths, tools, projects, media, folders, system, events),
+    agent: new AgentService(path14.join(opts.paths.root, "agent"), opts.instanceName, events),
     launchCodes: new LaunchCodes(),
     auth,
     shutdown: (reason) => opts.onShutdownRequest?.(reason)
@@ -62717,10 +63611,13 @@ async function buildApp(opts) {
   registerApiRoutes(app, services);
   registerEditingRoutes(app, services);
   registerAiRoutes(app, services);
+  registerGenerateRoutes(app, services);
+  registerAgentRoutes(app, services);
   registerStaticRoutes(app, opts.studioDir);
   app.addHook("onClose", async () => {
     services.mediaService.close();
     services.exports.close();
+    services.agent.close();
     db.close();
   });
   services.mediaService.recover();
@@ -62741,7 +63638,7 @@ Usage: soezy-server [options]
 `;
 function openInBrowser(url2) {
   const [cmd, args] = process.platform === "win32" ? ["rundll32.exe", ["url.dll,FileProtocolHandler", url2]] : process.platform === "darwin" ? ["open", [url2]] : ["xdg-open", [url2]];
-  spawn3(cmd, args, { detached: true, stdio: "ignore", windowsHide: true }).unref();
+  spawn4(cmd, args, { detached: true, stdio: "ignore", windowsHide: true }).unref();
 }
 async function mintLaunchUrl(session) {
   const res = await fetch(`http://127.0.0.1:${session.port}/api/session/launch-code`, {
@@ -62753,10 +63650,10 @@ async function mintLaunchUrl(session) {
   return (await res.json()).url;
 }
 function resolveStudioDir() {
-  if (process.env.SOEZY_STUDIO_DIR) return path11.resolve(process.env.SOEZY_STUDIO_DIR);
-  const here = path11.dirname(fileURLToPath2(import.meta.url));
-  const candidate = path11.resolve(here, "..", "..", "studio", "dist");
-  return fs11.existsSync(candidate) ? candidate : null;
+  if (process.env.SOEZY_STUDIO_DIR) return path15.resolve(process.env.SOEZY_STUDIO_DIR);
+  const here = path15.dirname(fileURLToPath3(import.meta.url));
+  const candidate = path15.resolve(here, "..", "..", "studio", "dist");
+  return fs14.existsSync(candidate) ? candidate : null;
 }
 async function main() {
   const { values } = parseArgs({

@@ -3379,9 +3379,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decodeUnreserved && isUnreserved(decoded)) {
               output2 += decoded;
@@ -3401,9 +3401,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decoded !== "." && isUnreserved(decoded)) {
               output2 += decoded;
@@ -3443,9 +3443,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -3481,9 +3481,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -3528,9 +3528,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (isUnreserved(decoded)) {
               output2 += decoded;
@@ -3568,9 +3568,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -12191,8 +12191,8 @@ function base64urlToUint8Array(base64url3) {
 function uint8ArrayToBase64url(bytes) {
   return uint8ArrayToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
-function hexToUint8Array(hex4) {
-  const cleanHex = hex4.replace(/^0x/, "");
+function hexToUint8Array(hex5) {
+  const cleanHex = hex5.replace(/^0x/, "");
   if (cleanHex.length % 2 !== 0) {
     throw new Error("Invalid hex string length");
   }
@@ -36813,6 +36813,8 @@ How to work:
 - Before removing material (delete_clip, cut_clip, destructive plans) make sure the user agrees. Everything you do can be undone (undo_edit), and original media files are never modified.
 - Analysis is local and signal-level: detect_scenes (cuts), analyze_audio (loudness, silences), analyze_video (metadata + scenes). There is no visual content understanding yet, so do not claim to have seen what is in a shot.
 - Use generate_preview for a quick exact render the user can watch, and export_video for the final file.
+- Creating without footage: create_motion_graphic renders original motion graphics (titles, intros, animated quotes, stats with counters, lower thirds, end cards, or a stylised version of a project image/video as the background). Build videos from several short scenes, then add_clip them in order and add_transition between them. If the user connected an AI image/video generator, generate there, then bring the file in with import_media_from_url; never claim to generate realistic AI video yourself.
+- Design with a human touch: a restrained palette, editorial typography (Thmanyah for Arabic), clear hierarchy, real margins, staggered timing, subtle grain. Avoid generic AI looks (neon rainbow gradients, glowing everything, centred clich\xE9s). This is about craft, never about hiding that AI was used if the user or a platform asks.
 - Not available yet (do not pretend to do these): transcription/subtitles, colour grading, automatic highlight detection, beat sync.`;
 
 // ../timeline/src/schema.ts
@@ -36867,7 +36869,7 @@ var MediaClip = external_exports.object({
   x: external_exports.number().min(-2).max(2).default(0),
   y: external_exports.number().min(-2).max(2).default(0)
 });
-var TextFont = external_exports.enum(["sans", "serif", "mono", "arabic"]);
+var TextFont = external_exports.enum(["sans", "serif", "mono", "arabic", "thmanyah"]);
 var TextClip = external_exports.object({
   ...ClipBase,
   type: external_exports.literal("text"),
@@ -37000,6 +37002,101 @@ var TimelineOp = external_exports.discriminatedUnion("op", [
   }),
   external_exports.object({ op: external_exports.literal("replaceTimeline"), timeline: Timeline, label: external_exports.string().max(80).optional() })
 ]);
+
+// ../video-engine/src/motion.ts
+var hex4 = external_exports.string().regex(/^#[0-9a-fA-F]{6}$/, "Colors are #rrggbb");
+var frac = external_exports.number().min(0).max(1);
+var Enter = external_exports.enum(["none", "fade", "slide-up", "slide-down", "slide-left", "slide-right", "typewriter", "words"]);
+var Exit = external_exports.enum(["none", "fade", "slide-up", "slide-down", "slide-left", "slide-right"]);
+var timing = {
+  start: external_exports.number().min(0).default(0),
+  /** Defaults to the end of the scene. */
+  end: external_exports.number().min(0).optional(),
+  enter: Enter.default("fade"),
+  exit: Exit.default("fade"),
+  enterDuration: external_exports.number().min(0.05).max(5).default(0.6),
+  exitDuration: external_exports.number().min(0.05).max(5).default(0.35)
+};
+var FontChoice = external_exports.enum(["thmanyah", "arabic", "sans", "serif", "mono"]);
+var FontWeight = external_exports.enum(["light", "regular", "bold", "black"]);
+var TextLayer = external_exports.object({
+  type: external_exports.literal("text"),
+  text: external_exports.string().min(1).max(400),
+  font: FontChoice.default("thmanyah"),
+  weight: FontWeight.default("bold"),
+  /** Font size as a fraction of frame height. */
+  size: external_exports.number().min(0.01).max(0.4).default(0.07),
+  color: hex4.default("#ffffff"),
+  /** Centre of the text, as fractions of the frame. */
+  x: frac.default(0.5),
+  y: frac.default(0.5),
+  box: external_exports.object({ color: hex4, opacity: frac.default(0.7), padding: external_exports.number().min(0).max(0.1).default(0.02) }).optional(),
+  shadow: external_exports.boolean().default(false),
+  ...timing
+});
+var ShapeLayer = external_exports.object({
+  type: external_exports.literal("shape"),
+  /** Rectangles cover bars, lines (thin rects), frames and blocks. */
+  shape: external_exports.literal("rect").default("rect"),
+  color: hex4,
+  opacity: frac.default(1),
+  x: frac.default(0.5),
+  y: frac.default(0.5),
+  w: external_exports.number().min(2e-3).max(1),
+  h: external_exports.number().min(2e-3).max(1),
+  ...timing
+});
+var CounterLayer = external_exports.object({
+  type: external_exports.literal("counter"),
+  from: external_exports.number().default(0),
+  to: external_exports.number(),
+  decimals: external_exports.number().int().min(0).max(2).default(0),
+  prefix: external_exports.string().max(20).default(""),
+  suffix: external_exports.string().max(20).default(""),
+  font: FontChoice.default("thmanyah"),
+  weight: FontWeight.default("black"),
+  size: external_exports.number().min(0.01).max(0.4).default(0.12),
+  color: hex4.default("#ffffff"),
+  x: frac.default(0.5),
+  y: frac.default(0.5),
+  ...timing
+});
+var ImageLayer = external_exports.object({
+  type: external_exports.literal("image"),
+  mediaId: external_exports.string().min(1),
+  /** Width as a fraction of the frame width. */
+  scale: external_exports.number().min(0.05).max(1.5).default(0.5),
+  x: frac.default(0.5),
+  y: frac.default(0.5),
+  ...timing
+});
+var MotionLayer = external_exports.discriminatedUnion("type", [TextLayer, ShapeLayer, CounterLayer, ImageLayer]);
+var MotionBackground = external_exports.discriminatedUnion("type", [
+  external_exports.object({ type: external_exports.literal("solid"), color: hex4 }),
+  external_exports.object({
+    type: external_exports.literal("gradient"),
+    colors: external_exports.array(hex4).min(2).max(6),
+    direction: external_exports.enum(["vertical", "horizontal", "diagonal", "radial"]).default("diagonal"),
+    /** Slowly drifting colors. */
+    animate: external_exports.boolean().default(true)
+  }),
+  external_exports.object({
+    type: external_exports.literal("media"),
+    mediaId: external_exports.string().min(1),
+    motion: external_exports.enum(["none", "ken-burns"]).default("ken-burns"),
+    /** Darken so text reads well (0..0.9). */
+    dim: external_exports.number().min(0).max(0.9).default(0.35),
+    blur: external_exports.number().min(0).max(40).default(0)
+  })
+]);
+var MotionSpec = external_exports.object({
+  durationSec: external_exports.number().min(0.5).max(60),
+  background: MotionBackground,
+  /** Film grain amount (0..1): a subtle 0.2–0.4 avoids the sterile digital look. */
+  grain: frac.default(0),
+  vignette: external_exports.boolean().default(false),
+  layers: external_exports.array(MotionLayer).max(40).default([])
+});
 
 // src/format.ts
 var r3 = (n) => Math.round(n * 1e3) / 1e3;
@@ -37512,7 +37609,7 @@ function registerTools(server, studio) {
       text: external_exports.string().min(1).max(1e3),
       start: seconds("When the text appears"),
       duration: external_exports.number().min(0.04).max(86400),
-      font: external_exports.enum(["sans", "serif", "mono", "arabic"]).optional(),
+      font: external_exports.enum(["thmanyah", "arabic", "sans", "serif", "mono"]).optional().describe("thmanyah = the Thmanyah Arabic typeface when the user installed it (falls back to the Arabic font)"),
       size: external_exports.number().min(0.01).max(0.5).optional().describe("Font size as a fraction of frame height (default 0.07)"),
       color: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
       box: external_exports.boolean().optional().describe("Draw a background box for legibility"),
@@ -37528,6 +37625,36 @@ function registerTools(server, studio) {
     if (a.fade) ops.push({ op: "updateClip", clipId: "$0", patch: { fadeIn: a.fade, fadeOut: a.fade } });
     const r = await call("POST", `/api/projects/${pid}/timeline/plan`, { ops, label: "Add text" });
     return timelineReply("Text added.", r, pid, call);
+  });
+  tool("create_motion_graphic", {
+    title: "Create motion graphic",
+    description: "Render an original motion-graphics clip locally (no footage needed): a background (solid, animated gradient, or a project image/video with Ken Burns), plus up to 40 timed layers \u2014 text (Arabic-safe, Thmanyah typeface by default), shapes, number counters and images \u2014 each with enter/exit animations (fade, slides, typewriter, word-by-word). The clip is added to the project's media; place it with add_clip. Positions/sizes are fractions of the frame (x,y = centre; size = font height / frame height). Several short scenes cut together usually look better than one long one. Design like a human motion designer: one restrained palette (2\u20133 colours plus a neutral), clear hierarchy (one big title, small supporting text), generous margins (keep text inside 0.1\u20130.9), staggered timing (layers start 0.15\u20130.4 s apart), subtle grain, and no rainbow/neon gradients or generic stock clich\xE9s.",
+    inputSchema: {
+      scene: MotionSpec,
+      name: external_exports.string().trim().min(1).max(80).optional().describe("Media name, e.g. '\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0627\u0641\u062A\u062A\u0627\u062D\u064A\u0629'"),
+      add_to_timeline_at: seconds("If given, also place the clip on the timeline at this time").optional(),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/motion`, { spec: a.scene, name: a.name });
+    const fontNote = r.usedThmanyah ? "" : " Thmanyah is not installed, so the Arabic system font was used (the user can download Thmanyah free from https://thmanyah.open.cx/en/line-eight-for-everyone and install it).";
+    if (a.add_to_timeline_at === void 0) return text(`Motion graphic rendered and added to media.${fontNote}`, compactMedia(r.media));
+    const t = await op(pid, { op: "addClip", mediaId: r.media.id, start: a.add_to_timeline_at }, call);
+    return timelineReply(`Motion graphic rendered and placed on the timeline.${fontNote}`, t, pid, call);
+  });
+  tool("import_media_from_url", {
+    title: "Import media from a link",
+    description: "Download a public https image, video or audio file into the project (for example a file produced by an AI image/video generator the user connected). Local and private network addresses are refused; max 2 GB. Only import files the user asked for or that you generated for them.",
+    inputSchema: {
+      url: external_exports.string().url(),
+      name: external_exports.string().trim().max(120).optional().describe("File name to show in the media library"),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const m = await call("POST", `/api/projects/${pid}/media/import-url`, { url: a.url, name: a.name });
+    return text("Downloaded into the project.", compactMedia(m));
   });
   tool("add_background_music", {
     title: "Add background music",
