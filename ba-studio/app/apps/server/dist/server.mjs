@@ -61271,7 +61271,7 @@ import net from "node:net";
 import os from "node:os";
 import path2 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.2.1";
+var APP_VERSION = "0.2.2";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
