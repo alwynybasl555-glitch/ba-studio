@@ -60256,6 +60256,23 @@ function atempoChain(speed) {
   if (Math.abs(s - 1) > 1e-9) out.push(`atempo=${n(s)}`);
   return out;
 }
+function wrapText(text, fontSize, maxWidth) {
+  const charW = (ch) => (/[؀-ۿݐ-ݿﭐ-﻿]/.test(ch) ? 0.48 : /[A-Z0-9MW@%#]/.test(ch) ? 0.66 : 0.55) * fontSize;
+  const width = (s) => Array.from(s).reduce((sum, ch) => sum + charW(ch), 0);
+  return text.split("\n").map((para) => {
+    const lines = [];
+    let line = "";
+    for (const word of para.split(/ +/)) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (line && width(candidate) > maxWidth) {
+        lines.push(line);
+        line = word;
+      } else line = candidate;
+    }
+    lines.push(line);
+    return lines.join("\n");
+  }).join("\n");
+}
 function prepareDrawText(text) {
   const firstStrong = /[A-Za-zÀ-ɏ]|[֐-ࣿיִ-﷿ﹰ-﻿]/.exec(text)?.[0];
   const rtl = firstStrong !== void 0 && /[֐-ࣿיִ-﷿ﹰ-﻿]/.test(firstStrong);
@@ -60350,11 +60367,14 @@ function compileRender({ timeline, media, settings, fonts }) {
       if (clip.type === "text") {
         const tc = clip;
         const file2 = `text_${layer}.txt`;
-        textFiles.push({ name: file2, content: prepareDrawText(tc.text) });
-        const fontPath = tc.font === "thmanyah" ? fonts.thmanyah ?? fonts.arabic : tc.font === "arabic" || hasArabic(tc.text) ? fonts.arabic : fonts[tc.font];
         const size = Math.max(8, Math.round(tc.size * H));
+        const room = 2 * Math.min(tc.x, 1 - tc.x) * W * 0.92;
+        textFiles.push({ name: file2, content: prepareDrawText(wrapText(tc.text, size, Math.max(size * 2, room))) });
+        const fontPath = tc.font === "thmanyah" ? fonts.thmanyah ?? fonts.arabic : tc.font === "arabic" || hasArabic(tc.text) ? fonts.arabic : fonts[tc.font];
         const opts = [
           `textfile=${filterValue(file2)}`,
+          // Literal text: never expand %{...} sequences typed by the user or Claude.
+          "expansion=none",
           `fontfile=${filterValue(fontPath)}`,
           `fontsize=${size}`,
           `fontcolor=0x${tc.color.slice(1)}`,
@@ -60689,6 +60709,11 @@ var MotionSpec = external_exports.object({
   grain: frac.default(0),
   vignette: external_exports.boolean().default(false),
   layers: external_exports.array(MotionLayer).max(40).default([])
+}).superRefine((s, ctx) => {
+  s.layers.forEach((l, i) => {
+    if (l.start >= s.durationSec - 0.05) ctx.addIssue({ code: "custom", path: ["layers", i, "start"], message: `start (${l.start}s) must be before the end of the scene (${s.durationSec}s)` });
+    if (l.end !== void 0 && l.end <= l.start + 0.05) ctx.addIssue({ code: "custom", path: ["layers", i, "end"], message: "end must be after start" });
+  });
 });
 var n2 = (v) => Number(v.toFixed(5)).toString();
 var even2 = (v) => Math.max(2, Math.round(v / 2) * 2);
@@ -60750,7 +60775,7 @@ function compileMotion(specInput, opts) {
   let fileIdx = 0;
   const mediaInput = (mediaId) => {
     const m = opts.media.get(mediaId);
-    if (!m || m.kind === "audio") throw new Error(`Media ${mediaId} is not an image or video in this project.`);
+    if (!m || m.kind === "audio") throw new Error(`Media ${mediaId} is not an image or video in this project (or the file is damaged or still being analysed).`);
     if (m.kind === "image") inputs.push("-loop", "1", "-framerate", n2(fps), "-t", n2(T), "-i", m.path);
     else inputs.push("-stream_loop", "-1", "-t", n2(T), "-i", m.path);
     return { idx: inputIdx++, m };
@@ -60787,9 +60812,11 @@ function compileMotion(specInput, opts) {
     if (layer.type === "text" || layer.type === "counter") {
       const size = Math.max(8, Math.round(layer.size * H));
       const font = filterValue(resolveFont(opts.fonts, layer.font, layer.weight));
+      const wrapped = layer.type === "text" ? wrapText(layer.text, size, Math.max(size * 2, 2 * Math.min(layer.x, 1 - layer.x) * W * 0.92)) : "";
       const base = (file2, extraEnable) => {
         const o = [
           `textfile=${filterValue(file2)}`,
+          "expansion=none",
           `fontfile=${font}`,
           `fontsize=${size}`,
           `fontcolor=${hexColor(layer.color)}`,
@@ -60826,7 +60853,7 @@ function compileMotion(specInput, opts) {
           addText(label, `enable='between(t,${n2(t0)},${n2(t1)})'`);
         }
       } else if (layer.enter === "typewriter" || layer.enter === "words") {
-        const units = layer.enter === "words" ? layer.text.split(/(\s+)/).filter((u) => u.length) : Array.from(layer.text);
+        const units = layer.enter === "words" ? wrapped.split(/(\s+)/).filter((u) => u.length) : Array.from(wrapped);
         const meaningful = layer.enter === "words" ? units.filter((u) => u.trim()).length : units.length;
         const steps = Math.min(meaningful, 80);
         const reveal = Math.min(E - S, Math.max(layer.enterDuration, steps * (layer.enter === "words" ? 0.22 : 0.045)));
@@ -60846,7 +60873,7 @@ function compileMotion(specInput, opts) {
           addText(units.slice(0, end).join(""), `enable='between(t,${n2(t0)},${n2(t1)})'`);
         }
       } else {
-        addText(layer.text);
+        addText(wrapped);
       }
       continue;
     }
@@ -61271,7 +61298,7 @@ import net from "node:net";
 import os from "node:os";
 import path2 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.2.3";
+var APP_VERSION = "0.2.4";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -62433,7 +62460,7 @@ function registerGenerateRoutes(app, s) {
     const fonts = { thmanyah: detectThmanyah(), arabic: base.arabic, sans: base.sans, serif: base.serif, mono: base.mono };
     const media = /* @__PURE__ */ new Map();
     for (const m of s.media.listByProject(id)) {
-      if ((m.kind === "image" || m.kind === "video") && fs10.existsSync(m.path)) media.set(m.id, { id: m.id, path: m.path, kind: m.kind });
+      if ((m.kind === "image" || m.kind === "video") && m.status === "ready" && fs10.existsSync(m.path)) media.set(m.id, { id: m.id, path: m.path, kind: m.kind });
     }
     let compiled;
     try {
@@ -62644,10 +62671,19 @@ var AgentService = class {
     this.events.emit({ type: "agent.log", runId: l.run.id, entry: e });
   }
   async start(input2) {
-    if ([...this.runs.values()].some((l) => l.run.status === "running")) {
+    if (this.starting || [...this.runs.values()].some((l) => l.run.status === "running")) {
       throw new HttpError(409, "agent_busy", "Claude is already working on a request. Wait for it or stop it first.");
     }
     if (input2.mode !== "ideas" && !input2.prompt.trim()) throw new HttpError(400, "empty_prompt", "Write what you want Claude to make.");
+    this.starting = true;
+    try {
+      return await this.launch(input2);
+    } finally {
+      this.starting = false;
+    }
+  }
+  starting = false;
+  async launch(input2) {
     const avail = await this.status(true);
     if (!avail.available || !avail.path) {
       throw new HttpError(424, "claude_missing", "Claude Code was not found on this computer. Install the Claude desktop app or Claude Code and sign in.");
@@ -62795,7 +62831,7 @@ var AgentService = class {
     l.run.status = status;
     l.run.finishedAt = (/* @__PURE__ */ new Date()).toISOString();
     if (error62) l.run.error = error62;
-    this.log(l, { kind: status === "completed" ? "info" : "error", text: status });
+    this.log(l, { kind: "info", text: status });
     this.publish(l.run);
   }
   cancel(id) {
@@ -62985,7 +63021,12 @@ var TimelineService = class {
     const raw = await fsp8.readFile(path11.join(this.backupDir(projectId), name), "utf8").catch(() => {
       throw new HttpError(404, "backup_not_found", "Backup not found.");
     });
-    const data = JSON.parse(raw);
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      throw new HttpError(422, "invalid_backup", "This backup is damaged and cannot be restored.");
+    }
     const parsed = Timeline.safeParse(data.timeline);
     if (!parsed.success) throw new HttpError(422, "invalid_backup", "This backup is damaged and cannot be restored.");
     return this.apply(projectId, { op: "replaceTimeline", timeline: parsed.data, label: `Restore backup \u201C${data.label ?? name}\u201D` });

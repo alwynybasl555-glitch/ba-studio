@@ -37096,6 +37096,11 @@ var MotionSpec = external_exports.object({
   grain: frac.default(0),
   vignette: external_exports.boolean().default(false),
   layers: external_exports.array(MotionLayer).max(40).default([])
+}).superRefine((s, ctx) => {
+  s.layers.forEach((l, i) => {
+    if (l.start >= s.durationSec - 0.05) ctx.addIssue({ code: "custom", path: ["layers", i, "start"], message: `start (${l.start}s) must be before the end of the scene (${s.durationSec}s)` });
+    if (l.end !== void 0 && l.end <= l.start + 0.05) ctx.addIssue({ code: "custom", path: ["layers", i, "end"], message: "end must be after start" });
+  });
 });
 
 // src/format.ts
@@ -37799,7 +37804,12 @@ function registerTools(server, studio) {
     description: "Cancel a queued or running export/preview. The partial file is removed.",
     inputSchema: { render_id: external_exports.string().uuid() }
   }, async (a, _e, call) => {
-    const item = await call("POST", `/api/exports/${a.render_id}/cancel`);
+    await call("POST", `/api/exports/${a.render_id}/cancel`);
+    let item = await call("GET", `/api/exports/${a.render_id}`);
+    for (let i = 0; i < 20 && (item.status === "rendering" || item.status === "queued"); i++) {
+      await sleep(250);
+      item = await call("GET", `/api/exports/${a.render_id}`);
+    }
     return text(`Render is ${item.status}.`, renderSummary(item));
   });
   tool("list_renders", {
