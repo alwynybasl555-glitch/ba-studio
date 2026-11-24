@@ -36813,7 +36813,8 @@ How to work:
 - Before removing material (delete_clip, cut_clip, destructive plans) make sure the user agrees. Everything you do can be undone (undo_edit), and original media files are never modified.
 - Analysis is local and signal-level: detect_scenes (cuts), analyze_audio (loudness, silences), analyze_video (metadata + scenes). There is no visual content understanding yet, so do not claim to have seen what is in a shot.
 - Use generate_preview for a quick exact render the user can watch, and export_video for the final file.
-- Creating without footage: create_motion_graphic renders original motion graphics (titles, intros, animated quotes, stats with counters, lower thirds, end cards, or a stylised version of a project image/video as the background). Build videos from several short scenes, then add_clip them in order and add_transition between them. If the user connected an AI image/video generator, generate there, then bring the file in with import_media_from_url; never claim to generate realistic AI video yourself.
+- Creating without footage: for rich ad-style design (cards, product cut-outs, phone mockups, drawn lines, pops and camera moves) use create_design_clip (HTML/CSS scenes); for simple titles and text animation create_motion_graphic is faster. create_motion_graphic renders original motion graphics (titles, intros, animated quotes, stats with counters, lower thirds, end cards, or a stylised version of a project image/video as the background). Build videos from several short scenes, then add_clip them in order and add_transition between them. If the user connected an AI image/video generator, generate there, then bring the file in with import_media_from_url; never claim to generate realistic AI video yourself.
+- When the user wants a design "like" a video (a reference), import it, call analyze_reference to see its stills and measurements, then follow its system (palette, element types, layout, pacing, amount of motion) with new content of their own.
 - Design with a human touch: a restrained palette, editorial typography (Thmanyah for Arabic), clear hierarchy, real margins, staggered timing, subtle grain. Avoid generic AI looks (neon rainbow gradients, glowing everything, centred clich\xE9s). This is about craft, never about hiding that AI was used if the user or a platform asks.
 - Not available yet (do not pretend to do these): transcription/subtitles, colour grading, automatic highlight detection, beat sync.`;
 
@@ -37647,6 +37648,49 @@ function registerTools(server, studio) {
     if (a.add_to_timeline_at === void 0) return text(`Motion graphic rendered and added to media.${fontNote}`, compactMedia(r.media));
     const t = await op(pid, { op: "addClip", mediaId: r.media.id, start: a.add_to_timeline_at }, call);
     return timelineReply(`Motion graphic rendered and placed on the timeline.${fontNote}`, t, pid, call);
+  });
+  tool("create_design_clip", {
+    title: "Create design clip (HTML)",
+    description: `Render a richly designed animated scene written as HTML + CSS, recorded frame by frame in a local headless browser (no network). Use this for ad-style motion design: rounded cards with shadows, cut-out product images, phone mockups (CSS), hand-drawn SVG squiggles/starbursts/dotted connectors, pop/scale/rotate/slide animations, progress bars, camera-like moves (transform on a wrapper). The canvas is exactly the project size (use px or vw/vh; body is RTL Arabic). Animate ONLY with CSS @keyframes / transitions or the Web Animations API (they are paused and set to each frame's time; Date.now() and setTimeout do not advance). For JS-driven drawing, listen to window 'ba-frame' events (detail = seconds). Fonts: 'Thmanyah' (if installed), 'Amiri', 'Aref Ruqaa' (titles). Add class 'ba-paper' for paper grain. Project images/videos: src="{{media:<media_id>}}". No external URLs (they are blocked). Follow the motion-design skill for the human-touch style. Returns a media item; place it with add_clip or add_to_timeline_at.`,
+    inputSchema: {
+      html: external_exports.string().min(1).max(4e5).describe("Scene HTML: <style> plus markup (a full document is also accepted)"),
+      duration_sec: external_exports.number().min(0.5).max(60),
+      name: external_exports.string().trim().min(1).max(80).optional(),
+      add_to_timeline_at: seconds("If given, also place the clip on the timeline at this time").optional(),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/design`, { html: a.html, durationSec: a.duration_sec, name: a.name });
+    const warn = r.warnings.length ? ` Warnings: ${r.warnings.join("; ")}` : "";
+    if (a.add_to_timeline_at === void 0) return text(`Design clip rendered and added to media.${warn}`, compactMedia(r.media));
+    const t = await op(pid, { op: "addClip", mediaId: r.media.id, start: a.add_to_timeline_at }, call);
+    return timelineReply(`Design clip rendered and placed on the timeline.${warn}`, t, pid, call);
+  });
+  tool("analyze_reference", {
+    title: "Analyse a reference video's design",
+    description: "Study a video in the project as a style reference: returns its cuts (count, shot lengths), dominant colour palette with shares, lightness/warmth/saturation, how much the picture moves, audio rhythm (events per minute), and one still per shot as IMAGES you can look at. Use before designing 'in the style of' a clip: copy its system (palette, typography feel, element types, layout, pacing, motion amount), never its content, logos or people.",
+    inputSchema: { media_id: external_exports.string().uuid().describe("A video already imported into the project") }
+  }, async (a, _e, call) => {
+    const r = await call("POST", `/api/media/${a.media_id}/reference?inline=1`);
+    const summary = {
+      name: r.name,
+      durationSec: r.durationSec,
+      aspect: r.aspect,
+      cuts: r.cuts,
+      palette: r.palette,
+      tone: r.tone,
+      movingShare: r.motion,
+      audio: r.audio,
+      frameTimes: r.frames.map((f) => f.time)
+    };
+    return {
+      content: [
+        { type: "text", text: `Reference analysis of \u201C${r.name}\u201D. Stills follow in time order.
+${JSON.stringify(summary)}` },
+        ...r.frames.filter((f) => f.base64).map((f) => ({ type: "image", data: f.base64, mimeType: "image/jpeg" }))
+      ]
+    };
   });
   tool("import_media_from_url", {
     title: "Import media from a link",
