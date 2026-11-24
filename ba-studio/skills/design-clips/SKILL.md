@@ -1,6 +1,6 @@
 ---
 name: design-clips
-description: Build ad-quality animated design scenes in Ba Studio with create_design_clip (HTML/CSS recorded to video) — cards, product cut-outs, phone mockups, hand-drawn lines and starbursts, pop and slide motion, in an editorial human style. Use for promos, app/product ads, explainers, "make it look like this reference" requests.
+description: Build ad-quality animated design scenes in Ba Studio with create_design_clip (HTML/CSS recorded to video) — cards, product cut-outs, phone mockups, hand-drawn lines and starbursts, refined reveal and slide motion, in an editorial, adult, never-childish style. Use for promos, app/product ads, explainers, "make it look like this reference" requests.
 ---
 
 # Design clips (HTML → video)
@@ -8,6 +8,15 @@ description: Build ad-quality animated design scenes in Ba Studio with create_de
 `create_design_clip` records an HTML/CSS page frame by frame. Anything a web page can draw, you can animate. The page has **no internet**, and **time is controlled**: only CSS animations/transitions and the Web Animations API move; `setTimeout`/`Date.now` do not advance. For JS drawing, listen to `window.addEventListener("ba-frame", e => …e.detail…)`.
 
 ## Workflow
+0. **Ask before designing (the user wants this every time).** Unless the user already told you, ask in **one short message** with options they can answer quickly:
+   - **Style:** فخم وأنيق / تحريري ورقي / جريء وعصري / بسيط ونظيف / خلّه عليّ
+   - **Colours:** their brand colours, one of your suggested palettes, or "خلّه عليّ"
+   - **Title font:** عارف رقعة / أميري / ثمانية / خلّه عليّ
+   - **Pace:** هادئ / متوسط / حيوي
+   - **Length:** in seconds
+   - **Anything to include or avoid**
+   
+   Then follow their answers strictly; they override the house style. If a request from the studio panel already contains a USER DESIGN BRIEF, do not ask again.
 1. **Brief:** brand colours, logo, product images (from the project: `src="{{media:<id>}}"`), what each scene says. If the user gave a reference video, copy its *system* (palette, type, element style, rhythm), not its content.
 2. **Storyboard:** 5–8 scenes of 2.5–5 s, one idea each. Tell the user how many before rendering (each scene costs tokens).
 3. **First scene:** render it alone, preview it, and adjust; only then make the rest **reusing the same CSS** (copy the style block) so the whole ad is consistent.
@@ -16,9 +25,9 @@ description: Build ad-quality animated design scenes in Ba Studio with create_de
 ## House style: the same every time, but never identical
 This is the user's chosen house style for all designs. Keep its DNA: paper grain, one strong accent, editorial Arabic titles, hand-drawn black details, and real product images. **But no two videos may look alike.** Before designing, pick a fresh combination and say it in one line:
 - **Palette** (one): mustard on paper · brick on warm sand · cobalt on stone · sage on cream · coral + deep teal · teal on off-white · night version (dark ink background, paper-coloured cards).
-- **Layouts** (3–4, never the same layout in two consecutive scenes): central hero with orbiting details · asymmetric card grid · split screen · winding path or timeline · tilted polaroids with tape · giant stat · revealing list · macro product with callout · phone held by a hand · before and after.
-- **Motion** (2–3): pop with overshoot · mask wipes · parallax pan · cascade · card flips · lines that lead the eye · elastic drop · slide and settle · zoom-through between scenes · typewriter with underline.
-- **Details** (2): starbursts · wavy connectors · dotted arrows · circled word · tape and sticky notes · stamps and badges · sparkles · price tags.
+- **Layouts** (3–4, never the same layout in two consecutive scenes): central hero with orbiting details · asymmetric card grid · split screen · winding path or timeline · stacked tilted photo prints · giant stat · revealing list · macro product with callout · phone held by a hand · before and after.
+- **Motion** (2–3): soft scale-in with subtle overshoot · mask wipes · parallax pan · cascade · card flips · lines that lead the eye · controlled ease-out settle · slide and settle · zoom-through between scenes · title reveal with a growing hairline.
+- **Details** (2): starbursts · wavy connectors · dotted arrows · circled word · thin frame lines and hairline rules · small numbered labels · fine line-art that draws on · elegant callout lines.
 - Vary where titles sit and how long scenes last. If the project already has design clips, choose a different palette and layouts from theirs.
 
 ## Adjusting after a request
@@ -29,8 +38,10 @@ The user can reply in the same conversation to change the result. Change only wh
 - **Type:** titles `font-family:"Thmanyah","Amiri"; font-weight:900` (or `"Aref Ruqaa"` for a calligraphic accent word), size 5.5–7% of height. Body 3–3.6%. Right-aligned (RTL) or centred, with lots of space around.
 - **Objects:** rounded cards (`border-radius:28px`) in the accent colour holding a product photo or a CSS phone; soft long shadows (`box-shadow:0 30px 60px -20px rgba(0,0,0,.35)`).
 - **Hand-drawn details** (SVG, black, slightly imperfect): squiggly connector lines, small starbursts on card corners, dotted lines linking items. Draw lines on with `stroke-dasharray` + animated `stroke-dashoffset`.
-- **Motion:** elements **pop** (scale .6→1.06→1 with `cubic-bezier(.2,1.4,.4,1)`), **slide** in from off-screen, start **0.12–0.3 s apart**. Add one slow "camera" move by animating a wrapper's `transform` (a slight zoom or pan) through the whole scene. End each scene still, for 0.4 s, before the cut.
+- **Motion:** elements **scale in softly** (scale .92→1.02→1 with `cubic-bezier(.2,1.15,.4,1)`), **slide** in from off-screen, start **0.12–0.3 s apart**. Add one slow "camera" move by animating a wrapper's `transform` (a slight zoom or pan) through the whole scene. End each scene still, for 0.4 s, before the cut.
 - **Avoid:** neon gradients, glow, emoji, generic stock phrases, and everything appearing at once.
+- **Never childish (the user insists):** no cartoon mascots, comic bubbles, stickers, confetti, rainbow colours, toy-like bouncing, or bubbly "kids app" shapes. The work must look adult, premium and editorial. Go playful only on an explicit request, and then tastefully.
+- **Never put `letter-spacing` on Arabic:** it breaks the joined letters. Use kashida (ـ) for width, and letter-spacing only on Latin.
 
 ## Template scene (copy, then change the content)
 ```html
@@ -45,9 +56,9 @@ The user can reply in the same conversation to change the result. Change only wh
   @keyframes up{from{opacity:0;transform:translateY(4vh)}to{opacity:1;transform:none}}
   .card{position:absolute;width:34vw;height:34vw;border-radius:28px;background:var(--accent);
         box-shadow:0 30px 60px -20px rgba(0,0,0,.35);display:grid;place-items:center;
-        animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
+        animation:pop .7s cubic-bezier(.2,1.15,.4,1) both}
   .card img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(0,0,0,.25))}
-  @keyframes pop{from{opacity:0;transform:scale(.6) rotate(-6deg)}to{opacity:1;transform:none}}
+  @keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
   .phone{position:absolute;width:30vw;aspect-ratio:9/19;border-radius:4.2vw;background:#111;padding:1.1vw;
          box-shadow:0 40px 70px -25px rgba(0,0,0,.45);animation:slide .8s cubic-bezier(.2,.9,.2,1) both}
   .phone .screen{width:100%;height:100%;border-radius:3.2vw;background:#fff;overflow:hidden}
@@ -55,7 +66,7 @@ The user can reply in the same conversation to change the result. Change only wh
   .line{fill:none;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-dasharray:1400;
         animation:draw 1.2s ease .5s both}
   @keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0}}
-  .star{position:absolute;width:7vw;animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+  .star{position:absolute;width:7vw;animation:pop .5s cubic-bezier(.2,1.15,.4,1) both}
 </style>
 <div class="stage ba-paper"><div class="cam">
   <h1>كل طلباتك <em>بمكان واحد</em></h1>
@@ -72,6 +83,13 @@ The user can reply in the same conversation to change the result. Change only wh
 Use `vw`/`vh` so the same scene works for vertical, square and landscape projects.
 
 ## Assets
+- **Pictures follow the user's choice, strictly:**
+  - **صور حقيقية (real photos):** `search_photos` (search in English with concrete words), look at the previews, pick photos that match the brand and mood, `import_photo`, then use `{{media:<id>}}`. Never draw or fake a photo with shapes or emoji. Skip photos with other brands' logos, watermarks, readable text or recognisable faces, and prefer clean, professional shots. Free Openverse photos vary in quality: if none look professional enough, say so and suggest adding a Pexels key in Settings. List the credits that need attribution in your final message.
+  - **صوري أنا (their photos):** only images and videos already in the project.
+  - **Claude يرسمها (drawn):** your own refined SVG line-art or flat illustration, no stock photos.
+  - **بدون صور (no pictures):** type, colour, shape and motion only.
+  - If they did not say, ask; in the studio panel the brief already tells you.
+- **Using photos well:** `object-fit: cover` inside rounded cards, a subtle shadow, a slow Ken Burns move (scale 1.08→1), a duotone or warm grade with CSS filters only when it fits the palette, and never stretch them.
 - **Product photos:** ask the user to import them (with transparent backgrounds when possible). A real photo beats any drawing.
 - **App screens:** build them in CSS inside `.screen` (headers, list rows, numbers, mini bar charts) using the brand colours.
 - **AI images:** if an image-generation tool is connected, generate the cut-outs there, then use `import_media_from_url`.

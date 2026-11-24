@@ -1,7 +1,7 @@
 {
   "name": "ba-studio",
   "displayName": "Ba Studio",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "استوديو مونتاج فيديو عربي يعمل على جهازك، ويخلي Claude يعدّل الفيديو معك: قص، ترتيب، نصوص عربية، موسيقى، انتقالات، وتصدير.",
   "author": { "name": "Ba Studio" },
   "license": "Apache-2.0",

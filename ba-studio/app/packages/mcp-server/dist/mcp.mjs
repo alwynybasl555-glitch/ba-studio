@@ -36814,6 +36814,9 @@ How to work:
 - Analysis is local and signal-level: detect_scenes (cuts), analyze_audio (loudness, silences), analyze_video (metadata + scenes). There is no visual content understanding yet, so do not claim to have seen what is in a shot.
 - Use generate_preview for a quick exact render the user can watch, and export_video for the final file.
 - Creating without footage: for rich ad-style design (cards, product cut-outs, phone mockups, drawn lines, pops and camera moves) use create_design_clip (HTML/CSS scenes); for simple titles and text animation create_motion_graphic is faster. create_motion_graphic renders original motion graphics (titles, intros, animated quotes, stats with counters, lower thirds, end cards, or a stylised version of a project image/video as the background). Build videos from several short scenes, then add_clip them in order and add_transition between them. If the user connected an AI image/video generator, generate there, then bring the file in with import_media_from_url; never claim to generate realistic AI video yourself.
+- Before creating any design or animation, ask the user how they want it (style, colours, title font, pace, length, anything to avoid) in one short message, unless they already said; then follow their answers. Keep everything adult and premium: never childish (no cartoon mascots, comic bubbles, emoji, toy-like bouncing) unless they explicitly ask.
+- Pictures: follow the user's choice exactly. Real photos = search_photos (look at the previews) then import_photo, never drawn fakes; their own photos = only project media; drawn = your own SVG illustration. Mention photo credits that need attribution.
+- Animation: animated SVG illustrations (characters that wave/blink/walk, objects with squash and stretch, kinetic type) and imported Lottie animations (list_lotties, data-lottie) are made with create_design_clip; follow the animation skill. Flat 2D only: no lip-synced cartoon films.
 - When the user wants a design "like" a video (a reference), import it, call analyze_reference to see its stills and measurements, then follow its system (palette, element types, layout, pacing, amount of motion) with new content of their own.
 - Design with a human touch: a restrained palette, editorial typography (Thmanyah for Arabic), clear hierarchy, real margins, staggered timing, subtle grain. Avoid generic AI looks (neon rainbow gradients, glowing everything, centred clich\xE9s). This is about craft, never about hiding that AI was used if the user or a platform asks.
 - Not available yet (do not pretend to do these): transcription/subtitles, colour grading, automatic highlight detection, beat sync.`;
@@ -37651,7 +37654,7 @@ function registerTools(server, studio) {
   });
   tool("create_design_clip", {
     title: "Create design clip (HTML)",
-    description: `Render a richly designed animated scene written as HTML + CSS, recorded frame by frame in a local headless browser (no network). Use this for ad-style motion design: rounded cards with shadows, cut-out product images, phone mockups (CSS), hand-drawn SVG squiggles/starbursts/dotted connectors, pop/scale/rotate/slide animations, progress bars, camera-like moves (transform on a wrapper). The canvas is exactly the project size (use px or vw/vh; body is RTL Arabic). Animate ONLY with CSS @keyframes / transitions or the Web Animations API (they are paused and set to each frame's time; Date.now() and setTimeout do not advance). For JS-driven drawing, listen to window 'ba-frame' events (detail = seconds). Fonts: 'Thmanyah' (if installed), 'Amiri', 'Aref Ruqaa' (titles). Add class 'ba-paper' for paper grain. Project images/videos: src="{{media:<media_id>}}". No external URLs (they are blocked). Follow the motion-design skill for the human-touch style. Returns a media item; place it with add_clip or add_to_timeline_at.`,
+    description: `Render a richly designed animated scene written as HTML + CSS, recorded frame by frame in a local headless browser (no network). Use this for ad-style motion design: rounded cards with shadows, cut-out product images, phone mockups (CSS), hand-drawn SVG squiggles/starbursts/dotted connectors, pop/scale/rotate/slide animations, progress bars, camera-like moves (transform on a wrapper). The canvas is exactly the project size (use px or vw/vh; body is RTL Arabic). Animate ONLY with CSS @keyframes / transitions or the Web Animations API (they are paused and set to each frame's time; Date.now() and setTimeout do not advance). For JS-driven drawing, listen to window 'ba-frame' events (detail = seconds). Fonts: 'Thmanyah' (if installed), 'Amiri', 'Aref Ruqaa' (titles). Add class 'ba-paper' for paper grain. Project images/videos: src="{{media:<media_id>}}". Imported Lottie animations: <div data-lottie="<lottie_id>" style="position:absolute;...;width:..;height:.."></div> (optional data-start, data-speed, data-loop="false", data-fit="cover"; ids from list_lotties). Animated SVG illustration (characters, objects) works too: follow the animation skill. No external URLs (they are blocked). Follow the motion-design skill for the human-touch style. Returns a media item; place it with add_clip or add_to_timeline_at.`,
     inputSchema: {
       html: external_exports.string().min(1).max(4e5).describe("Scene HTML: <style> plus markup (a full document is also accepted)"),
       duration_sec: external_exports.number().min(0.5).max(60),
@@ -37691,6 +37694,54 @@ ${JSON.stringify(summary)}` },
         ...r.frames.filter((f) => f.base64).map((f) => ({ type: "image", data: f.base64, mimeType: "image/jpeg" }))
       ]
     };
+  });
+  tool("search_photos", {
+    title: "Search real photos",
+    description: "Find REAL photographs for a design (free libraries: Pexels when the user set a key, otherwise Openverse, openly licensed for commercial use). Returns the results WITH preview images so you can look at them and choose. Search in English with concrete words (e.g. 'espresso cup on marble', 'riyadh skyline night'). Then call import_photo with the chosen id. Never draw or fake a photo when the user asked for real photos. Skip photos that show other companies' logos or brands, readable text, watermarks, or recognisable people's faces (unless the user asked), and prefer clean, well-lit, professional-looking shots that fit the palette.",
+    inputSchema: {
+      query: external_exports.string().trim().min(1).max(120),
+      count: external_exports.number().int().min(1).max(12).default(8),
+      orientation: external_exports.enum(["portrait", "landscape", "square"]).optional().describe("Match the project: portrait for 9:16")
+    },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const params = new URLSearchParams({ q: a.query, count: String(a.count), inline: "1", ...a.orientation ? { orientation: a.orientation } : {} });
+    const r = await call("GET", `/api/stock/photos?${params}`);
+    if (!r.photos.length) return text(`No photos found on ${r.provider} for \u201C${a.query}\u201D. Try other words (in English).`);
+    const content = [
+      { type: "text", text: `${r.photos.length} photos from ${r.provider}. Each preview below follows its line here, in the same order.
+${r.photos.map((p, i) => `${i + 1}. id=${p.id} \xB7 ${p.width}\xD7${p.height} \xB7 \u201C${p.title}\u201D by ${p.creator} \xB7 ${p.license}${p.attribution ? " (credit needed)" : ""}`).join("\n")}` }
+    ];
+    for (const p of r.photos) if (p.thumb) content.push({ type: "image", data: p.thumb.data, mimeType: p.thumb.mimeType });
+    return { content };
+  });
+  tool("import_photo", {
+    title: "Import a real photo",
+    description: "Download a photo from the last search_photos results into the project (by its id). Returns the media item to use in designs with {{media:<id>}} and its credit line; mention credits that need attribution in your final message.",
+    inputSchema: { photo_id: external_exports.string().min(3).max(120), name: external_exports.string().trim().max(60).optional(), project_id: projectIdArg }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/stock/import`, { photoId: a.photo_id, name: a.name });
+    return text(`Photo imported.${r.credit.attribution ? ` Credit: ${r.credit.attribution}` : ` (${r.credit.license}, no credit required)`}`, compactMedia(r.media));
+  });
+  tool("list_lotties", {
+    title: "List Lottie animations",
+    description: "Lottie animations imported into the project (id, name, size, fps, duration). Use their ids in create_design_clip with data-lottie.",
+    inputSchema: { project_id: projectIdArg },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const list = await call("GET", `/api/projects/${pid}/lottie`);
+    return text(list.length ? `${list.length} Lottie animation(s).` : "No Lottie animations imported yet. The user can upload .json files in \xAB\u0627\u0637\u0644\u0628 \u0645\u0646 Claude\xBB \u2190 \u0623\u0646\u064A\u0645\u064A\u0634\u0646 Lottie, or give you a public https link for import_lottie_from_url.", list);
+  });
+  tool("import_lottie_from_url", {
+    title: "Import a Lottie animation from a link",
+    description: "Download a public https Lottie JSON (Bodymovin, e.g. a LottieFiles JSON URL) into the project. Only import animations the user asked for. .lottie (zipped) files are not supported.",
+    inputSchema: { url: external_exports.string().url(), name: external_exports.string().trim().max(80).optional(), project_id: projectIdArg }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const l = await call("POST", `/api/projects/${pid}/lottie/import-url`, { url: a.url, name: a.name });
+    return text(`Imported Lottie \u201C${l.name}\u201D (${l.durationSec}s). Use data-lottie="${l.id}".`, l);
   });
   tool("import_media_from_url", {
     title: "Import media from a link",

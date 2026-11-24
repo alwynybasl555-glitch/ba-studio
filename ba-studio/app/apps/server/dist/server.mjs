@@ -6121,32 +6121,32 @@ var require_err_helpers = __commonJS({
         return isErrorLike(cause) ? cause : void 0;
       }
     };
-    var _stackWithCauses = (err, seen) => {
+    var _stackWithCauses = (err, seen2) => {
       if (!isErrorLike(err)) return "";
       const stack = err.stack || "";
-      if (seen.has(err)) {
+      if (seen2.has(err)) {
         return stack + "\ncauses have become circular...";
       }
       const cause = getErrorCause(err);
       if (cause) {
-        seen.add(err);
-        return stack + "\ncaused by: " + _stackWithCauses(cause, seen);
+        seen2.add(err);
+        return stack + "\ncaused by: " + _stackWithCauses(cause, seen2);
       } else {
         return stack;
       }
     };
     var stackWithCauses = (err) => _stackWithCauses(err, /* @__PURE__ */ new Set());
-    var _messageWithCauses = (err, seen, skip) => {
+    var _messageWithCauses = (err, seen2, skip) => {
       if (!isErrorLike(err)) return "";
       const message = skip ? "" : err.message || "";
-      if (seen.has(err)) {
+      if (seen2.has(err)) {
         return message + ": ...";
       }
       const cause = getErrorCause(err);
       if (cause) {
-        seen.add(err);
+        seen2.add(err);
         const skipIfVErrorStyleCause = typeof err.cause === "function";
-        return message + (skipIfVErrorStyleCause ? "" : ": ") + _messageWithCauses(cause, seen, skipIfVErrorStyleCause);
+        return message + (skipIfVErrorStyleCause ? "" : ": ") + _messageWithCauses(cause, seen2, skipIfVErrorStyleCause);
       } else {
         return message;
       }
@@ -6165,7 +6165,7 @@ var require_err_helpers = __commonJS({
 var require_err_proto = __commonJS({
   "../../node_modules/pino-std-serializers/lib/err-proto.js"(exports, module) {
     "use strict";
-    var seen = Symbol("circular-ref-tag");
+    var seen2 = Symbol("circular-ref-tag");
     var rawSymbol = Symbol("pino-raw-err-ref");
     var pinoErrProto = Object.create({}, {
       type: {
@@ -6205,7 +6205,7 @@ var require_err_proto = __commonJS({
     module.exports = {
       pinoErrProto,
       pinoErrorSymbols: {
-        seen,
+        seen: seen2,
         rawSymbol
       }
     };
@@ -6219,13 +6219,13 @@ var require_err = __commonJS({
     module.exports = errSerializer;
     var { messageWithCauses, stackWithCauses, isErrorLike } = require_err_helpers();
     var { pinoErrProto, pinoErrorSymbols } = require_err_proto();
-    var { seen } = pinoErrorSymbols;
+    var { seen: seen2 } = pinoErrorSymbols;
     var { toString } = Object.prototype;
     function errSerializer(err) {
       if (!isErrorLike(err)) {
         return err;
       }
-      err[seen] = void 0;
+      err[seen2] = void 0;
       const _err = Object.create(pinoErrProto);
       _err.type = toString.call(err.constructor) === "[object Function]" ? err.constructor.name : err.name;
       _err.message = messageWithCauses(err);
@@ -6237,7 +6237,7 @@ var require_err = __commonJS({
         if (_err[key] === void 0) {
           const val = err[key];
           if (isErrorLike(val)) {
-            if (key !== "cause" && !Object.prototype.hasOwnProperty.call(val, seen)) {
+            if (key !== "cause" && !Object.prototype.hasOwnProperty.call(val, seen2)) {
               _err[key] = errSerializer(val);
             }
           } else {
@@ -6245,7 +6245,7 @@ var require_err = __commonJS({
           }
         }
       }
-      delete err[seen];
+      delete err[seen2];
       _err.raw = err;
       return _err;
     }
@@ -6259,13 +6259,13 @@ var require_err_with_cause = __commonJS({
     module.exports = errWithCauseSerializer;
     var { isErrorLike } = require_err_helpers();
     var { pinoErrProto, pinoErrorSymbols } = require_err_proto();
-    var { seen } = pinoErrorSymbols;
+    var { seen: seen2 } = pinoErrorSymbols;
     var { toString } = Object.prototype;
     function errWithCauseSerializer(err) {
       if (!isErrorLike(err)) {
         return err;
       }
-      err[seen] = void 0;
+      err[seen2] = void 0;
       const _err = Object.create(pinoErrProto);
       _err.type = toString.call(err.constructor) === "[object Function]" ? err.constructor.name : err.name;
       _err.message = err.message;
@@ -6273,14 +6273,14 @@ var require_err_with_cause = __commonJS({
       if (Array.isArray(err.errors)) {
         _err.aggregateErrors = err.errors.map((err2) => errWithCauseSerializer(err2));
       }
-      if (isErrorLike(err.cause) && !Object.prototype.hasOwnProperty.call(err.cause, seen)) {
+      if (isErrorLike(err.cause) && !Object.prototype.hasOwnProperty.call(err.cause, seen2)) {
         _err.cause = errWithCauseSerializer(err.cause);
       }
       for (const key in err) {
         if (_err[key] === void 0) {
           const val = err[key];
           if (isErrorLike(val)) {
-            if (!Object.prototype.hasOwnProperty.call(val, seen)) {
+            if (!Object.prototype.hasOwnProperty.call(val, seen2)) {
               _err[key] = errWithCauseSerializer(val);
             }
           } else {
@@ -6288,7 +6288,7 @@ var require_err_with_cause = __commonJS({
           }
         }
       }
-      delete err[seen];
+      delete err[seen2];
       _err.raw = err;
       return _err;
     }
@@ -6367,8 +6367,8 @@ var require_req = __commonJS({
       if (req.originalUrl) {
         _req.url = req.originalUrl;
       } else {
-        const path18 = req.path;
-        _req.url = typeof path18 === "string" ? path18 : req.url ? req.url.path || req.url : void 0;
+        const path20 = req.path;
+        _req.url = typeof path20 === "string" ? path20 : req.url ? req.url.path || req.url : void 0;
       }
       if (req.query) {
         _req.query = req.query;
@@ -6538,14 +6538,14 @@ var require_redact = __commonJS({
       }
       return obj;
     }
-    function parsePath(path18) {
+    function parsePath(path20) {
       const parts = [];
       let current = "";
       let inBrackets = false;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path18.length; i++) {
-        const char = path18[i];
+      for (let i = 0; i < path20.length; i++) {
+        const char = path20[i];
         if (!inBrackets && char === ".") {
           if (current) {
             parts.push(current);
@@ -6676,10 +6676,10 @@ var require_redact = __commonJS({
       return current;
     }
     function redactPaths(obj, paths, censor, remove = false) {
-      for (const path18 of paths) {
-        const parts = parsePath(path18);
+      for (const path20 of paths) {
+        const parts = parsePath(path20);
         if (parts.includes("*")) {
-          redactWildcardPath(obj, parts, censor, path18, remove);
+          redactWildcardPath(obj, parts, censor, path20, remove);
         } else {
           if (remove) {
             removeKey(obj, parts);
@@ -6764,8 +6764,8 @@ var require_redact = __commonJS({
           }
         } else {
           if (afterWildcard.includes("*")) {
-            const wrappedCensor = typeof censor === "function" ? (value, path18) => {
-              const fullPath = [...pathArray.slice(0, pathLength), ...path18];
+            const wrappedCensor = typeof censor === "function" ? (value, path20) => {
+              const fullPath = [...pathArray.slice(0, pathLength), ...path20];
               return censor(value, fullPath);
             } : censor;
             redactWildcardPath(current, afterWildcard, wrappedCensor, originalPath, remove);
@@ -6800,8 +6800,8 @@ var require_redact = __commonJS({
         return null;
       }
       const pathStructure = /* @__PURE__ */ new Map();
-      for (const path18 of pathsToClone) {
-        const parts = parsePath(path18);
+      for (const path20 of pathsToClone) {
+        const parts = parsePath(path20);
         let current = pathStructure;
         for (let i = 0; i < parts.length; i++) {
           const part = parts[i];
@@ -6853,24 +6853,24 @@ var require_redact = __commonJS({
       }
       return cloneSelectively(obj, pathStructure);
     }
-    function validatePath(path18) {
-      if (typeof path18 !== "string") {
+    function validatePath(path20) {
+      if (typeof path20 !== "string") {
         throw new Error("Paths must be (non-empty) strings");
       }
-      if (path18 === "") {
+      if (path20 === "") {
         throw new Error("Invalid redaction path ()");
       }
-      if (path18.includes("..")) {
-        throw new Error(`Invalid redaction path (${path18})`);
+      if (path20.includes("..")) {
+        throw new Error(`Invalid redaction path (${path20})`);
       }
-      if (path18.includes(",")) {
-        throw new Error(`Invalid redaction path (${path18})`);
+      if (path20.includes(",")) {
+        throw new Error(`Invalid redaction path (${path20})`);
       }
       let bracketCount = 0;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path18.length; i++) {
-        const char = path18[i];
+      for (let i = 0; i < path20.length; i++) {
+        const char = path20[i];
         if ((char === '"' || char === "'") && bracketCount > 0) {
           if (!inQuotes) {
             inQuotes = true;
@@ -6884,20 +6884,20 @@ var require_redact = __commonJS({
         } else if (char === "]" && !inQuotes) {
           bracketCount--;
           if (bracketCount < 0) {
-            throw new Error(`Invalid redaction path (${path18})`);
+            throw new Error(`Invalid redaction path (${path20})`);
           }
         }
       }
       if (bracketCount !== 0) {
-        throw new Error(`Invalid redaction path (${path18})`);
+        throw new Error(`Invalid redaction path (${path20})`);
       }
     }
     function validatePaths(paths) {
       if (!Array.isArray(paths)) {
         throw new TypeError("paths must be an array");
       }
-      for (const path18 of paths) {
-        validatePath(path18);
+      for (const path20 of paths) {
+        validatePath(path20);
       }
     }
     function slowRedact(options = {}) {
@@ -7067,8 +7067,8 @@ var require_redaction = __commonJS({
         if (shape[k] === null) {
           o[k] = (value) => topCensor(value, [k]);
         } else {
-          const wrappedCensor = typeof censor === "function" ? (value, path18) => {
-            return censor(value, [k, ...path18]);
+          const wrappedCensor = typeof censor === "function" ? (value, path20) => {
+            return censor(value, [k, ...path20]);
           } : censor;
           o[k] = Redact({
             paths: shape[k],
@@ -7286,10 +7286,10 @@ var require_atomic_sleep = __commonJS({
 var require_sonic_boom = __commonJS({
   "../../node_modules/sonic-boom/index.js"(exports, module) {
     "use strict";
-    var fs16 = __require("fs");
+    var fs18 = __require("fs");
     var EventEmitter = __require("events");
     var inherits = __require("util").inherits;
-    var path18 = __require("path");
+    var path20 = __require("path");
     var sleep = require_atomic_sleep();
     var assert2 = __require("assert");
     var BUSY_WRITE_TIMEOUT = 100;
@@ -7343,20 +7343,20 @@ var require_sonic_boom = __commonJS({
       const mode = sonic.mode;
       if (sonic.sync) {
         try {
-          if (sonic.mkdir) fs16.mkdirSync(path18.dirname(file2), { recursive: true });
-          const fd = fs16.openSync(file2, flags, mode);
+          if (sonic.mkdir) fs18.mkdirSync(path20.dirname(file2), { recursive: true });
+          const fd = fs18.openSync(file2, flags, mode);
           fileOpened(null, fd);
         } catch (err) {
           fileOpened(err);
           throw err;
         }
       } else if (sonic.mkdir) {
-        fs16.mkdir(path18.dirname(file2), { recursive: true }, (err) => {
+        fs18.mkdir(path20.dirname(file2), { recursive: true }, (err) => {
           if (err) return fileOpened(err);
-          fs16.open(file2, flags, mode, fileOpened);
+          fs18.open(file2, flags, mode, fileOpened);
         });
       } else {
-        fs16.open(file2, flags, mode, fileOpened);
+        fs18.open(file2, flags, mode, fileOpened);
       }
     }
     function SonicBoom(opts) {
@@ -7397,8 +7397,8 @@ var require_sonic_boom = __commonJS({
         this.flush = flushBuffer;
         this.flushSync = flushBufferSync;
         this._actualWrite = actualWriteBuffer;
-        fsWriteSync = () => fs16.writeSync(this.fd, this._writingBuf);
-        fsWrite = () => fs16.write(this.fd, this._writingBuf, this.release);
+        fsWriteSync = () => fs18.writeSync(this.fd, this._writingBuf);
+        fsWrite = () => fs18.write(this.fd, this._writingBuf, this.release);
       } else if (contentMode === void 0 || contentMode === kContentModeUtf8) {
         this._writingBuf = "";
         this.write = write;
@@ -7407,15 +7407,15 @@ var require_sonic_boom = __commonJS({
         this._actualWrite = actualWrite;
         fsWriteSync = () => {
           if (Buffer.isBuffer(this._writingBuf)) {
-            return fs16.writeSync(this.fd, this._writingBuf);
+            return fs18.writeSync(this.fd, this._writingBuf);
           }
-          return fs16.writeSync(this.fd, this._writingBuf, "utf8");
+          return fs18.writeSync(this.fd, this._writingBuf, "utf8");
         };
         fsWrite = () => {
           if (Buffer.isBuffer(this._writingBuf)) {
-            return fs16.write(this.fd, this._writingBuf, this.release);
+            return fs18.write(this.fd, this._writingBuf, this.release);
           }
-          return fs16.write(this.fd, this._writingBuf, "utf8", this.release);
+          return fs18.write(this.fd, this._writingBuf, "utf8", this.release);
         };
       } else {
         throw new Error(`SonicBoom supports "${kContentModeUtf8}" and "${kContentModeBuffer}", but passed ${contentMode}`);
@@ -7472,7 +7472,7 @@ var require_sonic_boom = __commonJS({
           }
         }
         if (this._fsync) {
-          fs16.fsyncSync(this.fd);
+          fs18.fsyncSync(this.fd);
         }
         const len = this._len;
         if (this._reopening) {
@@ -7586,7 +7586,7 @@ var require_sonic_boom = __commonJS({
       const onDrain = () => {
         if (!this._fsync) {
           try {
-            fs16.fsync(this.fd, (err) => {
+            fs18.fsync(this.fd, (err) => {
               this._flushPending = false;
               cb(err);
             });
@@ -7688,7 +7688,7 @@ var require_sonic_boom = __commonJS({
       const fd = this.fd;
       this.once("ready", () => {
         if (fd !== this.fd) {
-          fs16.close(fd, (err) => {
+          fs18.close(fd, (err) => {
             if (err) {
               return this.emit("error", err);
             }
@@ -7737,7 +7737,7 @@ var require_sonic_boom = __commonJS({
           buf = this._bufs[0];
         }
         try {
-          const n3 = Buffer.isBuffer(buf) ? fs16.writeSync(this.fd, buf) : fs16.writeSync(this.fd, buf, "utf8");
+          const n3 = Buffer.isBuffer(buf) ? fs18.writeSync(this.fd, buf) : fs18.writeSync(this.fd, buf, "utf8");
           const releasedBufObj = releaseWritingBuf(buf, this._len, n3);
           buf = releasedBufObj.writingBuf;
           this._len = releasedBufObj.len;
@@ -7753,7 +7753,7 @@ var require_sonic_boom = __commonJS({
         }
       }
       try {
-        fs16.fsyncSync(this.fd);
+        fs18.fsyncSync(this.fd);
       } catch {
       }
     }
@@ -7774,7 +7774,7 @@ var require_sonic_boom = __commonJS({
           buf = mergeBuf(this._bufs[0], this._lens[0]);
         }
         try {
-          const n3 = fs16.writeSync(this.fd, buf);
+          const n3 = fs18.writeSync(this.fd, buf);
           buf = buf.subarray(n3);
           this._len = Math.max(this._len - n3, 0);
           if (buf.length <= 0) {
@@ -7802,13 +7802,13 @@ var require_sonic_boom = __commonJS({
       this._writingBuf = this._writingBuf.length ? this._writingBuf : this._bufs.shift() || "";
       if (this.sync) {
         try {
-          const written = Buffer.isBuffer(this._writingBuf) ? fs16.writeSync(this.fd, this._writingBuf) : fs16.writeSync(this.fd, this._writingBuf, "utf8");
+          const written = Buffer.isBuffer(this._writingBuf) ? fs18.writeSync(this.fd, this._writingBuf) : fs18.writeSync(this.fd, this._writingBuf, "utf8");
           release(null, written);
         } catch (err) {
           release(err);
         }
       } else {
-        fs16.write(this.fd, this._writingBuf, release);
+        fs18.write(this.fd, this._writingBuf, release);
       }
     }
     function actualWriteBuffer() {
@@ -7817,7 +7817,7 @@ var require_sonic_boom = __commonJS({
       this._writingBuf = this._writingBuf.length ? this._writingBuf : mergeBuf(this._bufs.shift(), this._lens.shift());
       if (this.sync) {
         try {
-          const written = fs16.writeSync(this.fd, this._writingBuf);
+          const written = fs18.writeSync(this.fd, this._writingBuf);
           release(null, written);
         } catch (err) {
           release(err);
@@ -7826,7 +7826,7 @@ var require_sonic_boom = __commonJS({
         if (kCopyBuffer) {
           this._writingBuf = Buffer.from(this._writingBuf);
         }
-        fs16.write(this.fd, this._writingBuf, release);
+        fs18.write(this.fd, this._writingBuf, release);
       }
     }
     function actualClose(sonic) {
@@ -7842,12 +7842,12 @@ var require_sonic_boom = __commonJS({
       sonic._lens = [];
       assert2(typeof sonic.fd === "number", `sonic.fd must be a number, got ${typeof sonic.fd}`);
       try {
-        fs16.fsync(sonic.fd, closeWrapped);
+        fs18.fsync(sonic.fd, closeWrapped);
       } catch {
       }
       function closeWrapped() {
         if (sonic.fd !== 1 && sonic.fd !== 2) {
-          fs16.close(sonic.fd, done);
+          fs18.close(sonic.fd, done);
         } else {
           done();
         }
@@ -8682,7 +8682,7 @@ var require_transport = __commonJS({
     var { existsSync } = __require("node:fs");
     var getCallers = require_caller();
     var { join, isAbsolute, sep } = __require("node:path");
-    var { fileURLToPath: fileURLToPath5 } = __require("node:url");
+    var { fileURLToPath: fileURLToPath6 } = __require("node:url");
     var sleep = require_atomic_sleep();
     var onExit = require_on_exit_leak_free();
     var ThreadStream = require_thread_stream();
@@ -8746,15 +8746,15 @@ var require_transport = __commonJS({
       if (!unquoted) {
         return false;
       }
-      let path18 = unquoted;
-      if (path18.startsWith("file://")) {
+      let path20 = unquoted;
+      if (path20.startsWith("file://")) {
         try {
-          path18 = fileURLToPath5(path18);
+          path20 = fileURLToPath6(path20);
         } catch {
           return false;
         }
       }
-      return isAbsolute(path18) && !existsSync(path18);
+      return isAbsolute(path20) && !existsSync(path20);
     }
     function stripQuotes(value) {
       const first = value[0];
@@ -17627,8 +17627,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path18) {
-      let input2 = path18;
+    function removeDotSegments(path20) {
+      let input2 = path20;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -17702,11 +17702,11 @@ var require_utils = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path18) {
-      if (path18 === "" || path18[0] === "/") {
-        return removeDotSegments(path18);
+    function removeDotSegmentsRelative(path20) {
+      if (path20 === "" || path20[0] === "/") {
+        return removeDotSegments(path20);
       }
-      const segments = path18.split("/");
+      const segments = path20.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -18069,8 +18069,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path18 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path18 && path18 !== "/" ? path18 : void 0;
+        const path20 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path20 && path20 !== "/" ? path20 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -23148,8 +23148,8 @@ var require_utils2 = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path18) {
-      let input2 = path18;
+    function removeDotSegments(path20) {
+      let input2 = path20;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -23223,11 +23223,11 @@ var require_utils2 = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path18) {
-      if (path18 === "" || path18[0] === "/") {
-        return removeDotSegments(path18);
+    function removeDotSegmentsRelative(path20) {
+      if (path20 === "" || path20[0] === "/") {
+        return removeDotSegments(path20);
       }
-      const segments = path18.split("/");
+      const segments = path20.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -23647,8 +23647,8 @@ var require_schemes2 = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path18 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path18 && path18 !== "/" ? path18 : void 0;
+        const path20 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path20 && path20 !== "/" ? path20 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -24829,12 +24829,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs16, exportName) {
+    function addFormats(ajv, list, fs18, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs16[f]);
+        ajv.addFormat(f, fs18[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -27560,7 +27560,7 @@ const asInteger = serializer.asInteger.bind(serializer)
       if (typeof schema !== "object" || schema === null) return false;
       const values = [schema];
       const depths = [0];
-      const path18 = [];
+      const path20 = [];
       let hasRef = false;
       while (values.length > 0) {
         const value = values.pop();
@@ -27568,11 +27568,11 @@ const asInteger = serializer.asInteger.bind(serializer)
         if (depth > maxDepth * 2) {
           throw schemaDepthError(maxDepth, name);
         }
-        path18.length = depth;
-        if (path18.includes(value)) {
+        path20.length = depth;
+        if (path20.includes(value)) {
           throw new Error("schema contains a circular object reference; use $ref instead");
         }
-        path18.push(value);
+        path20.push(value);
         for (const key in value) {
           const child = value[key];
           if (key === "$ref" && typeof child === "string") {
@@ -27650,17 +27650,17 @@ const asInteger = serializer.asInteger.bind(serializer)
       }
     }
     function resolveRef2(context, location) {
-      const seen = /* @__PURE__ */ new Set();
+      const seen2 = /* @__PURE__ */ new Set();
       const siblingLocations = [];
       let depth = 0;
       while (location.schema.$ref !== void 0) {
         const refSchema = location.schema;
         const ref = refSchema.$ref;
         const locationRef = location.getSchemaRef();
-        if (seen.has(locationRef)) {
+        if (seen2.has(locationRef)) {
           throw new Error(`Cannot resolve circular reference "${ref}"`);
         }
-        seen.add(locationRef);
+        seen2.add(locationRef);
         if (depth++ > context.maxDepth) {
           throw schemaDepthError(context.maxDepth);
         }
@@ -33551,8 +33551,8 @@ var require_node = __commonJS({
         return matchSingleCharPrefix;
       }
       if (prefix.length >= LONG_PREFIX_MIN_LENGTH) {
-        return function matchLongPrefix(path18, i) {
-          return path18.indexOf(prefix, i) === i;
+        return function matchLongPrefix(path20, i) {
+          return path20.indexOf(prefix, i) === i;
         };
       }
       const lines = [];
@@ -33603,13 +33603,13 @@ return ${lines.join(" && ")}`);
           this.staticChildrenNodes[index] = node2;
         }
       }
-      findStaticMatchingChild(path18, pathIndex) {
-        const charCode = path18.charCodeAt(pathIndex);
+      findStaticMatchingChild(path20, pathIndex) {
+        const charCode = path20.charCodeAt(pathIndex);
         const charCodes = this.staticChildrenCharCodes;
         for (let i = 0; i < charCodes.length; i++) {
           if (charCodes[i] === charCode) {
             const staticChild = this.staticChildrenNodes[i];
-            if (staticChild.matchPrefix(path18, pathIndex)) {
+            if (staticChild.matchPrefix(path20, pathIndex)) {
               return staticChild;
             }
             return null;
@@ -33617,34 +33617,34 @@ return ${lines.join(" && ")}`);
         }
         return null;
       }
-      getStaticChild(path18, pathIndex = 0) {
-        if (path18.length === pathIndex) {
+      getStaticChild(path20, pathIndex = 0) {
+        if (path20.length === pathIndex) {
           return this;
         }
-        const staticChild = this.findStaticMatchingChild(path18, pathIndex);
+        const staticChild = this.findStaticMatchingChild(path20, pathIndex);
         if (staticChild) {
-          return staticChild.getStaticChild(path18, pathIndex + staticChild.prefix.length);
+          return staticChild.getStaticChild(path20, pathIndex + staticChild.prefix.length);
         }
         return null;
       }
-      createStaticChild(path18) {
-        if (path18.length === 0) {
+      createStaticChild(path20) {
+        if (path20.length === 0) {
           return this;
         }
-        const childIndex = this.staticChildrenCharCodes.indexOf(path18.charCodeAt(0));
+        const childIndex = this.staticChildrenCharCodes.indexOf(path20.charCodeAt(0));
         let staticChild = childIndex === -1 ? void 0 : this.staticChildrenNodes[childIndex];
         if (staticChild) {
           let i = 1;
           for (; i < staticChild.prefix.length; i++) {
-            if (path18.charCodeAt(i) !== staticChild.prefix.charCodeAt(i)) {
+            if (path20.charCodeAt(i) !== staticChild.prefix.charCodeAt(i)) {
               staticChild = staticChild.split(this, i);
               break;
             }
           }
-          return staticChild.createStaticChild(path18.slice(i));
+          return staticChild.createStaticChild(path20.slice(i));
         }
-        const node2 = createStaticNode(path18);
-        this.setStaticChild(path18.charAt(0), node2);
+        const node2 = createStaticNode(path20);
+        this.setStaticChild(path20.charAt(0), node2);
         return node2;
       }
       getParametricChild(regex) {
@@ -33692,8 +33692,8 @@ return ${lines.join(" && ")}`);
       // static child, then the first parametric child, then the wildcard. Every
       // sibling that is skipped over is pushed on nodeStack as a flat triple
       // (node, pathIndex, paramsCount) so lookup can backtrack to it later.
-      getNextNode(path18, pathIndex, nodeStack, paramsCount) {
-        let node2 = this.findStaticMatchingChild(path18, pathIndex);
+      getNextNode(path20, pathIndex, nodeStack, paramsCount) {
+        let node2 = this.findStaticMatchingChild(path20, pathIndex);
         let parametricBrotherNodeIndex = 0;
         if (node2 === null) {
           if (this.parametricChildren.length === 0) {
@@ -33776,62 +33776,62 @@ var require_url_sanitizer = __commonJS({
       return String.fromCharCode(charCode);
     }
     var MIN_NATIVE_SCAN_LENGTH = 12;
-    function safeDecodeURI(path18, useSemicolonDelimiter) {
-      if (path18.length >= MIN_NATIVE_SCAN_LENGTH) {
-        return safeDecodeURINativeScan(path18, useSemicolonDelimiter);
+    function safeDecodeURI(path20, useSemicolonDelimiter) {
+      if (path20.length >= MIN_NATIVE_SCAN_LENGTH) {
+        return safeDecodeURINativeScan(path20, useSemicolonDelimiter);
       }
-      return safeDecodeURICharScan(path18, useSemicolonDelimiter, 1);
+      return safeDecodeURICharScan(path20, useSemicolonDelimiter, 1);
     }
-    function safeDecodeURINativeScan(path18, useSemicolonDelimiter) {
-      const percentIndex = path18.indexOf("%", 1);
-      let delimIndex = path18.indexOf("?", 1);
-      const hashIndex = path18.indexOf("#", 1);
+    function safeDecodeURINativeScan(path20, useSemicolonDelimiter) {
+      const percentIndex = path20.indexOf("%", 1);
+      let delimIndex = path20.indexOf("?", 1);
+      const hashIndex = path20.indexOf("#", 1);
       if (hashIndex !== -1 && (delimIndex === -1 || hashIndex < delimIndex)) {
         delimIndex = hashIndex;
       }
       if (useSemicolonDelimiter) {
-        const semicolonIndex = path18.indexOf(";", 1);
+        const semicolonIndex = path20.indexOf(";", 1);
         if (semicolonIndex !== -1 && (delimIndex === -1 || semicolonIndex < delimIndex)) {
           delimIndex = semicolonIndex;
         }
       }
       if (percentIndex === -1 || delimIndex !== -1 && percentIndex > delimIndex) {
         if (delimIndex === -1) {
-          return { path: path18, querystring: "", shouldDecodeParam: false };
+          return { path: path20, querystring: "", shouldDecodeParam: false };
         }
         return {
-          path: path18.slice(0, delimIndex),
-          querystring: path18.slice(delimIndex + 1),
+          path: path20.slice(0, delimIndex),
+          querystring: path20.slice(delimIndex + 1),
           shouldDecodeParam: false
         };
       }
-      return safeDecodeURIPercentScan(path18, useSemicolonDelimiter, percentIndex);
+      return safeDecodeURIPercentScan(path20, useSemicolonDelimiter, percentIndex);
     }
-    function safeDecodeURICharScan(path18, useSemicolonDelimiter, startIndex) {
-      for (let i = startIndex; i < path18.length; i++) {
-        const charCode = path18.charCodeAt(i);
+    function safeDecodeURICharScan(path20, useSemicolonDelimiter, startIndex) {
+      for (let i = startIndex; i < path20.length; i++) {
+        const charCode = path20.charCodeAt(i);
         if (charCode === 37) {
-          return safeDecodeURIPercentScan(path18, useSemicolonDelimiter, i);
+          return safeDecodeURIPercentScan(path20, useSemicolonDelimiter, i);
         } else if (charCode === 63 || charCode === 35 || charCode === 59 && useSemicolonDelimiter) {
           return {
-            path: path18.slice(0, i),
-            querystring: path18.slice(i + 1),
+            path: path20.slice(0, i),
+            querystring: path20.slice(i + 1),
             shouldDecodeParam: false
           };
         }
       }
-      return { path: path18, querystring: "", shouldDecodeParam: false };
+      return { path: path20, querystring: "", shouldDecodeParam: false };
     }
-    function safeDecodeURIPercentScan(path18, useSemicolonDelimiter, startIndex) {
+    function safeDecodeURIPercentScan(path20, useSemicolonDelimiter, startIndex) {
       let shouldDecode = false;
       let shouldDecodeParam = false;
       let querystring = "";
       let percentIndexes = null;
       let pathEnd = -1;
-      for (let i = startIndex; i < path18.length; i++) {
-        const charCode = path18.charCodeAt(i);
+      for (let i = startIndex; i < path20.length; i++) {
+        const charCode = path20.charCodeAt(i);
         if (charCode === 37) {
-          const componentCharCode = decodeComponentCharCode(path18.charCodeAt(i + 1), path18.charCodeAt(i + 2));
+          const componentCharCode = decodeComponentCharCode(path20.charCodeAt(i + 1), path20.charCodeAt(i + 2));
           if (componentCharCode === 0) {
             shouldDecode = true;
           } else {
@@ -33844,22 +33844,22 @@ var require_url_sanitizer = __commonJS({
             i += 2;
           }
         } else if (charCode === 63 || charCode === 35 || charCode === 59 && useSemicolonDelimiter) {
-          querystring = path18.slice(i + 1);
+          querystring = path20.slice(i + 1);
           pathEnd = i;
           break;
         }
       }
       let decodedPath;
       if (percentIndexes === null) {
-        decodedPath = pathEnd === -1 ? path18 : path18.slice(0, pathEnd);
+        decodedPath = pathEnd === -1 ? path20 : path20.slice(0, pathEnd);
       } else {
         const parts = [];
         let last = 0;
         for (const index of percentIndexes) {
-          parts.push(path18.slice(last, index), "%2525");
+          parts.push(path20.slice(last, index), "%2525");
           last = index + 3;
         }
-        parts.push(path18.slice(last, pathEnd === -1 ? path18.length : pathEnd));
+        parts.push(path20.slice(last, pathEnd === -1 ? path20.length : pathEnd));
         decodedPath = parts.join("");
       }
       if (shouldDecode) decodedPath = decodeURI(decodedPath);
@@ -34377,14 +34377,14 @@ var require_compiler = __commonJS({
     }
     function compileTree(router, root) {
       const sanitized = new TreeCompiler(router, false).compile(root, null);
-      const slow = function findSanitized(path18, derivedConstraints) {
-        return router._findSanitized(sanitized, path18, derivedConstraints);
+      const slow = function findSanitized(path20, derivedConstraints) {
+        return router._findSanitized(sanitized, path20, derivedConstraints);
       };
       if (!supportsRawMatching(router, root)) {
         return {
           find: slow,
-          lookup: function lookupSanitized(path18, derivedConstraints, req, res, ctx) {
-            return router.callHandler(slow(path18, derivedConstraints), req, res, ctx);
+          lookup: function lookupSanitized(path20, derivedConstraints, req, res, ctx) {
+            return router.callHandler(slow(path20, derivedConstraints), req, res, ctx);
           }
         };
       }
@@ -34784,7 +34784,7 @@ var require_find_my_way = __commonJS({
       const byPattern = router._routesByMethodAndPattern.get(method);
       return byPattern === void 0 ? void 0 : byPattern.get(pattern);
     }
-    Router.prototype.on = function on(method, path18, opts, handler, store) {
+    Router.prototype.on = function on(method, path20, opts, handler, store) {
       if (typeof opts === "function") {
         if (handler !== void 0) {
           store = handler;
@@ -34792,34 +34792,34 @@ var require_find_my_way = __commonJS({
         handler = opts;
         opts = {};
       }
-      assert2(typeof path18 === "string", "Path should be a string");
-      assert2(path18.length > 0, "The path could not be empty");
-      assert2(path18[0] === "/" || path18[0] === "*", "The first character of a path should be `/` or `*`");
+      assert2(typeof path20 === "string", "Path should be a string");
+      assert2(path20.length > 0, "The path could not be empty");
+      assert2(path20[0] === "/" || path20[0] === "*", "The first character of a path should be `/` or `*`");
       assert2(typeof handler === "function", "Handler should be a function");
-      const optionalParamMatch = path18.match(OPTIONAL_PARAM_REGEXP);
+      const optionalParamMatch = path20.match(OPTIONAL_PARAM_REGEXP);
       if (optionalParamMatch) {
-        assert2(path18.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
-        const pathFull = path18.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
-        const pathOptional = path18.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
+        assert2(path20.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
+        const pathFull = path20.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
+        const pathOptional = path20.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
         this.on(method, pathFull, opts, handler, store);
         this.on(method, pathOptional, opts, handler, store);
         return;
       }
-      const route = path18;
+      const route = path20;
       if (this.ignoreDuplicateSlashes) {
-        path18 = removeDuplicateSlashes(path18);
+        path20 = removeDuplicateSlashes(path20);
       }
       if (this.ignoreTrailingSlash) {
-        path18 = trimLastSlash(path18);
+        path20 = trimLastSlash(path20);
       }
       const methods = Array.isArray(method) ? method : [method];
       for (const method2 of methods) {
         assert2(typeof method2 === "string", "Method should be a string");
         assert2(httpMethods.includes(method2), `Method '${method2}' is not an http method.`);
-        this._on(method2, path18, opts, handler, store, route);
+        this._on(method2, path20, opts, handler, store, route);
       }
     };
-    Router.prototype._on = function _on(method, path18, opts, handler, store) {
+    Router.prototype._on = function _on(method, path20, opts, handler, store) {
       let constraints = {};
       if (opts.constraints !== void 0) {
         assert2(typeof opts.constraints === "object" && opts.constraints !== null, "Constraints should be an object");
@@ -34834,7 +34834,7 @@ var require_find_my_way = __commonJS({
       if (this.trees[method] === void 0) {
         this.trees[method] = createStaticNode("/");
       }
-      let pattern = path18;
+      let pattern = path20;
       if (pattern === "*" && this.trees[method].prefix.length !== 0) {
         const currentRoot = this.trees[method];
         this.trees[method] = createStaticNode("");
@@ -34949,7 +34949,7 @@ var require_find_my_way = __commonJS({
           }
         }
       }
-      const route = { method, path: path18, pattern, params, opts, handler, store };
+      const route = { method, path: path20, pattern, params, opts, handler, store };
       this.routes.push(route);
       if (sameRoutes !== void 0) {
         sameRoutes.push(route);
@@ -34963,21 +34963,21 @@ var require_find_my_way = __commonJS({
       }
       currentNode.addRoute(route, this.constrainer);
     };
-    Router.prototype.hasRoute = function hasRoute(method, path18, constraints) {
-      const route = this.findRoute(method, path18, constraints);
+    Router.prototype.hasRoute = function hasRoute(method, path20, constraints) {
+      const route = this.findRoute(method, path20, constraints);
       return route !== null;
     };
-    Router.prototype.findRoute = function findNode(method, path18, constraints = {}) {
+    Router.prototype.findRoute = function findNode(method, path20, constraints = {}) {
       if (this.trees[method] === void 0) {
         return null;
       }
       if (this.ignoreDuplicateSlashes) {
-        path18 = removeDuplicateSlashes(path18);
+        path20 = removeDuplicateSlashes(path20);
       }
       if (this.ignoreTrailingSlash) {
-        path18 = trimLastSlash(path18);
+        path20 = trimLastSlash(path20);
       }
-      let pattern = path18;
+      let pattern = path20;
       let currentNode = this.trees[method];
       let parentNodePathIndex = currentNode.prefix.length;
       const params = [];
@@ -35105,39 +35105,39 @@ var require_find_my_way = __commonJS({
       this.routes = [];
       this._routesByMethodAndPattern = /* @__PURE__ */ new Map();
     };
-    Router.prototype.off = function off(method, path18, constraints) {
-      assert2(typeof path18 === "string", "Path should be a string");
-      assert2(path18.length > 0, "The path could not be empty");
-      assert2(path18[0] === "/" || path18[0] === "*", "The first character of a path should be `/` or `*`");
+    Router.prototype.off = function off(method, path20, constraints) {
+      assert2(typeof path20 === "string", "Path should be a string");
+      assert2(path20.length > 0, "The path could not be empty");
+      assert2(path20[0] === "/" || path20[0] === "*", "The first character of a path should be `/` or `*`");
       assert2(
         typeof constraints === "undefined" || typeof constraints === "object" && !Array.isArray(constraints) && constraints !== null,
         "Constraints should be an object or undefined."
       );
-      const optionalParamMatch = path18.match(OPTIONAL_PARAM_REGEXP);
+      const optionalParamMatch = path20.match(OPTIONAL_PARAM_REGEXP);
       if (optionalParamMatch) {
-        assert2(path18.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
-        const pathFull = path18.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
-        const pathOptional = path18.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
+        assert2(path20.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
+        const pathFull = path20.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
+        const pathOptional = path20.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
         this.off(method, pathFull, constraints);
         this.off(method, pathOptional, constraints);
         return;
       }
       if (this.ignoreDuplicateSlashes) {
-        path18 = removeDuplicateSlashes(path18);
+        path20 = removeDuplicateSlashes(path20);
       }
       if (this.ignoreTrailingSlash) {
-        path18 = trimLastSlash(path18);
+        path20 = trimLastSlash(path20);
       }
       const methods = Array.isArray(method) ? method : [method];
       for (const method2 of methods) {
-        this._off(method2, path18, constraints);
+        this._off(method2, path20, constraints);
       }
     };
-    Router.prototype._off = function _off(method, path18, constraints) {
+    Router.prototype._off = function _off(method, path20, constraints) {
       assert2(typeof method === "string", "Method should be a string");
       assert2(httpMethods.includes(method), `Method '${method}' is not an http method.`);
       function matcherWithoutConstraints(route) {
-        return method !== route.method || path18 !== route.path;
+        return method !== route.method || path20 !== route.path;
       }
       function matcherWithConstraints(route) {
         return matcherWithoutConstraints(route) || !deepEqual(constraints, route.opts.constraints || {});
@@ -35174,40 +35174,40 @@ var require_find_my_way = __commonJS({
       if (handle === null) return this._defaultRoute(req, res, ctx);
       return ctx === void 0 ? handle.handler(req, res, handle.params, handle.store, handle.searchParams) : handle.handler.call(ctx, req, res, handle.params, handle.store, handle.searchParams);
     };
-    Router.prototype.find = function find(method, path18, derivedConstraints) {
+    Router.prototype.find = function find(method, path20, derivedConstraints) {
       let currentNode = method === "GET" ? this._treeGET : this.trees[method];
       if (currentNode == null) return null;
-      if (path18.charCodeAt(0) !== 47) {
-        const absolutePath = getPathFromAbsoluteUrl(path18);
+      if (path20.charCodeAt(0) !== 47) {
+        const absolutePath = getPathFromAbsoluteUrl(path20);
         if (absolutePath === null) {
-          return this._onBadUrl(path18);
+          return this._onBadUrl(path20);
         }
-        path18 = absolutePath;
+        path20 = absolutePath;
       }
       let sanitizedUrl;
       let querystring2;
       let shouldDecodeParam;
       try {
-        sanitizedUrl = path18.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path18, this.useSemicolonDelimiter) : safeDecodeURICharScan(path18, this.useSemicolonDelimiter, 1);
-        path18 = sanitizedUrl.path;
+        sanitizedUrl = path20.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path20, this.useSemicolonDelimiter) : safeDecodeURICharScan(path20, this.useSemicolonDelimiter, 1);
+        path20 = sanitizedUrl.path;
         querystring2 = sanitizedUrl.querystring;
         shouldDecodeParam = sanitizedUrl.shouldDecodeParam;
       } catch (error62) {
-        return this._onBadUrl(path18);
+        return this._onBadUrl(path20);
       }
       if (this.ignoreDuplicateSlashes) {
-        path18 = removeDuplicateSlashes(path18);
+        path20 = removeDuplicateSlashes(path20);
       }
       if (this.ignoreTrailingSlash) {
-        path18 = trimLastSlash(path18);
+        path20 = trimLastSlash(path20);
       }
-      const originPath = path18;
+      const originPath = path20;
       if (this.caseSensitive === false) {
-        path18 = path18.toLowerCase();
+        path20 = path20.toLowerCase();
       }
       const maxParamLength = this.maxParamLength;
       let pathIndex = currentNode.prefix.length;
-      const pathLen = path18.length;
+      const pathLen = path20.length;
       let paramsCount = 0;
       let param0, param1, param2, param3;
       let extraParams = null;
@@ -35225,7 +35225,7 @@ var require_find_my_way = __commonJS({
             };
           }
         }
-        let node2 = currentNode.getNextNode(path18, pathIndex, brothersNodesStack, paramsCount);
+        let node2 = currentNode.getNextNode(path20, pathIndex, brothersNodesStack, paramsCount);
         if (node2 === null) {
           if (brothersNodesStack.length === 0) {
             if (maxParamLengthExceeded && this.onMaxParamLength) {
@@ -35339,13 +35339,13 @@ var require_find_my_way = __commonJS({
       }
       return compiled;
     };
-    Router.prototype._findCompiled = function _findCompiled(method, path18, derivedConstraints) {
+    Router.prototype._findCompiled = function _findCompiled(method, path20, derivedConstraints) {
       let compiled = method === "GET" ? this._compiledGET : this._compiledTrees[method];
       if (compiled == null) {
         compiled = this._compileTree(method);
         if (compiled === null) return null;
       }
-      return compiled.find(path18, derivedConstraints);
+      return compiled.find(path20, derivedConstraints);
     };
     Router.prototype._lookupCompiled = function _lookupCompiled(req, res, ctx, done) {
       if (typeof ctx === "function" || done !== void 0) {
@@ -35360,42 +35360,42 @@ var require_find_my_way = __commonJS({
       }
       return compiled.lookup(req.url, derivedConstraints, req, res, ctx);
     };
-    Router.prototype._findSanitized = function _findSanitized(matcher, path18, derivedConstraints) {
-      if (path18.charCodeAt(0) !== 47) {
-        const absolutePath = getPathFromAbsoluteUrl(path18);
+    Router.prototype._findSanitized = function _findSanitized(matcher, path20, derivedConstraints) {
+      if (path20.charCodeAt(0) !== 47) {
+        const absolutePath = getPathFromAbsoluteUrl(path20);
         if (absolutePath === null) {
-          return this._onBadUrl(path18);
+          return this._onBadUrl(path20);
         }
-        path18 = absolutePath;
+        path20 = absolutePath;
       }
       let sanitizedUrl;
       let querystring2;
       let shouldDecodeParam;
       try {
-        sanitizedUrl = path18.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path18, this.useSemicolonDelimiter) : safeDecodeURICharScan(path18, this.useSemicolonDelimiter, 1);
-        path18 = sanitizedUrl.path;
+        sanitizedUrl = path20.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path20, this.useSemicolonDelimiter) : safeDecodeURICharScan(path20, this.useSemicolonDelimiter, 1);
+        path20 = sanitizedUrl.path;
         querystring2 = sanitizedUrl.querystring;
         shouldDecodeParam = sanitizedUrl.shouldDecodeParam;
       } catch (error62) {
-        return this._onBadUrl(path18);
+        return this._onBadUrl(path20);
       }
       if (this.ignoreDuplicateSlashes) {
-        path18 = removeDuplicateSlashes(path18);
+        path20 = removeDuplicateSlashes(path20);
       }
       if (this.ignoreTrailingSlash) {
-        path18 = trimLastSlash(path18);
+        path20 = trimLastSlash(path20);
       }
-      const originPath = path18;
+      const originPath = path20;
       if (this.caseSensitive === false) {
-        path18 = path18.toLowerCase();
+        path20 = path20.toLowerCase();
       }
-      return matcher(path18, originPath, shouldDecodeParam, derivedConstraints, querystring2);
+      return matcher(path20, originPath, shouldDecodeParam, derivedConstraints, querystring2);
     };
     Router.prototype._rebuild = function(routes) {
       this.reset();
       for (const route of routes) {
-        const { method, path: path18, opts, handler, store } = route;
-        this._on(method, path18, opts, handler, store);
+        const { method, path: path20, opts, handler, store } = route;
+        this._on(method, path20, opts, handler, store);
       }
     };
     Router.prototype._defaultRoute = function(req, res, ctx) {
@@ -35406,24 +35406,24 @@ var require_find_my_way = __commonJS({
         res.end();
       }
     };
-    Router.prototype._onBadUrl = function(path18) {
+    Router.prototype._onBadUrl = function(path20) {
       if (this.onBadUrl === null) {
         return null;
       }
       const onBadUrl = this.onBadUrl;
       return {
-        handler: (req, res, ctx) => onBadUrl(path18, req, res),
+        handler: (req, res, ctx) => onBadUrl(path20, req, res),
         params: {},
         store: null
       };
     };
-    Router.prototype._onMaxParamLength = function(path18) {
+    Router.prototype._onMaxParamLength = function(path20) {
       if (this.onMaxParamLength === null) {
         return null;
       }
       const onMaxParamLength = this.onMaxParamLength;
       return {
-        handler: (req, res, ctx) => onMaxParamLength(path18, req, res),
+        handler: (req, res, ctx) => onMaxParamLength(path20, req, res),
         params: {},
         store: null
       };
@@ -35455,12 +35455,12 @@ var require_find_my_way = __commonJS({
       if (!httpMethods.hasOwnProperty(i)) continue;
       const m = httpMethods[i];
       const methodName = m.toLowerCase();
-      Router.prototype[methodName] = function(path18, handler, store) {
-        return this.on(m, path18, handler, store);
+      Router.prototype[methodName] = function(path20, handler, store) {
+        return this.on(m, path20, handler, store);
       };
     }
-    Router.prototype.all = function(path18, handler, store) {
-      this.on(httpMethods, path18, handler, store);
+    Router.prototype.all = function(path20, handler, store) {
+      this.on(httpMethods, path20, handler, store);
     };
     Router.sanitizeUrlPath = function sanitizeUrlPath(url2, useSemicolonDelimiter) {
       const decoded = safeDecodeURI(url2, useSemicolonDelimiter);
@@ -35512,14 +35512,14 @@ var require_find_my_way = __commonJS({
       }
       return url2.slice(pathStart);
     }
-    function removeDuplicateSlashes(path18) {
-      return path18.indexOf("//") !== -1 ? path18.replace(REMOVE_DUPLICATE_SLASHES_REGEXP, "/") : path18;
+    function removeDuplicateSlashes(path20) {
+      return path20.indexOf("//") !== -1 ? path20.replace(REMOVE_DUPLICATE_SLASHES_REGEXP, "/") : path20;
     }
-    function trimLastSlash(path18) {
-      if (path18.length > 1 && path18.charCodeAt(path18.length - 1) === 47) {
-        return path18.slice(0, -1);
+    function trimLastSlash(path20) {
+      if (path20.length > 1 && path20.charCodeAt(path20.length - 1) === 47) {
+        return path20.slice(0, -1);
       }
-      return path18;
+      return path20;
     }
     function trimRegExpStartAndEnd(regexString) {
       if (regexString.charCodeAt(1) === 94) {
@@ -35530,22 +35530,22 @@ var require_find_my_way = __commonJS({
       }
       return regexString;
     }
-    function getClosingParenthensePosition(path18, idx) {
+    function getClosingParenthensePosition(path20, idx) {
       let parentheses = 1;
-      while (idx < path18.length) {
+      while (idx < path20.length) {
         idx++;
-        if (path18.charCodeAt(idx) === 92) {
+        if (path20.charCodeAt(idx) === 92) {
           idx++;
           continue;
         }
-        if (path18.charCodeAt(idx) === 41) {
+        if (path20.charCodeAt(idx) === 41) {
           parentheses--;
-        } else if (path18.charCodeAt(idx) === 40) {
+        } else if (path20.charCodeAt(idx) === 40) {
           parentheses++;
         }
         if (!parentheses) return idx;
       }
-      throw new TypeError('Invalid regexp expression in "' + path18 + '"');
+      throw new TypeError('Invalid regexp expression in "' + path20 + '"');
     }
     function defaultBuildPrettyMeta(route) {
       if (!route) return {};
@@ -35781,12 +35781,12 @@ var require_route = __commonJS({
       function route({ options: options2, isFastify }) {
         throwIfAlreadyStarted("Cannot add route!");
         const opts = { ...options2 };
-        const path18 = opts.url || opts.path || "";
+        const path20 = opts.url || opts.path || "";
         if (!opts.handler) {
-          throw new FST_ERR_ROUTE_MISSING_HANDLER(opts.method, path18);
+          throw new FST_ERR_ROUTE_MISSING_HANDLER(opts.method, path20);
         }
         if (opts.errorHandler !== void 0 && typeof opts.errorHandler !== "function") {
-          throw new FST_ERR_ROUTE_HANDLER_NOT_FN(opts.method, path18);
+          throw new FST_ERR_ROUTE_HANDLER_NOT_FN(opts.method, path20);
         }
         validateBodyLimitOption(opts.bodyLimit);
         validateHandlerTimeoutOption(opts.handlerTimeout);
@@ -35796,22 +35796,22 @@ var require_route = __commonJS({
         if (Array.isArray(opts.method)) {
           for (let i = 0; i < opts.method.length; ++i) {
             opts.method[i] = normalizeAndValidateMethod.call(this, opts.method[i]);
-            validateSchemaBodyOption.call(this, opts.method[i], path18, opts.schema);
+            validateSchemaBodyOption.call(this, opts.method[i], path20, opts.schema);
             isGetRoute = opts.method.includes("GET");
             isHeadRoute = opts.method.includes("HEAD");
           }
         } else {
           opts.method = normalizeAndValidateMethod.call(this, opts.method);
-          validateSchemaBodyOption.call(this, opts.method, path18, opts.schema);
+          validateSchemaBodyOption.call(this, opts.method, path20, opts.schema);
           isGetRoute = opts.method === "GET";
           isHeadRoute = opts.method === "HEAD";
         }
         const headOpts = shouldExposeHead && isGetRoute ? { ...options2 } : null;
         const prefix = this[kRoutePrefix];
-        if (path18 === "/" && prefix.length > 0 && opts.method !== "HEAD") {
+        if (path20 === "/" && prefix.length > 0 && opts.method !== "HEAD") {
           switch (opts.prefixTrailingSlash) {
             case "slash":
-              addNewRoute.call(this, { path: path18, isFastify });
+              addNewRoute.call(this, { path: path20, isFastify });
               break;
             case "no-slash":
               addNewRoute.call(this, { path: "", isFastify });
@@ -35820,20 +35820,20 @@ var require_route = __commonJS({
             default:
               addNewRoute.call(this, { path: "", isFastify });
               if (ignoreTrailingSlash !== true && (ignoreDuplicateSlashes !== true || !prefix.endsWith("/"))) {
-                addNewRoute.call(this, { path: path18, prefixing: true, isFastify });
+                addNewRoute.call(this, { path: path20, prefixing: true, isFastify });
               }
           }
-        } else if (path18[0] === "/" && prefix.endsWith("/")) {
-          addNewRoute.call(this, { path: path18.slice(1), isFastify });
+        } else if (path20[0] === "/" && prefix.endsWith("/")) {
+          addNewRoute.call(this, { path: path20.slice(1), isFastify });
         } else {
-          addNewRoute.call(this, { path: path18, isFastify });
+          addNewRoute.call(this, { path: path20, isFastify });
         }
         return this;
-        function addNewRoute({ path: path19, prefixing = false, isFastify: isFastify2 = false }) {
-          const url2 = prefix + path19;
+        function addNewRoute({ path: path21, prefixing = false, isFastify: isFastify2 = false }) {
+          const url2 = prefix + path21;
           opts.url = url2;
           opts.path = url2;
-          opts.routePath = path19;
+          opts.routePath = path21;
           opts.prefix = prefix;
           opts.logLevel = opts.logLevel || this[kLogLevel];
           validateLogLevelOption(opts.logLevel, opts.method, opts.url, logger);
@@ -35966,7 +35966,7 @@ var require_route = __commonJS({
           });
           if (shouldExposeHead && isGetRoute && !isHeadRoute && !hasHEADHandler) {
             const onSendHandlers = parseHeadOnSendHandlers(headOpts.onSend);
-            prepareRoute.call(this, { method: "HEAD", url: path19, options: { ...headOpts, onSend: onSendHandlers }, isFastify: true });
+            prepareRoute.call(this, { method: "HEAD", url: path21, options: { ...headOpts, onSend: onSendHandlers }, isFastify: true });
           }
         }
       }
@@ -36100,9 +36100,9 @@ var require_route = __commonJS({
       }
       return method;
     }
-    function validateSchemaBodyOption(method, path18, schema) {
+    function validateSchemaBodyOption(method, path20, schema) {
       if (this[kSupportedHTTPMethods].bodyless.has(method) && schema?.body) {
-        throw new FST_ERR_ROUTE_BODY_VALIDATION_SCHEMA_NOT_SUPPORTED(method, path18);
+        throw new FST_ERR_ROUTE_BODY_VALIDATION_SCHEMA_NOT_SUPPORTED(method, path20);
       }
     }
     function validateBodyLimitOption(bodyLimit) {
@@ -36117,11 +36117,11 @@ var require_route = __commonJS({
         throw new FST_ERR_ROUTE_HANDLER_TIMEOUT_OPTION_NOT_INT(handlerTimeout);
       }
     }
-    function validateLogLevelOption(logLevel, method, path18, logger) {
+    function validateLogLevelOption(logLevel, method, path20, logger) {
       if (logLevel == null || logLevel === "") return;
       if (logger?.levels?.values == null) return;
       if (typeof logLevel !== "string" || logger.levels.values[logLevel] === void 0) {
-        throw new FST_ERR_ROUTE_LOG_LEVEL_INVALID(method, path18, logLevel);
+        throw new FST_ERR_ROUTE_LOG_LEVEL_INVALID(method, path20, logLevel);
       }
     }
     function runPreParsing(err, request, reply) {
@@ -36766,14 +36766,14 @@ var require_cookies = __commonJS({
     "use strict";
     var { stringifySetCookie: stringifySetCookie2 } = (init_dist(), __toCommonJS(dist_exports));
     function cookiePathMatches(cookiePath, requestPath) {
-      const path18 = cookiePath || "/";
-      if (requestPath === path18) {
+      const path20 = cookiePath || "/";
+      if (requestPath === path20) {
         return true;
       }
-      if (!requestPath.startsWith(path18)) {
+      if (!requestPath.startsWith(path20)) {
         return false;
       }
-      return path18.endsWith("/") || requestPath.charAt(path18.length) === "/";
+      return path20.endsWith("/") || requestPath.charAt(path20.length) === "/";
     }
     function listCookies(cookies) {
       if (Array.isArray(cookies)) {
@@ -39299,19 +39299,19 @@ var require_fastify = __commonJS({
         }
         fourOhFour.router.lookup(req, res);
       }
-      function onBadUrl(path18, req, res) {
+      function onBadUrl(path20, req, res) {
         if (options.frameworkErrors) {
           const id = getGenReqId(routeEventContext.server, req);
           const childLogger = createChildLogger(routeEventContext, options.logger, req, id);
           const request = new Request(id, null, req, null, childLogger, routeEventContext);
           const reply = new Reply(res, request, childLogger);
           routeEventContext.server[kLogController].incomingRequest(request, reply);
-          return options.frameworkErrors(new FST_ERR_BAD_URL(path18), request, reply);
+          return options.frameworkErrors(new FST_ERR_BAD_URL(path20), request, reply);
         }
         const body = JSON.stringify({
           error: "Bad Request",
           code: "FST_ERR_BAD_URL",
-          message: `'${path18}' is not a valid url component`,
+          message: `'${path20}' is not a valid url component`,
           statusCode: 400
         });
         res.writeHead(400, {
@@ -39320,19 +39320,19 @@ var require_fastify = __commonJS({
         });
         res.end(body);
       }
-      function onMaxParamLength(path18, req, res) {
+      function onMaxParamLength(path20, req, res) {
         if (options.frameworkErrors) {
           const id = getGenReqId(routeEventContext.server, req);
           const childLogger = createChildLogger(routeEventContext, options.logger, req, id);
           const request = new Request(id, null, req, null, childLogger, routeEventContext);
           const reply = new Reply(res, request, childLogger);
           routeEventContext.server[kLogController].incomingRequest(request, reply);
-          return options.frameworkErrors(new FST_ERR_MAX_PARAM_LENGTH(path18), request, reply);
+          return options.frameworkErrors(new FST_ERR_MAX_PARAM_LENGTH(path20), request, reply);
         }
         const body = JSON.stringify({
           error: "Bad Request",
           code: "FST_ERR_MAX_PARAM_LENGTH",
-          message: `'${path18}' is exceeding the max param length`,
+          message: `'${path20}' is exceeding the max param length`,
           statusCode: 414
         });
         res.writeHead(414, {
@@ -39590,14 +39590,14 @@ ${body}`);
 
 // src/main.ts
 import { spawn as spawn6 } from "node:child_process";
-import fs15 from "node:fs";
-import path17 from "node:path";
-import { fileURLToPath as fileURLToPath4 } from "node:url";
+import fs17 from "node:fs";
+import path19 from "node:path";
+import { fileURLToPath as fileURLToPath5 } from "node:url";
 import { parseArgs } from "node:util";
 
 // src/app.ts
 var import_fastify = __toESM(require_fastify(), 1);
-import crypto8 from "node:crypto";
+import crypto9 from "node:crypto";
 
 // ../../node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -40416,10 +40416,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path18) {
-  if (!path18)
+function getElementAtPath(obj, path20) {
+  if (!path20)
     return obj;
-  return path18.reduce((acc, key) => acc?.[key], obj);
+  return path20.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -40759,11 +40759,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path18, issues) {
+function prefixIssues(path20, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path18);
+    iss.path.unshift(path20);
     return iss;
   });
 }
@@ -41225,16 +41225,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path18 = []) => {
+  const processError = (error63, path20 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path18, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path20, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path20, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path20, ...issue2.path]);
       } else {
-        const fullpath = [...path18, ...issue2.path];
+        const fullpath = [...path20, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -41273,17 +41273,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path18 = []) => {
+  const processError = (error63, path20 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path18, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path20, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path20, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path20, ...issue2.path]);
       } else {
-        const fullpath = [...path18, ...issue2.path];
+        const fullpath = [...path20, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -41322,8 +41322,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path18 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path18) {
+  const path20 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path20) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -43088,12 +43088,12 @@ function handleCatchall(proms, input2, payload, ctx, def, inst, abortEarly) {
   const t = _catchall.def.type;
   const optin = _catchall.optin;
   const optout = _catchall.optout;
-  let seen = 0;
+  let seen2 = 0;
   for (const key in input2) {
-    if (abortEarly && payload.issues.length !== seen) {
-      if (aborted(payload, seen))
+    if (abortEarly && payload.issues.length !== seen2) {
+      if (aborted(payload, seen2))
         break;
-      seen = payload.issues.length;
+      seen2 = payload.issues.length;
     }
     if (keySet.has(key))
       continue;
@@ -43182,12 +43182,12 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
     const proms = [];
     const shape = value.shape;
     const abortEarly = ctx?.abortEarly;
-    let seen = payload.issues.length;
+    let seen2 = payload.issues.length;
     for (const key of value.allKeys) {
-      if (abortEarly && payload.issues.length !== seen) {
-        if (aborted(payload, seen))
+      if (abortEarly && payload.issues.length !== seen2) {
+        if (aborted(payload, seen2))
           break;
-        seen = payload.issues.length;
+        seen2 = payload.issues.length;
       }
       if (key === "__proto__")
         continue;
@@ -43727,12 +43727,12 @@ var $ZodTuple = /* @__PURE__ */ $constructor("$ZodTuple", (inst, def) => {
     if (def.rest && !itemAborted) {
       let i = items.length - 1;
       const rest = input2.slice(items.length);
-      let seen = payload.issues.length;
+      let seen2 = payload.issues.length;
       for (const el of rest) {
-        if (abortEarly && payload.issues.length !== seen) {
-          if (aborted(payload, seen))
+        if (abortEarly && payload.issues.length !== seen2) {
+          if (aborted(payload, seen2))
             break;
-          seen = payload.issues.length;
+          seen2 = payload.issues.length;
         }
         i++;
         const result = def.rest._zod.run({ value: el, issues: [] }, ctx);
@@ -43962,12 +43962,12 @@ var $ZodMap = /* @__PURE__ */ $constructor("$ZodMap", (inst, def) => {
     const proms = [];
     payload.value = memo2 ? memo2.alloc(inst, payload, /* @__PURE__ */ new Map(), ctx) : /* @__PURE__ */ new Map();
     const abortEarly = ctx?.abortEarly;
-    let seen = payload.issues.length;
+    let seen2 = payload.issues.length;
     for (const [key, value] of input2) {
-      if (abortEarly && payload.issues.length !== seen) {
-        if (aborted(payload, seen))
+      if (abortEarly && payload.issues.length !== seen2) {
+        if (aborted(payload, seen2))
           break;
-        seen = payload.issues.length;
+        seen2 = payload.issues.length;
       }
       const keyResult = def.keyType._zod.run({ value: key, issues: [] }, ctx);
       const valueResult = def.valueType._zod.run({ value, issues: [] }, ctx);
@@ -44033,12 +44033,12 @@ var $ZodSet = /* @__PURE__ */ $constructor("$ZodSet", (inst, def) => {
     const proms = [];
     payload.value = memo2 ? memo2.alloc(inst, payload, /* @__PURE__ */ new Set(), ctx) : /* @__PURE__ */ new Set();
     const abortEarly = ctx?.abortEarly;
-    let seen = payload.issues.length;
+    let seen2 = payload.issues.length;
     for (const item of input2) {
-      if (abortEarly && payload.issues.length !== seen) {
-        if (aborted(payload, seen))
+      if (abortEarly && payload.issues.length !== seen2) {
+        if (aborted(payload, seen2))
           break;
-        seen = payload.issues.length;
+        seen2 = payload.issues.length;
       }
       const result = def.valueType._zod.run({ value: item, issues: [] }, ctx);
       if (result instanceof Promise) {
@@ -55258,14 +55258,14 @@ function handleUnrepresentable(schema, ctx, json2, params, message) {
 function processSchema(schema, ctx, _params = { path: [], schemaPath: [] }) {
   var _a3;
   const def = schema._zod.def;
-  const seen = ctx.seen.get(schema);
-  if (seen) {
-    seen.count++;
+  const seen2 = ctx.seen.get(schema);
+  if (seen2) {
+    seen2.count++;
     const isCycle = _params.schemaPath.includes(schema);
     if (isCycle) {
-      seen.cycle = _params.path;
+      seen2.cycle = _params.path;
     }
-    return seen.schema;
+    return seen2.schema;
   }
   const result = { schema: {}, count: 1, cycle: void 0, path: _params.path };
   ctx.seen.set(schema, result);
@@ -55355,12 +55355,12 @@ function extractDefs(ctx, schema) {
     if (entry[1].schema.$ref) {
       return;
     }
-    const seen = entry[1];
+    const seen2 = entry[1];
     const { ref, defId } = makeURI(entry);
-    seen.def = { ...seen.schema };
+    seen2.def = { ...seen2.schema };
     if (defId)
-      seen.defId = defId;
-    const schema2 = seen.schema;
+      seen2.defId = defId;
+    const schema2 = seen2.schema;
     for (const key in schema2) {
       delete schema2[key];
     }
@@ -55368,16 +55368,16 @@ function extractDefs(ctx, schema) {
   };
   if (ctx.cycles === "throw") {
     for (const entry of ctx.seen.entries()) {
-      const seen = entry[1];
-      if (seen.cycle) {
-        throw new Error(`Cycle detected: #/${seen.cycle?.join("/")}/<root>
+      const seen2 = entry[1];
+      if (seen2.cycle) {
+        throw new Error(`Cycle detected: #/${seen2.cycle?.join("/")}/<root>
 
 Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.`);
       }
     }
   }
   for (const entry of ctx.seen.entries()) {
-    const seen = entry[1];
+    const seen2 = entry[1];
     if (schema === entry[0]) {
       extractToDef(entry);
       continue;
@@ -55394,11 +55394,11 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
       extractToDef(entry);
       continue;
     }
-    if (seen.cycle) {
+    if (seen2.cycle) {
       extractToDef(entry);
       continue;
     }
-    if (seen.count > 1) {
+    if (seen2.count > 1) {
       if (ctx.reused === "ref") {
         extractToDef(entry);
       }
@@ -55460,7 +55460,7 @@ function foldObjects(members2) {
         const part = other.properties?.[key] ?? undeclaredConstraint(other);
         if (part === null || part === void 0)
           continue;
-        if (!parts.some((seen) => JSON.stringify(seen) === JSON.stringify(part)))
+        if (!parts.some((seen2) => JSON.stringify(seen2) === JSON.stringify(part)))
           parts.push(part);
       }
       const merged = parts.length === 1 ? parts[0] : foldObjects(parts) ?? { allOf: parts };
@@ -55478,7 +55478,7 @@ function foldObjects(members2) {
     const constraints = [];
     for (const object2 of objects) {
       const constraint = undeclaredConstraint(object2);
-      if (constraint && !constraints.some((seen) => JSON.stringify(seen) === JSON.stringify(constraint)))
+      if (constraint && !constraints.some((seen2) => JSON.stringify(seen2) === JSON.stringify(constraint)))
         constraints.push(constraint);
     }
     if (constraints.length === 1)
@@ -55520,13 +55520,13 @@ function finalize(ctx, schema) {
   if (!root)
     throw new Error("Unprocessed schema. This is a bug in Zod.");
   const flattenRef = (zodSchema) => {
-    const seen = ctx.seen.get(zodSchema);
-    if (seen.ref === null)
+    const seen2 = ctx.seen.get(zodSchema);
+    if (seen2.ref === null)
       return;
-    const schema2 = seen.def ?? seen.schema;
+    const schema2 = seen2.def ?? seen2.schema;
     const _cached = { ...schema2 };
-    const ref = seen.ref;
-    seen.ref = null;
+    const ref = seen2.ref;
+    seen2.ref = null;
     if (ref) {
       flattenRef(ref);
       const refSeen = ctx.seen.get(ref);
@@ -55578,7 +55578,7 @@ function finalize(ctx, schema) {
     ctx.override({
       zodSchema,
       jsonSchema: schema2,
-      path: seen.path ?? []
+      path: seen2.path ?? []
     });
   };
   if (!ctx.external || ctx.sharedEmitDoneFor !== ctx.external) {
@@ -55594,8 +55594,8 @@ function finalize(ctx, schema) {
       rewrite();
     if (ctx.intersections.length) {
       const carriers = /* @__PURE__ */ new Map();
-      for (const seen of ctx.seen.values()) {
-        for (const json2 of [seen.schema, seen.def]) {
+      for (const seen2 of ctx.seen.values()) {
+        for (const json2 of [seen2.schema, seen2.def]) {
           const allOf = json2?.allOf;
           if (!Array.isArray(allOf))
             continue;
@@ -55635,11 +55635,11 @@ function finalize(ctx, schema) {
   const defs = ctx.external?.defs ?? {};
   if (!ctx.external || ctx.sharedEmitDoneFor !== ctx.external) {
     for (const entry of ctx.seen.entries()) {
-      const seen = entry[1];
-      if (seen.def && seen.defId) {
-        if (seen.def.id === seen.defId)
-          delete seen.def.id;
-        assignProp(defs, seen.defId, seen.def);
+      const seen2 = entry[1];
+      if (seen2.def && seen2.defId) {
+        if (seen2.def.id === seen2.defId)
+          delete seen2.def.id;
+        assignProp(defs, seen2.defId, seen2.def);
       }
     }
   }
@@ -56253,8 +56253,8 @@ function rewriteKeyNames(ctx) {
   }
   const rewrites = /* @__PURE__ */ new Map();
   for (const record2 of pendingRecords.get(ctx) ?? []) {
-    const seen = ctx.seen.get(record2);
-    const names = (seen?.def ?? seen?.schema)?.propertyNames;
+    const seen2 = ctx.seen.get(record2);
+    const names = (seen2?.def ?? seen2?.schema)?.propertyNames;
     if (!names || names === true || rewrites.has(names))
       continue;
     const rewritten = stringifyKeyNames(bySchema, names, /* @__PURE__ */ new Set());
@@ -56317,9 +56317,9 @@ var recordProcessor = (schema, ctx, _json, params) => {
 var nullableProcessor = (schema, ctx, json2, params) => {
   const def = schema._zod.def;
   const inner = processSchema(def.innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
+  const seen2 = ctx.seen.get(schema);
   if (ctx.target === "openapi-3.0") {
-    seen.ref = def.innerType;
+    seen2.ref = def.innerType;
     json2.nullable = true;
   } else {
     json2.anyOf = [inner, { type: "null" }];
@@ -56328,8 +56328,8 @@ var nullableProcessor = (schema, ctx, json2, params) => {
 var nonoptionalProcessor = (schema, ctx, _json, params) => {
   const def = schema._zod.def;
   processSchema(def.innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = def.innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = def.innerType;
 };
 var UNREPRESENTABLE_DEFAULT = Symbol();
 function serializeDefaultValue(value, schema, ctx, json2, params) {
@@ -56348,8 +56348,8 @@ function serializeDefaultValue(value, schema, ctx, json2, params) {
 var defaultProcessor = (schema, ctx, json2, params) => {
   const def = schema._zod.def;
   processSchema(def.innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = def.innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = def.innerType;
   const value = serializeDefaultValue(def.defaultValue, schema, ctx, json2, params);
   if (value !== UNREPRESENTABLE_DEFAULT)
     json2.default = value;
@@ -56357,8 +56357,8 @@ var defaultProcessor = (schema, ctx, json2, params) => {
 var prefaultProcessor = (schema, ctx, json2, params) => {
   const def = schema._zod.def;
   processSchema(def.innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = def.innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = def.innerType;
   if (ctx.io !== "input")
     return;
   const value = serializeDefaultValue(def.defaultValue, schema, ctx, json2, params);
@@ -56368,8 +56368,8 @@ var prefaultProcessor = (schema, ctx, json2, params) => {
 var catchProcessor = (schema, ctx, json2, params) => {
   const def = schema._zod.def;
   processSchema(def.innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = def.innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = def.innerType;
   let catchValue;
   try {
     catchValue = def.catchValue(void 0);
@@ -56384,33 +56384,33 @@ var pipeProcessor = (schema, ctx, _json, params) => {
   const inIsTransform = def.in._zod.traits.has("$ZodTransform");
   const innerType = ctx.io === "input" ? inIsTransform ? def.out : def.in : def.out;
   processSchema(innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = innerType;
 };
 var readonlyProcessor = (schema, ctx, json2, params) => {
   const def = schema._zod.def;
   processSchema(def.innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = def.innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = def.innerType;
   json2.readOnly = true;
 };
 var promiseProcessor = (schema, ctx, _json, params) => {
   const def = schema._zod.def;
   processSchema(def.innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = def.innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = def.innerType;
 };
 var optionalProcessor = (schema, ctx, _json, params) => {
   const def = schema._zod.def;
   processSchema(def.innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = def.innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = def.innerType;
 };
 var lazyProcessor = (schema, ctx, _json, params) => {
   const innerType = schema._zod.innerType;
   processSchema(innerType, ctx, params);
-  const seen = ctx.seen.get(schema);
-  seen.ref = innerType;
+  const seen2 = ctx.seen.get(schema);
+  seen2.ref = innerType;
 };
 var allProcessors = {
   string: stringProcessor,
@@ -58461,13 +58461,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path18 = ref.slice(1).split("/").filter(Boolean);
-  if (path18.length === 0) {
+  const path20 = ref.slice(1).split("/").filter(Boolean);
+  if (path20.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path18[0] === defsKey) {
-    const key = path18[1] === void 0 ? void 0 : decodeJSONPointerSegment(path18[1]);
+  if (path20[0] === defsKey) {
+    const key = path20[1] === void 0 ? void 0 : decodeJSONPointerSegment(path20[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -58523,7 +58523,7 @@ function checkObjectGuards(objectSchema, guards) {
   });
   return guard.pipe(objectSchema);
 }
-function canonicalKey(value, seen) {
+function canonicalKey(value, seen2) {
   if (value === null)
     return "z";
   const type = typeof value;
@@ -58533,14 +58533,14 @@ function canonicalKey(value, seen) {
     const raw = String(value);
     return `${type[0]}${raw.length}:${raw}`;
   }
-  if (seen.has(value))
+  if (seen2.has(value))
     return null;
-  seen.add(value);
+  seen2.add(value);
   try {
     if (Array.isArray(value)) {
       const parts2 = [];
       for (const item of value) {
-        const key = canonicalKey(item, seen);
+        const key = canonicalKey(item, seen2);
         if (key === null)
           return null;
         parts2.push(key);
@@ -58550,14 +58550,14 @@ function canonicalKey(value, seen) {
     const keys = Object.keys(value).sort();
     const parts = [];
     for (const k of keys) {
-      const key = canonicalKey(value[k], seen);
+      const key = canonicalKey(value[k], seen2);
       if (key === null)
         return null;
       parts.push(`${k.length}:${k}=${key}`);
     }
     return `o${parts.length}:{${parts.join(",")}}`;
   } finally {
-    seen.delete(value);
+    seen2.delete(value);
   }
 }
 var SCHEMA_KEYWORDS = /* @__PURE__ */ new Set([
@@ -60964,6 +60964,18 @@ function buildScenePage(html, opts) {
     if (!file2) throw new HtmlRenderError(`Media ${id} is not an image or video in this project.`);
     return pathToFileURL(file2).href;
   });
+  const lottieIds = [...new Set([...body.matchAll(/data-lottie\s*=\s*["']([0-9a-f-]{36})["']/gi)].map((m) => m[1].toLowerCase()))];
+  let lottieScripts = "";
+  if (lottieIds.length) {
+    if (!opts.lottiePlayer) throw new HtmlRenderError("The Lottie player is missing from this installation.");
+    const data = [];
+    for (const id of lottieIds) {
+      const file2 = opts.lotties?.get(id);
+      if (!file2) throw new HtmlRenderError(`Lottie ${id} is not imported in this project.`);
+      data.push(`"${id}":${fs2.readFileSync(file2, "utf8").replace(/<\//g, "<\\/")}`);
+    }
+    lottieScripts = `<script src="${pathToFileURL(opts.lottiePlayer).href}"></script><script>window.__baLottieData={${data.join(",")}};</script>`;
+  }
   const full = /<html[\s>]/i.test(body);
   if (full) body = body.replace(/<\/?(html|head|body)[^>]*>/gi, "").replace(/<!doctype[^>]*>/gi, "");
   const noise = "data:image/svg+xml;utf8," + encodeURIComponent(
@@ -60979,11 +60991,27 @@ html,body{margin:0;padding:0;width:${opts.width}px;height:${opts.height}px;overf
 .ba-paper{background-image:url("${noise}")}
 </style></head><body>
 ${body}
+${lottieScripts}
 <script>
 (() => {
   window.baTime = 0;
+  const lotties = [];
+  if (window.lottie && window.__baLottieData) {
+    for (const el of document.querySelectorAll("[data-lottie]")) {
+      const data = window.__baLottieData[el.dataset.lottie.toLowerCase()];
+      if (!data) continue;
+      const anim = window.lottie.loadAnimation({ container: el, renderer: "svg", loop: false, autoplay: false, animationData: data,
+        rendererSettings: { preserveAspectRatio: el.dataset.fit === "cover" ? "xMidYMid slice" : "xMidYMid meet" } });
+      lotties.push({ anim, start: parseFloat(el.dataset.start || "0"), speed: parseFloat(el.dataset.speed || "1"),
+        loop: el.dataset.loop !== "false", fr: data.fr || 30, total: Math.max(1, (data.op || 1) - (data.ip || 0) - 1) });
+    }
+  }
   const seek = (t) => {
     window.baTime = t;
+    for (const L of lotties) {
+      const local = Math.max(0, (t - L.start) * L.speed) * L.fr;
+      L.anim.goToAndStop(L.loop ? local % L.total : Math.min(local, L.total), true);
+    }
     for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; }
     for (const v of document.querySelectorAll("video")) { v.pause(); v.currentTime = t; }
     window.dispatchEvent(new CustomEvent("ba-frame", { detail: t }));
@@ -60991,6 +61019,7 @@ ${body}
   window.__baSeek = (t) => new Promise((done) => { seek(t); requestAnimationFrame(() => { seek(t); requestAnimationFrame(() => done(true)); }); });
   window.__baReady = async () => {
     await document.fonts.ready;
+    for (let i = 0; i < 100 && lotties.some((L) => !L.anim.isLoaded); i++) await new Promise((r) => setTimeout(r, 50));
     await Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; })));
     return [...document.images].filter((i) => !i.naturalWidth).map((i) => i.src.slice(0, 200));
   };
@@ -61172,6 +61201,13 @@ async function renderHtmlScene(tools, html, output2, opts) {
 import { spawn as spawn3 } from "node:child_process";
 import fsp3 from "node:fs/promises";
 import path3 from "node:path";
+function niceAspect(w, h) {
+  const common = [[9, 16], [16, 9], [1, 1], [4, 5], [5, 4], [3, 4], [4, 3], [2, 3], [3, 2], [21, 9]];
+  for (const [a, b] of common) if (Math.abs(w / h - a / b) / (a / b) < 0.02) return `${a}:${b}`;
+  const g = (x, y) => y ? g(y, x % y) : x;
+  const d = g(w, h);
+  return `${w / d}:${h / d}`;
+}
 var SAMPLE_W = 24;
 var SAMPLE_H = 40;
 var SAMPLE_FPS = 4;
@@ -61248,6 +61284,37 @@ function audioEvents(pcm, rate) {
   }
   return count;
 }
+async function analyzeImageReference(tools, file2, outDir) {
+  const probe = await probeMedia(tools, file2);
+  if (!probe.width || !probe.height) throw new Error("Could not read this image.");
+  await fsp3.mkdir(outDir, { recursive: true });
+  const raw = await readRaw(tools.ffmpeg, ["-hide_banner", "-v", "error", "-i", file2, "-frames:v", "1", "-vf", "scale=64:-2:flags=area", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], 4 * 1024 * 1024);
+  const pixels = new Uint8Array(raw.buffer, raw.byteOffset, raw.length - raw.length % 3);
+  let L = 0, warm = 0, sat = 0;
+  for (let i = 0; i + 2 < pixels.length; i += 3) {
+    const r = pixels[i] / 255, g = pixels[i + 1] / 255, b = pixels[i + 2] / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    L += (mx + mn) / 2;
+    warm += r - b;
+    sat += mx === 0 ? 0 : (mx - mn) / mx;
+  }
+  const np = Math.max(1, pixels.length / 3);
+  const out = path3.join(outDir, "frame_0.jpg");
+  const res = await runTool(tools.ffmpeg, ["-hide_banner", "-v", "error", "-y", "-i", file2, "-frames:v", "1", "-vf", "scale='min(1024,iw)':-2", "-q:v", "3", out], { timeoutMs: 6e4 });
+  if (res.code !== 0) throw new Error(`Could not read this image: ${tailError(res.stderr)}`);
+  return {
+    durationSec: 0,
+    width: probe.width,
+    height: probe.height,
+    aspect: niceAspect(probe.width, probe.height),
+    cuts: { count: 0, times: [], avgShotSec: 0, longestShotSec: 0, firstCutSec: null },
+    palette: paletteOf(pixels, 6).map((p) => ({ hex: p.hex, share: Number(p.share.toFixed(3)) })),
+    tone: { lightness: Number((L / np).toFixed(3)), warmth: Number((warm / np).toFixed(3)), saturation: Number((sat / np).toFixed(3)) },
+    motion: 0,
+    audio: { hasAudio: false, eventsPerMin: null },
+    frames: [{ time: 0, file: out }]
+  };
+}
 async function analyzeReference(tools, file2, outDir, opts = {}) {
   const probe = await probeMedia(tools, file2);
   if (!probe.hasVideo || !probe.width || !probe.height) throw new Error("This file has no video to analyse.");
@@ -61267,8 +61334,8 @@ async function analyzeReference(tools, file2, outDir, opts = {}) {
   const palette = paletteOf(Uint8Array.from(pal));
   let L = 0, warm = 0, sat = 0;
   for (let i = 0; i + 2 < pal.length; i += 3) {
-    const r = pal[i] / 255, g2 = pal[i + 1] / 255, b = pal[i + 2] / 255;
-    const mx = Math.max(r, g2, b), mn = Math.min(r, g2, b);
+    const r = pal[i] / 255, g = pal[i + 1] / 255, b = pal[i + 2] / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
     L += (mx + mn) / 2;
     warm += r - b;
     sat += mx === 0 ? 0 : (mx - mn) / mx;
@@ -61303,13 +61370,11 @@ async function analyzeReference(tools, file2, outDir, opts = {}) {
     const res = await runTool(tools.ffmpeg, ["-hide_banner", "-v", "error", "-y", "-ss", t.toFixed(3), "-i", file2, "-frames:v", "1", "-vf", "scale='min(480,iw)':-2", "-q:v", "4", out], { timeoutMs: 6e4 });
     if (res.code === 0) frames.push({ time: Number(t.toFixed(2)), file: out });
   }
-  const g = (a, b) => b ? g(b, a % b) : a;
-  const div = g(probe.width, probe.height);
   return {
     durationSec: Number(D.toFixed(2)),
     width: probe.width,
     height: probe.height,
-    aspect: `${probe.width / div}:${probe.height / div}`,
+    aspect: niceAspect(probe.width, probe.height),
     cuts: {
       count: scenes.length,
       times: scenes.map((t) => Number(t.toFixed(2))),
@@ -61613,8 +61678,8 @@ var MediaRepo = class {
     this.db.prepare("DELETE FROM media WHERE id = ?").run(id);
   }
   /** Whether another media record still references the same source file. */
-  countByPath(path18) {
-    const row = this.db.prepare("SELECT COUNT(*) AS n FROM media WHERE path = ?").get(path18);
+  countByPath(path20) {
+    const row = this.db.prepare("SELECT COUNT(*) AS n FROM media WHERE path = ?").get(path20);
     return row.n;
   }
 };
@@ -61645,11 +61710,11 @@ var FolderRepo = class {
   paths() {
     return this.list().map((f) => f.path);
   }
-  add(path18) {
-    const existing = this.list().find((f) => f.path.toLowerCase() === path18.toLowerCase());
+  add(path20) {
+    const existing = this.list().find((f) => f.path.toLowerCase() === path20.toLowerCase());
     if (existing) return existing;
     const id = crypto.randomUUID();
-    this.db.prepare("INSERT INTO approved_folders (id, path, created_at) VALUES (?, ?, ?)").run(id, path18, now());
+    this.db.prepare("INSERT INTO approved_folders (id, path, created_at) VALUES (?, ?, ?)").run(id, path20, now());
     return this.list().find((f) => f.id === id);
   }
   remove(id) {
@@ -61681,7 +61746,7 @@ import net from "node:net";
 import os2 from "node:os";
 import path4 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.3.0";
+var APP_VERSION = "0.4.0";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -62017,7 +62082,23 @@ var ExportRequest = external_exports.object({
 });
 
 // ../../packages/shared/src/agent.ts
-var AgentMode = external_exports.enum(["create", "edit", "ideas"]);
+var AgentMode = external_exports.enum(["create", "edit", "ideas", "study"]);
+var DesignBrief = external_exports.object({
+  /** What kind of piece: motion graphics, line animation, product showcase, app promo… */
+  kind: external_exports.enum(["auto", "motion", "animation", "product", "app", "kinetic", "infographic", "explainer", "photo_story", "logo"]).default("auto"),
+  /** Where pictures come from: real stock photos, the user's own project photos, drawn by Claude, or none. */
+  visuals: external_exports.enum(["auto", "real_photos", "my_photos", "drawn", "none"]).default("auto"),
+  transitions: external_exports.enum(["auto", "cut", "fade", "wipe", "zoom", "slide"]).default("auto"),
+  camera: external_exports.enum(["auto", "still", "gentle", "dynamic"]).default("auto"),
+  style: external_exports.enum(["auto", "luxury", "editorial", "bold", "minimal"]).default("auto"),
+  /** Up to 4 colours (#rrggbb); empty = let Claude choose. */
+  colors: external_exports.array(external_exports.string().regex(/^#[0-9a-fA-F]{6}$/)).max(4).default([]),
+  headingFont: external_exports.enum(["auto", "ruqaa", "amiri", "thmanyah"]).default("auto"),
+  pace: external_exports.enum(["auto", "calm", "medium", "lively"]).default("auto"),
+  /** Target total length in seconds; null = let Claude choose. */
+  durationSec: external_exports.number().int().min(3).max(180).nullable().default(null),
+  notes: external_exports.string().trim().max(1500).default("")
+});
 var AgentRunRequest = external_exports.object({
   projectId: external_exports.string().uuid(),
   mode: AgentMode,
@@ -62029,7 +62110,9 @@ var AgentRunRequest = external_exports.object({
   /** Continue the conversation of this earlier run (same Claude session), e.g. "make the title bigger". */
   followUpOf: external_exports.string().uuid().optional(),
   /** Design in the style of this project video (analysed with analyze_reference). */
-  referenceMediaId: external_exports.string().uuid().optional()
+  referenceMediaId: external_exports.string().uuid().optional(),
+  /** Answers from the design questions; applied to create runs. */
+  brief: DesignBrief.optional()
 });
 
 // src/http/send-file.ts
@@ -62424,19 +62507,29 @@ function registerEditingRoutes(app, s) {
 }
 
 // src/routes/generate.ts
-import crypto4 from "node:crypto";
-import fs11 from "node:fs";
-import fsp8 from "node:fs/promises";
+import crypto6 from "node:crypto";
+import fs13 from "node:fs";
+import fsp10 from "node:fs/promises";
 import os4 from "node:os";
-import path11 from "node:path";
+import path13 from "node:path";
+import { fileURLToPath as fileURLToPath3 } from "node:url";
+
+// src/routes/lottie.ts
+import crypto4 from "node:crypto";
+import fs10 from "node:fs";
+import fsp8 from "node:fs/promises";
+import path10 from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
-// src/services/export-service.ts
+// src/services/media-service.ts
 import crypto3 from "node:crypto";
-import fs10 from "node:fs";
+import fs9 from "node:fs";
 import fsp7 from "node:fs/promises";
-import path10 from "node:path";
-import { spawn as spawn4 } from "node:child_process";
+import path9 from "node:path";
+import { pipeline } from "node:stream/promises";
+import { Readable, Transform } from "node:stream";
+import dns from "node:dns/promises";
+import net2 from "node:net";
 
 // src/services/job-queue.ts
 var JobQueue = class {
@@ -62488,18 +62581,452 @@ var JobQueue = class {
   }
 };
 
+// src/services/media-service.ts
+var MAX_DOWNLOAD = 2 * 1024 ** 3;
+var EXT_BY_TYPE = {
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+  "video/mp4": ".mp4",
+  "video/webm": ".webm",
+  "video/quicktime": ".mov",
+  "audio/mpeg": ".mp3",
+  "audio/wav": ".wav",
+  "audio/x-wav": ".wav",
+  "audio/mp4": ".m4a"
+};
+function isPrivateIp(ip) {
+  if (net2.isIPv4(ip)) {
+    const [a, b] = ip.split(".").map(Number);
+    return a === 0 || a === 10 || a === 127 || a === 100 && b >= 64 && b <= 127 || a === 169 && b === 254 || a === 172 && b >= 16 && b <= 31 || a === 192 && b === 168 || a >= 224;
+  }
+  const v = ip.toLowerCase();
+  if (v.startsWith("::ffff:")) return isPrivateIp(v.slice(7));
+  return v === "::" || v === "::1" || v.startsWith("fc") || v.startsWith("fd") || v.startsWith("fe80");
+}
+async function assertPublicHttps(url2) {
+  if (url2.protocol !== "https:") throw new HttpError(400, "bad_url", "Only https links can be imported.");
+  if (url2.username || url2.password) throw new HttpError(400, "bad_url", "Links with credentials are not allowed.");
+  const host = url2.hostname.replace(/^[|]$/g, "");
+  const addrs = net2.isIP(host) ? [{ address: host }] : await dns.lookup(host, { all: true }).catch(() => []);
+  if (!addrs.length) throw new HttpError(400, "bad_url", `Could not resolve ${host}.`);
+  if (addrs.some((a) => isPrivateIp(a.address))) throw new HttpError(400, "bad_url", "Links to local or private network addresses are not allowed.");
+}
+var MediaService = class {
+  constructor(paths, tools, media, projects, folders, events) {
+    this.paths = paths;
+    this.tools = tools;
+    this.media = media;
+    this.projects = projects;
+    this.folders = folders;
+    this.events = events;
+  }
+  /** Probing + thumbnails: light, run a couple at a time. */
+  analyzeQueue = new JobQueue(2);
+  /** Proxy transcodes: heavy, one at a time to keep the machine responsive. */
+  proxyQueue = new JobQueue(1);
+  requireProject(projectId) {
+    if (!this.projects.get(projectId)) throw new HttpError(404, "project_not_found", "Project not found.");
+  }
+  requireMedia(id) {
+    const m = this.media.get(id);
+    if (!m) throw new HttpError(404, "media_not_found", "Media not found.");
+    return m;
+  }
+  publish(m) {
+    if (m) this.events.emit({ type: "media.updated", projectId: m.projectId, media: toPublicMedia(m) });
+  }
+  /** Browser upload: the stream is written into the project workspace (originals elsewhere are never touched). */
+  async upload(projectId, rawName, body) {
+    this.requireProject(projectId);
+    const name = sanitizeFileName(rawName);
+    const kind = mediaKindFromName(name);
+    if (!kind) throw new HttpError(415, "unsupported_type", `Unsupported file type: ${name}`);
+    const dir = path9.join(this.paths.projectsDir, projectId, "media");
+    await fsp7.mkdir(dir, { recursive: true });
+    const dest = path9.join(dir, `${crypto3.randomBytes(4).toString("hex")}-${name}`);
+    const part = `${dest}.part`;
+    try {
+      await pipeline(body, fs9.createWriteStream(part, { flags: "wx" }));
+      await fsp7.rename(part, dest);
+    } catch (e) {
+      await fsp7.rm(part, { force: true });
+      throw new HttpError(400, "upload_failed", `Upload failed: ${e.message}`);
+    }
+    const { size } = await fsp7.stat(dest);
+    if (size === 0) {
+      await fsp7.rm(dest, { force: true });
+      throw new HttpError(400, "empty_file", "The uploaded file is empty.");
+    }
+    const rec = this.media.insert({ projectId, kind, name, path: dest, storage: "uploaded", sizeBytes: size });
+    this.projects.touch(projectId);
+    this.publish(rec);
+    this.analyze(rec.id);
+    return toPublicMedia(rec);
+  }
+  /** Link files in place from approved folders: no copy of large media is made. */
+  async link(projectId, inputPaths) {
+    this.requireProject(projectId);
+    const approved = this.folders.paths();
+    const existing = new Map(this.media.listByProject(projectId).map((m) => [m.path.toLowerCase(), m]));
+    const result = { imported: [], errors: [] };
+    for (const p of inputPaths) {
+      try {
+        const real = await resolveApprovedPath(p, approved);
+        const dup = existing.get(real.toLowerCase());
+        if (dup) {
+          result.imported.push(toPublicMedia(dup));
+          continue;
+        }
+        const { kind, size } = await assertMediaFile(real);
+        const rec = this.media.insert({ projectId, kind, name: path9.basename(real), path: real, storage: "linked", sizeBytes: size });
+        existing.set(real.toLowerCase(), rec);
+        this.publish(rec);
+        this.analyze(rec.id);
+        result.imported.push(toPublicMedia(rec));
+      } catch (e) {
+        result.errors.push({ path: p, error: e.message });
+      }
+    }
+    if (result.imported.length) this.projects.touch(projectId);
+    return result;
+  }
+  /** Queue metadata probe + thumbnail, then a preview proxy when the format needs one. */
+  analyze(mediaId) {
+    this.analyzeQueue.enqueue({ key: mediaId, run: () => this.analyzeNow(mediaId) });
+  }
+  /** Probe + thumbnail right away (used when the caller needs the duration before returning). */
+  async analyzeNow(mediaId) {
+    {
+      {
+        const m = this.media.get(mediaId);
+        if (!m) return;
+        try {
+          const probe = await probeMedia(this.tools, m.path);
+          if (m.kind === "video" && !probe.hasVideo) throw new Error("File contains no video stream.");
+          if (m.kind === "audio" && !probe.hasAudio) throw new Error("File contains no audio stream.");
+          const st = await fsp7.stat(m.path);
+          this.media.update(mediaId, {
+            sizeBytes: st.size,
+            durationSec: probe.durationSec,
+            width: probe.width,
+            height: probe.height,
+            fps: m.kind === "video" ? probe.fps : null,
+            videoCodec: probe.videoCodec,
+            audioCodec: probe.audioCodec,
+            hasAudio: probe.hasAudio
+          });
+          const thumb = path9.join(this.paths.thumbnailsDir, `${mediaId}.jpg`);
+          try {
+            await generateThumbnail(this.tools, m.kind, m.path, thumb, probe.durationSec);
+            this.media.update(mediaId, { thumbnailPath: thumb });
+          } catch {
+          }
+          const proxy = needsProxy(m.kind, m.name, probe);
+          this.publish(this.media.update(mediaId, { status: "ready", error: null, proxyStatus: proxy ? "queued" : "not_needed" }));
+          if (proxy) this.queueProxy(mediaId);
+        } catch (e) {
+          this.publish(this.media.update(mediaId, { status: "error", error: e.message }));
+        }
+      }
+    }
+  }
+  /** A file Ba Studio created inside the project workspace (motion graphics, downloads). */
+  async registerOwned(projectId, filePath, displayName) {
+    this.requireProject(projectId);
+    const kind = mediaKindFromName(filePath);
+    if (!kind) throw new HttpError(415, "unsupported_type", `Unsupported file type: ${path9.basename(filePath)}`);
+    const { size } = await fsp7.stat(filePath);
+    const rec = this.media.insert({ projectId, kind, name: sanitizeFileName(displayName), path: filePath, storage: "uploaded", sizeBytes: size });
+    this.projects.touch(projectId);
+    this.publish(rec);
+    await this.analyzeNow(rec.id);
+    return toPublicMedia(this.requireMedia(rec.id));
+  }
+  /** Workspace folder for a project's own media. */
+  async projectMediaDir(projectId) {
+    const dir = path9.join(this.paths.projectsDir, projectId, "media");
+    await fsp7.mkdir(dir, { recursive: true });
+    return dir;
+  }
+  /**
+   * Download a public https file (for example an image or video made by an AI tool) into the project.
+   * Private and local network addresses are refused, every redirect is re-checked, and size is capped.
+   */
+  async importFromUrl(projectId, rawUrl, rawName) {
+    this.requireProject(projectId);
+    let url2 = new URL(rawUrl);
+    let res = null;
+    for (let hop = 0; hop < 5; hop++) {
+      await assertPublicHttps(url2);
+      res = await fetch(url2, { redirect: "manual", signal: AbortSignal.timeout(12e4) });
+      if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
+        url2 = new URL(res.headers.get("location"), url2);
+        continue;
+      }
+      break;
+    }
+    if (!res || !res.ok || !res.body) throw new HttpError(502, "download_failed", `Download failed (HTTP ${res?.status ?? "?"}).`);
+    const declared = Number(res.headers.get("content-length") ?? 0);
+    if (declared > MAX_DOWNLOAD) throw new HttpError(413, "too_large", "The file is larger than 2 GB.");
+    const type = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+    let name = sanitizeFileName(rawName || decodeURIComponent(path9.basename(url2.pathname)) || "download");
+    if (!mediaKindFromName(name) && EXT_BY_TYPE[type]) name = `${name.replace(/.[^.]*$/, "")}${EXT_BY_TYPE[type]}`;
+    if (!mediaKindFromName(name)) throw new HttpError(415, "unsupported_type", `The link is not a supported image, video or audio file (${type || "unknown type"}).`);
+    let seen2 = 0;
+    const limiter = new Transform({
+      transform(chunk, _enc, cb) {
+        seen2 += chunk.length;
+        cb(seen2 > MAX_DOWNLOAD ? new Error("The file is larger than 2 GB.") : null, chunk);
+      }
+    });
+    const body = Readable.fromWeb(res.body).pipe(limiter);
+    return this.upload(projectId, name, body);
+  }
+  queueProxy(mediaId) {
+    this.proxyQueue.enqueue({
+      key: mediaId,
+      run: async (signal) => {
+        const m = this.media.get(mediaId);
+        if (!m) return;
+        const out = path9.join(this.paths.proxiesDir, `${mediaId}.mp4`);
+        const tmp = path9.join(this.paths.proxiesDir, `${mediaId}.tmp.mp4`);
+        this.publish(this.media.update(mediaId, { proxyStatus: "running", proxyProgress: 0 }));
+        let lastEmit = 0;
+        try {
+          await generateProxy(this.tools, m.path, tmp, m.durationSec, {
+            signal,
+            onProgress: (f) => {
+              if (Date.now() - lastEmit < 500) return;
+              lastEmit = Date.now();
+              this.publish(this.media.update(mediaId, { proxyProgress: Math.round(f * 1e3) / 1e3 }));
+            }
+          });
+          const check2 = await probeMedia(this.tools, tmp);
+          if (!check2.hasVideo) throw new Error("Proxy verification failed: no video stream.");
+          await fsp7.rename(tmp, out);
+          this.publish(this.media.update(mediaId, { proxyStatus: "ready", proxyPath: out, proxyProgress: 1 }));
+        } catch (e) {
+          await fsp7.rm(tmp, { force: true });
+          if (!this.media.get(mediaId)) return;
+          this.publish(this.media.update(mediaId, { proxyStatus: "failed", proxyProgress: null, error: e.message }));
+        }
+      }
+    });
+  }
+  /** Stat every source file; flag missing ones and restore ones that came back. */
+  async refreshAvailability(projectId) {
+    const list = this.media.listByProject(projectId);
+    await Promise.all(
+      list.map(async (m) => {
+        const exists = await fsp7.stat(m.path).then((s) => s.isFile()).catch(() => false);
+        if (!exists && m.status !== "missing") {
+          this.publish(this.media.update(m.id, { status: "missing", error: "Source file not found on disk." }));
+        } else if (exists && m.status === "missing") {
+          this.media.update(m.id, { status: "processing", error: null });
+          this.analyze(m.id);
+        }
+      })
+    );
+    return this.media.listByProject(projectId);
+  }
+  /** Point a media item at a new file location (e.g. after the user moved it). */
+  async relink(mediaId, newPath) {
+    const m = this.requireMedia(mediaId);
+    const real = await resolveApprovedPath(newPath, this.folders.paths());
+    const { kind, size } = await assertMediaFile(real);
+    if (kind !== m.kind) throw new HttpError(400, "kind_mismatch", `Expected a ${m.kind} file but got a ${kind} file.`);
+    const probe = await probeMedia(this.tools, real).catch(() => null);
+    if (!probe) throw new HttpError(400, "unreadable", "The selected file could not be read as media.");
+    let warning = null;
+    if (m.durationSec && probe.durationSec && Math.abs(m.durationSec - probe.durationSec) > 0.5) {
+      warning = `Duration differs from the original (${m.durationSec.toFixed(1)}s vs ${probe.durationSec.toFixed(1)}s).`;
+    }
+    this.analyzeQueue.cancel(mediaId);
+    this.proxyQueue.cancel(mediaId);
+    await this.removeCaches(m);
+    const updated = this.media.update(mediaId, {
+      path: real,
+      name: path9.basename(real),
+      storage: "linked",
+      sizeBytes: size,
+      status: "processing",
+      error: null,
+      thumbnailPath: null,
+      proxyPath: null,
+      proxyStatus: "none",
+      proxyProgress: null
+    });
+    this.publish(updated);
+    this.analyze(mediaId);
+    return { media: toPublicMedia(updated), warning };
+  }
+  /**
+   * Remove a media item from its project. Linked source files are never touched;
+   * uploaded workspace copies are moved to the instance trash, not deleted.
+   */
+  async remove(mediaId) {
+    const m = this.requireMedia(mediaId);
+    this.analyzeQueue.cancel(mediaId);
+    this.proxyQueue.cancel(mediaId);
+    this.media.delete(mediaId);
+    await this.removeCaches(m);
+    if (m.storage === "uploaded" && this.media.countByPath(m.path) === 0 && fs9.existsSync(m.path)) {
+      const dest = path9.join(this.paths.trashDir, `${Date.now()}-${path9.basename(m.path)}`);
+      await fsp7.rename(m.path, dest).catch(() => void 0);
+    }
+    this.projects.touch(m.projectId);
+    this.events.emit({ type: "media.deleted", projectId: m.projectId, mediaId });
+  }
+  async removeCaches(m) {
+    for (const p of [m.thumbnailPath, m.proxyPath]) if (p) await fsp7.rm(p, { force: true });
+  }
+  /** After a crash or restart, resume interrupted analysis and proxy jobs. */
+  recover() {
+    const pending = this.media.listByStatus(["processing"], "status");
+    pending.forEach((m) => this.analyze(m.id));
+    const proxies = this.media.listByStatus(["queued", "running"], "proxy_status");
+    proxies.forEach((m) => {
+      this.media.update(m.id, { proxyStatus: "queued", proxyProgress: null });
+      this.queueProxy(m.id);
+    });
+    return pending.length + proxies.length;
+  }
+  async idle() {
+    await this.analyzeQueue.idle();
+    await this.proxyQueue.idle();
+    await this.analyzeQueue.idle();
+  }
+  close() {
+    this.analyzeQueue.close();
+    this.proxyQueue.close();
+  }
+};
+
+// src/routes/lottie.ts
+var MAX_BYTES = 15 * 1024 * 1024;
+var IdParams4 = external_exports.object({ id: external_exports.string().uuid() });
+var AI4 = { config: { ai: true } };
+var dirOf = (s, projectId) => path10.join(s.paths.projectsDir, projectId, "lottie");
+function inspectLottie(text) {
+  let j;
+  try {
+    j = JSON.parse(text.replace(/^﻿/, ""));
+  } catch {
+    throw new HttpError(422, "lottie_invalid", "This file is not valid Lottie JSON.");
+  }
+  const num = (v) => typeof v === "number" && Number.isFinite(v) ? v : NaN;
+  const fr = num(j.fr), ip = num(j.ip), op = num(j.op), w = num(j.w), h = num(j.h);
+  if (!Array.isArray(j.layers) || !(fr > 0) || !(op > ip) || !(w > 0) || !(h > 0)) {
+    throw new HttpError(422, "lottie_invalid", "This JSON is not a Lottie animation (missing frame rate, size or layers).");
+  }
+  return { width: w, height: h, fps: fr, durationSec: Number(((op - ip) / fr).toFixed(2)) };
+}
+function listLotties(s, projectId) {
+  const dir = dirOf(s, projectId);
+  try {
+    return JSON.parse(fs10.readFileSync(path10.join(dir, "index.json"), "utf8")).filter((l) => fs10.existsSync(path10.join(dir, `${l.id}.json`)));
+  } catch {
+    return [];
+  }
+}
+function lottieFiles(s, projectId) {
+  const dir = dirOf(s, projectId);
+  return new Map(listLotties(s, projectId).map((l) => [l.id, path10.join(dir, `${l.id}.json`)]));
+}
+function lottiePlayer() {
+  let dir = path10.dirname(fileURLToPath2(import.meta.url));
+  for (let i = 0; i < 6; i++) {
+    for (const p of [path10.join(dir, "vendor", "lottie.min.js"), path10.join(dir, "apps", "server", "dist", "vendor", "lottie.min.js"), path10.join(dir, "node_modules", "lottie-web", "build", "player", "lottie_svg.min.js")]) {
+      if (fs10.existsSync(p)) return p;
+    }
+    dir = path10.dirname(dir);
+  }
+  return null;
+}
+async function save(s, projectId, rawName, text) {
+  if (!s.projects.get(projectId)) throw new HttpError(404, "project_not_found", "Project not found.");
+  const info = inspectLottie(text);
+  const dir = dirOf(s, projectId);
+  await fsp8.mkdir(dir, { recursive: true });
+  const item = {
+    id: crypto4.randomUUID(),
+    name: rawName.replace(/\.(json|lottie)$/i, "").trim().slice(0, 80) || "\u0623\u0646\u064A\u0645\u064A\u0634\u0646",
+    ...info,
+    sizeBytes: Buffer.byteLength(text),
+    createdAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+  await fsp8.writeFile(path10.join(dir, `${item.id}.json`), text);
+  await fsp8.writeFile(path10.join(dir, "index.json"), JSON.stringify([item, ...listLotties(s, projectId)], null, 1));
+  return item;
+}
+async function readLimited(stream) {
+  const chunks = [];
+  let size = 0;
+  for await (const c of stream) {
+    size += c.length;
+    if (size > MAX_BYTES) throw new HttpError(413, "too_large", "Lottie files must be under 15 MB.");
+    chunks.push(c);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+function registerLottieRoutes(app, s) {
+  app.get("/api/projects/:id/lottie", AI4, async (req) => listLotties(s, IdParams4.parse(req.params).id));
+  app.put("/api/projects/:id/lottie", async (req, reply) => {
+    const { id } = IdParams4.parse(req.params);
+    const { name } = external_exports.object({ name: external_exports.string().trim().min(1).max(200) }).parse(req.query);
+    if (/\.lottie$/i.test(name)) throw new HttpError(415, "dotlottie", "Download the animation as Lottie JSON (.json); .lottie files are not supported yet.");
+    return reply.code(201).send(await save(s, id, name, await readLimited(req.raw)));
+  });
+  app.post("/api/projects/:id/lottie/import-url", AI4, async (req, reply) => {
+    const { id } = IdParams4.parse(req.params);
+    const body = external_exports.object({ url: external_exports.string().url().max(4e3), name: external_exports.string().trim().max(80).optional() }).parse(req.body);
+    let url2 = new URL(body.url);
+    let res = null;
+    for (let hop = 0; hop < 5; hop++) {
+      await assertPublicHttps(url2);
+      res = await fetch(url2, { redirect: "manual", signal: AbortSignal.timeout(6e4) });
+      if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
+        url2 = new URL(res.headers.get("location"), url2);
+        continue;
+      }
+      break;
+    }
+    if (!res || !res.ok || !res.body) throw new HttpError(502, "download_failed", `Download failed (HTTP ${res?.status ?? "?"}).`);
+    if (Number(res.headers.get("content-length") ?? 0) > MAX_BYTES) throw new HttpError(413, "too_large", "Lottie files must be under 15 MB.");
+    const { Readable: R } = await import("node:stream");
+    const text = await readLimited(R.fromWeb(res.body));
+    return reply.code(201).send(await save(s, id, body.name || decodeURIComponent(path10.basename(url2.pathname)) || "\u0623\u0646\u064A\u0645\u064A\u0634\u0646", text));
+  });
+  app.delete("/api/projects/:id/lottie/:lid", async (req) => {
+    const { id, lid } = external_exports.object({ id: external_exports.string().uuid(), lid: external_exports.string().uuid() }).parse(req.params);
+    const dir = dirOf(s, id);
+    await fsp8.rm(path10.join(dir, `${lid}.json`), { force: true });
+    await fsp8.writeFile(path10.join(dir, "index.json"), JSON.stringify(listLotties(s, id), null, 1)).catch(() => void 0);
+    return { ok: true };
+  });
+}
+
+// src/services/export-service.ts
+import crypto5 from "node:crypto";
+import fs12 from "node:fs";
+import fsp9 from "node:fs/promises";
+import path12 from "node:path";
+import { spawn as spawn4 } from "node:child_process";
+
 // src/services/fonts.ts
-import fs9 from "node:fs";
-import path9 from "node:path";
+import fs11 from "node:fs";
+import path11 from "node:path";
 var THMANYAH_URL = "https://thmanyah.open.cx/en/line-eight-for-everyone";
 function fontDirs() {
   if (process.platform === "win32") {
-    const dirs = [path9.join(process.env.WINDIR ?? "C:\\Windows", "Fonts")];
-    if (process.env.LOCALAPPDATA) dirs.push(path9.join(process.env.LOCALAPPDATA, "Microsoft", "Windows", "Fonts"));
+    const dirs = [path11.join(process.env.WINDIR ?? "C:\\Windows", "Fonts")];
+    if (process.env.LOCALAPPDATA) dirs.push(path11.join(process.env.LOCALAPPDATA, "Microsoft", "Windows", "Fonts"));
     return dirs;
   }
   const home = process.env.HOME ?? "";
-  return ["/Library/Fonts", path9.join(home, "Library", "Fonts"), "/usr/share/fonts", "/usr/local/share/fonts", path9.join(home, ".local", "share", "fonts"), path9.join(home, ".fonts")];
+  return ["/Library/Fonts", path11.join(home, "Library", "Fonts"), "/usr/share/fonts", "/usr/local/share/fonts", path11.join(home, ".local", "share", "fonts"), path11.join(home, ".fonts")];
 }
 function weightOf(file2) {
   const f = file2.toLowerCase();
@@ -62519,12 +63046,12 @@ function detectThmanyah(dirs = fontDirs()) {
   const walk = (dir, depth) => {
     let entries;
     try {
-      entries = fs9.readdirSync(dir, { withFileTypes: true });
+      entries = fs11.readdirSync(dir, { withFileTypes: true });
     } catch {
       return;
     }
     for (const e of entries) {
-      const p = path9.join(dir, e.name);
+      const p = path11.join(dir, e.name);
       if (e.isDirectory() && depth > 0) walk(p, depth - 1);
       else if (e.isFile() && /thmanyah|ثمانية/i.test(e.name) && /\.(otf|ttf)$/i.test(e.name)) {
         found.push({ file: p, weight: weightOf(e.name), rank: familyRank(e.name) });
@@ -62555,7 +63082,7 @@ function toItem(r) {
     progress: r.progress,
     etaSec: r.eta_sec,
     outputPath: r.output_path,
-    fileName: path10.basename(r.output_path),
+    fileName: path12.basename(r.output_path),
     encoder: r.encoder,
     width: s.width,
     height: s.height,
@@ -62576,9 +63103,9 @@ function outputSize(projectW, projectH, shortSide) {
   return projectW <= projectH ? { width: even4(shortSide), height: even4(shortSide * projectH / projectW) } : { width: even4(shortSide * projectW / projectH), height: even4(shortSide) };
 }
 function resolveFonts() {
-  const dirs = process.platform === "win32" ? [path10.join(process.env.WINDIR ?? "C:\\Windows", "Fonts")] : ["/usr/share/fonts/truetype/dejavu", "/usr/share/fonts/TTF", "/Library/Fonts", "/System/Library/Fonts/Supplemental"];
+  const dirs = process.platform === "win32" ? [path12.join(process.env.WINDIR ?? "C:\\Windows", "Fonts")] : ["/usr/share/fonts/truetype/dejavu", "/usr/share/fonts/TTF", "/Library/Fonts", "/System/Library/Fonts/Supplemental"];
   const find = (...names) => {
-    for (const d of dirs) for (const n3 of names) if (fs10.existsSync(path10.join(d, n3))) return path10.join(d, n3);
+    for (const d of dirs) for (const n3 of names) if (fs12.existsSync(path12.join(d, n3))) return path12.join(d, n3);
     return null;
   };
   const sans = find("segoeui.ttf", "arial.ttf", "DejaVuSans.ttf", "Arial.ttf");
@@ -62622,10 +63149,10 @@ var ExportService = class {
   queue = new JobQueue(1);
   lastEmit = /* @__PURE__ */ new Map();
   get defaultDir() {
-    return path10.join(this.paths.root, "exports");
+    return path12.join(this.paths.root, "exports");
   }
   get previewDir() {
-    return path10.join(this.paths.root, "cache", "previews");
+    return path12.join(this.paths.root, "cache", "previews");
   }
   list(opts = {}) {
     const where = [];
@@ -62663,9 +63190,9 @@ var ExportService = class {
         (r) => r.output_path.toLowerCase()
       )
     );
-    const taken = (p) => fs10.existsSync(p) || reserved.has(p.toLowerCase());
-    let candidate = path10.join(dir, `${base}.${ext}`);
-    for (let i = 2; taken(candidate); i++) candidate = path10.join(dir, `${base} (${i}).${ext}`);
+    const taken = (p) => fs12.existsSync(p) || reserved.has(p.toLowerCase());
+    let candidate = path12.join(dir, `${base}.${ext}`);
+    for (let i = 2; taken(candidate); i++) candidate = path12.join(dir, `${base} (${i}).${ext}`);
     return candidate;
   }
   async create(projectId, req, opts = {}) {
@@ -62680,7 +63207,7 @@ var ExportService = class {
     for (const clip of timeline.clips) {
       if (clip.type !== "media" || mediaMap.has(clip.mediaId)) continue;
       const m = this.media.get(clip.mediaId);
-      if (!m || m.status === "missing" || !fs10.existsSync(m.path)) {
+      if (!m || m.status === "missing" || !fs12.existsSync(m.path)) {
         missing.push(m?.name ?? clip.mediaId);
         continue;
       }
@@ -62702,17 +63229,17 @@ var ExportService = class {
       if (!folder || !folder.exists) throw new HttpError(404, "folder_not_found", "The selected output folder is not available.");
       dir = folder.path;
     } else dir = this.defaultDir;
-    await fsp7.mkdir(dir, { recursive: true });
+    await fsp9.mkdir(dir, { recursive: true });
     if (kind === "preview") {
       for (const old of this.list({ projectId, kind: "preview", limit: 200 })) {
         if (old.status === "queued" || old.status === "rendering") this.cancel(old.id);
-        await fsp7.rm(old.outputPath, { force: true }).catch(() => void 0);
+        await fsp9.rm(old.outputPath, { force: true }).catch(() => void 0);
         this.db.prepare("DELETE FROM exports WHERE id = ?").run(old.id);
       }
     }
     const base = kind === "preview" ? `preview-${projectId}` : sanitizeFileName(req.fileName).replace(/\.(mp4|mov|webm)$/i, "");
     const output2 = this.uniquePath(dir, base, req.container);
-    const id = crypto3.randomUUID();
+    const id = crypto5.randomUUID();
     const stored = { width: size.width, height: size.height, fps, codec: req.videoCodec, request: req };
     this.db.prepare(
       `INSERT INTO exports (id, project_id, project_name, kind, status, progress, settings, output_path, encoder, actor, created_at)
@@ -62738,7 +63265,7 @@ var ExportService = class {
     const fontSet = fonts ?? { sans: "", serif: "", mono: "", arabic: "" };
     const attempt = async (encoder) => {
       const compiled = compileRender({ timeline, media, settings: { ...settings, encoder }, fonts: fontSet });
-      const work = path10.join(this.paths.root, "cache", "render", id);
+      const work = path12.join(this.paths.root, "cache", "render", id);
       return runRender(this.tools, compiled, work, output2, {
         signal,
         onProgress: (p) => this.update(id, { progress: Math.round(p.fraction * 1e3) / 1e3, eta_sec: p.etaSec }, false)
@@ -62792,12 +63319,12 @@ var ExportService = class {
   async removeFromHistory(id) {
     const item = this.get(id);
     if (item.status === "queued" || item.status === "rendering") throw new HttpError(409, "export_running", "Cancel the render first.");
-    if (item.kind === "preview") await fsp7.rm(item.outputPath, { force: true });
+    if (item.kind === "preview") await fsp9.rm(item.outputPath, { force: true });
     this.db.prepare("DELETE FROM exports WHERE id = ?").run(id);
   }
   reveal(id) {
     const item = this.get(id);
-    if (item.status !== "completed" || !fs10.existsSync(item.outputPath)) throw new HttpError(404, "file_missing", "The exported file no longer exists.");
+    if (item.status !== "completed" || !fs12.existsSync(item.outputPath)) throw new HttpError(404, "file_missing", "The exported file no longer exists.");
     if (process.platform !== "win32") throw new HttpError(501, "unsupported", "Revealing files is only supported on Windows for now.");
     spawn4("explorer.exe", [`/select,${item.outputPath}`], { detached: true, stdio: "ignore", windowsHide: false }).unref();
   }
@@ -62810,26 +63337,26 @@ var ExportService = class {
 };
 
 // src/routes/generate.ts
-var IdParams4 = external_exports.object({ id: external_exports.string().uuid() });
+var IdParams5 = external_exports.object({ id: external_exports.string().uuid() });
 function designFonts() {
   const out = [];
-  let dir = path11.dirname(fileURLToPath2(import.meta.url));
+  let dir = path13.dirname(fileURLToPath3(import.meta.url));
   for (let i = 0; i < 6; i++) {
-    const assets = path11.join(dir, "apps", "studio", "dist", "assets");
-    if (fs11.existsSync(assets)) {
-      for (const f of fs11.readdirSync(assets)) {
+    const assets = path13.join(dir, "apps", "studio", "dist", "assets");
+    if (fs13.existsSync(assets)) {
+      for (const f of fs13.readdirSync(assets)) {
         const m = /^(amiri|aref-ruqaa)-arabic-(400|700)-normal-.*\.woff2$/.exec(f);
-        if (m) out.push({ family: m[1] === "amiri" ? "Amiri" : "Aref Ruqaa", weight: Number(m[2]), file: path11.join(assets, f) });
+        if (m) out.push({ family: m[1] === "amiri" ? "Amiri" : "Aref Ruqaa", weight: Number(m[2]), file: path13.join(assets, f) });
       }
       break;
     }
-    dir = path11.dirname(dir);
+    dir = path13.dirname(dir);
   }
   const weights = { light: 300, regular: 400, bold: 700, black: 900 };
   for (const [w, file2] of Object.entries(detectThmanyah())) if (file2) out.push({ family: "Thmanyah", weight: weights[w], file: file2 });
   return out;
 }
-var AI4 = { config: { ai: true } };
+var AI5 = { config: { ai: true } };
 var chain = Promise.resolve();
 function serial(fn) {
   const next = chain.then(fn, fn);
@@ -62837,7 +63364,7 @@ function serial(fn) {
   return next;
 }
 function registerGenerateRoutes(app, s) {
-  app.get("/api/fonts/status", AI4, async () => {
+  app.get("/api/fonts/status", AI5, async () => {
     const files = detectThmanyah();
     return { thmanyah: { installed: Object.keys(files).length > 0, weights: Object.keys(files), downloadUrl: THMANYAH_URL } };
   });
@@ -62856,8 +63383,8 @@ function registerGenerateRoutes(app, s) {
     reply.header("cache-control", "private, max-age=3600");
     return sendFile(req, reply, file2);
   });
-  app.post("/api/projects/:id/motion", AI4, async (req, reply) => {
-    const { id } = IdParams4.parse(req.params);
+  app.post("/api/projects/:id/motion", AI5, async (req, reply) => {
+    const { id } = IdParams5.parse(req.params);
     const body = external_exports.object({ spec: MotionSpec, name: external_exports.string().trim().min(1).max(80).default("\u0645\u0648\u0634\u0646 \u062C\u0631\u0627\u0641\u064A\u0643") }).parse(req.body);
     const project = s.projects.get(id);
     if (!project) throw new HttpError(404, "project_not_found", "Project not found.");
@@ -62866,7 +63393,7 @@ function registerGenerateRoutes(app, s) {
     const fonts = { thmanyah: detectThmanyah(), arabic: base.arabic, sans: base.sans, serif: base.serif, mono: base.mono };
     const media = /* @__PURE__ */ new Map();
     for (const m of s.media.listByProject(id)) {
-      if ((m.kind === "image" || m.kind === "video") && m.status === "ready" && fs11.existsSync(m.path)) media.set(m.id, { id: m.id, path: m.path, kind: m.kind });
+      if ((m.kind === "image" || m.kind === "video") && m.status === "ready" && fs13.existsSync(m.path)) media.set(m.id, { id: m.id, path: m.path, kind: m.kind });
     }
     let compiled;
     try {
@@ -62877,22 +63404,22 @@ function registerGenerateRoutes(app, s) {
     }
     const item = await serial(async () => {
       const dir = await s.mediaService.projectMediaDir(id);
-      const file2 = path11.join(dir, `${crypto4.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
-      const work = await fsp8.mkdtemp(path11.join(os4.tmpdir(), "ba-motion-"));
+      const file2 = path13.join(dir, `${crypto6.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
+      const work = await fsp10.mkdtemp(path13.join(os4.tmpdir(), "ba-motion-"));
       try {
         const res = await runRender(s.tools, compiled, work, file2);
         return await s.mediaService.registerOwned(id, res.outputPath, `${body.name}.mp4`);
       } catch (e) {
-        await fsp8.rm(file2, { force: true });
+        await fsp10.rm(file2, { force: true });
         throw new HttpError(500, "render_failed", `Motion render failed: ${e.message.slice(0, 400)}`);
       } finally {
-        await fsp8.rm(work, { recursive: true, force: true });
+        await fsp10.rm(work, { recursive: true, force: true });
       }
     });
     return reply.code(201).send({ media: item, usedThmanyah: Object.keys(fonts.thmanyah).length > 0 });
   });
-  app.post("/api/projects/:id/design", AI4, async (req, reply) => {
-    const { id } = IdParams4.parse(req.params);
+  app.post("/api/projects/:id/design", AI5, async (req, reply) => {
+    const { id } = IdParams5.parse(req.params);
     const body = external_exports.object({
       html: external_exports.string().min(1).max(4e5),
       durationSec: external_exports.number().min(0.5).max(60),
@@ -62902,67 +63429,67 @@ function registerGenerateRoutes(app, s) {
     if (!project) throw new HttpError(404, "project_not_found", "Project not found.");
     if (!findBrowser()) throw new HttpError(424, "browser_missing", "Design clips need Microsoft Edge or Google Chrome on this computer.");
     const media = /* @__PURE__ */ new Map();
-    for (const m of s.media.listByProject(id)) if (m.kind !== "audio" && m.status === "ready" && fs11.existsSync(m.path)) media.set(m.id.toLowerCase(), m.path);
+    for (const m of s.media.listByProject(id)) if (m.kind !== "audio" && m.status === "ready" && fs13.existsSync(m.path)) media.set(m.id.toLowerCase(), m.path);
     const res = await serial(async () => {
       const dir = await s.mediaService.projectMediaDir(id);
-      const file2 = path11.join(dir, `${crypto4.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
+      const file2 = path13.join(dir, `${crypto6.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
       try {
-        const r = await renderHtmlScene(s.tools, body.html, file2, { width: project.width, height: project.height, fps: project.fps, durationSec: body.durationSec, fonts: designFonts(), media });
+        const r = await renderHtmlScene(s.tools, body.html, file2, { width: project.width, height: project.height, fps: project.fps, durationSec: body.durationSec, fonts: designFonts(), media, lotties: lottieFiles(s, id), lottiePlayer: lottiePlayer() ?? void 0 });
         return { media: await s.mediaService.registerOwned(id, r.outputPath, `${body.name}.mp4`), warnings: r.warnings };
       } catch (e) {
-        await fsp8.rm(file2, { force: true });
-        if (e instanceof HtmlRenderError && /not an image or video/.test(e.message)) throw new HttpError(422, "design_invalid", e.message);
+        await fsp10.rm(file2, { force: true });
+        if (e instanceof HtmlRenderError && /not an image or video|not imported|Lottie player/.test(e.message)) throw new HttpError(422, "design_invalid", e.message);
         throw new HttpError(500, "render_failed", `Design render failed: ${e.message.slice(0, 300)}`);
       }
     });
     return reply.code(201).send(res);
   });
-  app.post("/api/media/:id/reference", AI4, async (req) => {
-    const { id } = IdParams4.parse(req.params);
+  app.post("/api/media/:id/reference", AI5, async (req) => {
+    const { id } = IdParams5.parse(req.params);
     const { inline } = external_exports.object({ inline: external_exports.coerce.boolean().default(false) }).parse(req.query ?? {});
     const m = s.mediaService.requireMedia(id);
-    if (m.kind !== "video") throw new HttpError(422, "not_video", "Only video clips can be analysed as a reference.");
-    if (!fs11.existsSync(m.path)) throw new HttpError(404, "file_missing", "The clip's file is missing.");
-    const dir = path11.join(s.paths.root, "cache", "reference", id);
-    const cacheFile = path11.join(dir, "analysis.json");
-    const mtime = (await fsp8.stat(m.path)).mtimeMs;
+    if (m.kind === "audio") throw new HttpError(422, "not_visual", "Pick a video or an image as the reference.");
+    if (!fs13.existsSync(m.path)) throw new HttpError(404, "file_missing", "The clip's file is missing.");
+    const dir = path13.join(s.paths.root, "cache", "reference", id);
+    const cacheFile = path13.join(dir, "analysis.json");
+    const mtime = (await fsp10.stat(m.path)).mtimeMs;
     let analysis = null;
     try {
-      const cached2 = JSON.parse(await fsp8.readFile(cacheFile, "utf8"));
-      if (cached2.mtime === mtime && cached2.analysis.frames.every((f) => fs11.existsSync(f.file))) analysis = cached2.analysis;
+      const cached2 = JSON.parse(await fsp10.readFile(cacheFile, "utf8"));
+      if (cached2.mtime === mtime && cached2.analysis.frames.every((f) => fs13.existsSync(f.file))) analysis = cached2.analysis;
     } catch {
     }
     if (!analysis) {
-      analysis = await serial(() => analyzeReference(s.tools, m.path, dir)).catch((e) => {
+      analysis = await serial(() => m.kind === "image" ? analyzeImageReference(s.tools, m.path, dir) : analyzeReference(s.tools, m.path, dir)).catch((e) => {
         throw new HttpError(422, "analysis_failed", `Could not analyse this clip: ${e.message.slice(0, 300)}`);
       });
-      await fsp8.writeFile(cacheFile, JSON.stringify({ mtime, analysis }));
+      await fsp10.writeFile(cacheFile, JSON.stringify({ mtime, analysis }));
     }
     const frames = await Promise.all(
       analysis.frames.map(async (f, i) => ({
         time: f.time,
         url: `/api/media/${id}/reference/frames/${i}`,
-        ...inline ? { base64: (await fsp8.readFile(f.file)).toString("base64") } : {}
+        ...inline ? { base64: (await fsp10.readFile(f.file)).toString("base64") } : {}
       }))
     );
-    return { mediaId: id, name: m.name, ...analysis, frames };
+    return { mediaId: id, name: m.name, kind: m.kind, ...analysis, frames };
   });
-  app.get("/api/media/:id/reference/frames/:n", AI4, async (req, reply) => {
+  app.get("/api/media/:id/reference/frames/:n", AI5, async (req, reply) => {
     const { id, n: n3 } = external_exports.object({ id: external_exports.string().uuid(), n: external_exports.coerce.number().int().min(0).max(20) }).parse(req.params);
     s.mediaService.requireMedia(id);
-    const file2 = path11.join(s.paths.root, "cache", "reference", id, `frame_${n3}.jpg`);
-    if (!fs11.existsSync(file2)) throw new HttpError(404, "frame_missing", "Analyse the clip first.");
+    const file2 = path13.join(s.paths.root, "cache", "reference", id, `frame_${n3}.jpg`);
+    if (!fs13.existsSync(file2)) throw new HttpError(404, "frame_missing", "Analyse the clip first.");
     return sendFile(req, reply, file2);
   });
-  app.post("/api/projects/:id/media/import-url", AI4, async (req, reply) => {
-    const { id } = IdParams4.parse(req.params);
+  app.post("/api/projects/:id/media/import-url", AI5, async (req, reply) => {
+    const { id } = IdParams5.parse(req.params);
     const body = external_exports.object({ url: external_exports.string().url().max(4e3), name: external_exports.string().trim().max(120).optional() }).parse(req.body);
     return reply.code(201).send(await s.mediaService.importFromUrl(id, body.url, body.name));
   });
 }
 
 // src/routes/agent.ts
-var IdParams5 = external_exports.object({ id: external_exports.string().uuid() });
+var IdParams6 = external_exports.object({ id: external_exports.string().uuid() });
 function registerAgentRoutes(app, s) {
   app.get("/api/agent/status", async (req) => {
     const { refresh } = external_exports.object({ refresh: external_exports.coerce.boolean().default(false) }).parse(req.query);
@@ -62972,7 +63499,7 @@ function registerAgentRoutes(app, s) {
     const { projectId } = external_exports.object({ projectId: external_exports.string().uuid().optional() }).parse(req.query);
     return s.agent.list(projectId);
   });
-  app.get("/api/agent/runs/:id", async (req) => s.agent.get(IdParams5.parse(req.params).id));
+  app.get("/api/agent/runs/:id", async (req) => s.agent.get(IdParams6.parse(req.params).id));
   app.post("/api/agent/runs", async (req, reply) => {
     const body = AgentRunRequest.parse(req.body);
     const project = s.projects.get(body.projectId);
@@ -62984,28 +63511,170 @@ function registerAgentRoutes(app, s) {
     }
     return reply.code(202).send(await s.agent.start(body));
   });
-  app.post("/api/agent/runs/:id/cancel", async (req) => s.agent.cancel(IdParams5.parse(req.params).id));
+  app.post("/api/agent/runs/:id/cancel", async (req) => s.agent.cancel(IdParams6.parse(req.params).id));
+}
+
+// src/services/stock.ts
+import fs14 from "node:fs";
+import fsp11 from "node:fs/promises";
+import path14 from "node:path";
+var UA = "BaStudio/0.4 (local video editor)";
+var seen = /* @__PURE__ */ new Map();
+async function getJson(url2, headers = {}) {
+  await assertPublicHttps(new URL(url2));
+  const res = await fetch(url2, { headers: { "user-agent": UA, ...headers }, signal: AbortSignal.timeout(2e4), redirect: "follow" });
+  if (res.status === 401 || res.status === 403) throw new HttpError(502, "photos_key_rejected", "The photo service refused the request (check the Pexels key in Settings).");
+  if (res.status === 429) throw new HttpError(429, "photos_rate_limited", "The photo service is busy. Try again in a minute.");
+  if (!res.ok) throw new HttpError(502, "photos_unavailable", `The photo service did not answer (HTTP ${res.status}).`);
+  return res.json();
+}
+async function searchPhotos(query, opts) {
+  const count = Math.min(Math.max(opts.count, 1), 15);
+  let photos;
+  let provider;
+  if (opts.pexelsKey) {
+    provider = "pexels";
+    const u = new URL("https://api.pexels.com/v1/search");
+    u.searchParams.set("query", query);
+    u.searchParams.set("per_page", String(count));
+    if (opts.orientation) u.searchParams.set("orientation", opts.orientation);
+    const j = await getJson(u.href, { authorization: opts.pexelsKey });
+    photos = (j.photos ?? []).map((p) => {
+      const src = p.src;
+      return {
+        id: `pexels-${p.id}`,
+        provider,
+        title: String(p.alt || query),
+        creator: String(p.photographer ?? ""),
+        license: "Pexels License",
+        attribution: "",
+        pageUrl: String(p.url ?? ""),
+        imageUrl: src.large2x ?? src.original ?? src.large ?? "",
+        thumbUrl: src.medium ?? src.small ?? src.tiny ?? "",
+        width: Number(p.width) || 0,
+        height: Number(p.height) || 0
+      };
+    });
+  } else {
+    provider = "openverse";
+    const u = new URL("https://api.openverse.org/v1/images/");
+    u.searchParams.set("q", query);
+    u.searchParams.set("page_size", String(count));
+    u.searchParams.set("license", "cc0,pdm,by,by-sa");
+    u.searchParams.set("license_type", "commercial");
+    u.searchParams.set("mature", "false");
+    if (opts.orientation === "portrait") u.searchParams.set("aspect_ratio", "tall");
+    if (opts.orientation === "landscape") u.searchParams.set("aspect_ratio", "wide");
+    if (opts.orientation === "square") u.searchParams.set("aspect_ratio", "square");
+    const j = await getJson(u.href);
+    photos = (j.results ?? []).map((r) => {
+      const lic = String(r.license ?? "");
+      return {
+        id: `openverse-${r.id}`,
+        provider,
+        title: String(r.title || query),
+        creator: String(r.creator ?? ""),
+        license: `${lic.toUpperCase()} ${r.license_version ?? ""}`.trim(),
+        attribution: lic === "cc0" || lic === "pdm" ? "" : String(r.attribution ?? ""),
+        pageUrl: String(r.foreign_landing_url ?? ""),
+        imageUrl: String(r.url ?? ""),
+        thumbUrl: String(r.thumbnail ?? r.url ?? ""),
+        width: Number(r.width) || 0,
+        height: Number(r.height) || 0
+      };
+    });
+  }
+  photos = photos.filter((p) => p.imageUrl.startsWith("https://"));
+  for (const p of photos) seen.set(p.id, p);
+  return { provider, photos };
+}
+async function thumbnail(p) {
+  try {
+    await assertPublicHttps(new URL(p.thumbUrl));
+    const res = await fetch(p.thumbUrl, { headers: { "user-agent": UA }, signal: AbortSignal.timeout(15e3) });
+    if (!res.ok) return null;
+    const type = (res.headers.get("content-type") ?? "image/jpeg").split(";")[0];
+    if (!/^image\/(jpeg|png|webp)$/.test(type)) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length > 4e5) return null;
+    return { data: buf.toString("base64"), mimeType: type };
+  } catch {
+    return null;
+  }
+}
+var creditsFile = (projectsDir, projectId) => path14.join(projectsDir, projectId, "credits.json");
+function readCredits(projectsDir, projectId) {
+  try {
+    return JSON.parse(fs14.readFileSync(creditsFile(projectsDir, projectId), "utf8"));
+  } catch {
+    return [];
+  }
+}
+async function importPhoto(media, projectsDir, projectId, photoId, name) {
+  const p = seen.get(photoId);
+  if (!p) throw new HttpError(404, "photo_not_found", "Search for photos first, then import one of the results by its id.");
+  const ext = /\.png($|\?)/i.test(p.imageUrl) ? ".png" : ".jpg";
+  const item = await media.importFromUrl(projectId, p.imageUrl, `${(name || p.title).slice(0, 60)}${ext}`);
+  const credit = { mediaId: item.id, photoId: p.id, title: p.title, creator: p.creator, license: p.license, attribution: p.attribution, pageUrl: p.pageUrl };
+  const list = readCredits(projectsDir, projectId);
+  list.push(credit);
+  await fsp11.writeFile(creditsFile(projectsDir, projectId), JSON.stringify(list, null, 1));
+  return { media: item, credit };
+}
+
+// src/routes/stock.ts
+var AI6 = { config: { ai: true } };
+var PEXELS_KEY = "photos.pexelsKey";
+function registerStockRoutes(app, s) {
+  app.get("/api/stock/photos", AI6, async (req) => {
+    const q = external_exports.object({
+      q: external_exports.string().trim().min(1).max(120),
+      count: external_exports.coerce.number().int().min(1).max(15).default(8),
+      orientation: external_exports.enum(["portrait", "landscape", "square"]).optional(),
+      inline: external_exports.coerce.boolean().default(false)
+    }).parse(req.query);
+    const res = await searchPhotos(q.q, { count: q.count, orientation: q.orientation, pexelsKey: s.settings.get(PEXELS_KEY) });
+    const photos = await Promise.all(
+      res.photos.map(async (p) => ({ ...p, ...q.inline ? { thumb: await thumbnail(p) } : {} }))
+    );
+    return { provider: res.provider, photos };
+  });
+  app.post("/api/projects/:id/stock/import", AI6, async (req, reply) => {
+    const { id } = external_exports.object({ id: external_exports.string().uuid() }).parse(req.params);
+    const body = external_exports.object({ photoId: external_exports.string().min(3).max(120), name: external_exports.string().trim().max(60).optional() }).parse(req.body);
+    return reply.code(201).send(await importPhoto(s.mediaService, s.paths.projectsDir, id, body.photoId, body.name));
+  });
+  app.get("/api/projects/:id/credits", AI6, async (req) => readCredits(s.paths.projectsDir, external_exports.object({ id: external_exports.string().uuid() }).parse(req.params).id));
+  app.get("/api/settings/photos", async () => ({ pexelsConfigured: Boolean(s.settings.get(PEXELS_KEY)) }));
+  app.put("/api/settings/photos", async (req) => {
+    const { pexelsKey } = external_exports.object({ pexelsKey: external_exports.string().trim().max(200) }).parse(req.body);
+    s.settings.set(PEXELS_KEY, pexelsKey);
+    return { pexelsConfigured: Boolean(pexelsKey) };
+  });
 }
 
 // src/services/agent-service.ts
-import crypto5 from "node:crypto";
-import fs12 from "node:fs";
-import fsp9 from "node:fs/promises";
-import path12 from "node:path";
+import crypto7 from "node:crypto";
+import fs15 from "node:fs";
+import fsp12 from "node:fs/promises";
+import path15 from "node:path";
 import { spawn as spawn5 } from "node:child_process";
-import { fileURLToPath as fileURLToPath3 } from "node:url";
-var MAX_TURNS = { create: 40, edit: 30, ideas: 6 };
+import { fileURLToPath as fileURLToPath4 } from "node:url";
+var MAX_TURNS = { create: 40, edit: 30, ideas: 6, study: 6 };
+var ONE_SHOT = ["ideas", "study"];
 var MAX_LOG = 400;
 var MAX_RUNS = 20;
 var SERVER = "ba";
-var READ_ONLY_TOOLS = ["analyze_reference", "get_project_info", "list_media", "list_projects", "open_project", "get_system_status", "list_renders"];
+var READ_ONLY_TOOLS = ["analyze_reference", "list_lotties", "get_project_info", "list_media", "list_projects", "open_project", "get_system_status", "list_renders"];
 var BLOCKED_BUILTINS = ["Bash", "PowerShell", "Read", "Edit", "Write", "MultiEdit", "NotebookEdit", "Glob", "Grep", "WebFetch", "WebSearch", "Task", "Agent", "Skill"];
 var HUMAN_TOUCH = `Design with a human touch (this is about craft and taste, never about hiding that AI was used):
 - One restrained palette: a base (#14161a, #0f0f0f, #f4efe6 paper, #1b2a2f) + one accent (#d4af5f muted gold, #c8553d brick, #6c8f7a sage) + a neutral. No neon, no rainbow gradients; gradients use 2 close tones.
 - Editorial typography: Arabic text in font "thmanyah". One big title per scene (weight black/bold, size 0.07\u20130.11), small supporting text (regular, 0.03\u20130.045), a tiny label (0.025) like "\u0660\u0661".
 - Real margins (text within x 0.1\u20130.9), not everything dead centre. Staggered timing (layers 0.15\u20130.4 s apart). Titles slide-up/fade, sentences "words", quotes "typewriter", numbers "counter".
 - Texture: grain 0.15\u20130.35 and vignette. Thin accent lines (shape h 0.004) work well.
-- Avoid stock clich\xE9s, emoji spam, glow everywhere, text appearing all at once.`;
+- Avoid stock clich\xE9s, emoji spam, glow everywhere, text appearing all at once.
+- NEVER childish (the user insists): no cartoon mascots, big-eyed characters, comic speech bubbles, emoji, stickers, confetti, rainbow colours, toy-like bouncing or wobbling, bubbly "kids app" shapes or comic fonts. Aim for adult, premium, editorial work. Only go playful if the user explicitly asks, and then keep it tasteful.
+- Never put letter-spacing on Arabic text (it breaks the joined letters); use kashida for width.`;
 var VARIATION = {
   palettes: [
     "paper #efe7d8 + mustard #e3a92b + ink #1b1b1b",
@@ -63021,7 +63690,7 @@ var VARIATION = {
     "asymmetric grid of 2\u20133 cards of different sizes",
     "split screen: text block on one side, visual on the other",
     "a winding path/timeline that links steps from top to bottom",
-    "stacked tilted photos like polaroids with tape strips",
+    "stacked, slightly tilted photo prints with soft shadows",
     "a big number or stat that fills half the frame",
     "a vertical list that reveals item by item with icons",
     "macro close-up of one product with a callout label and arrow",
@@ -63029,26 +63698,26 @@ var VARIATION = {
     "before/after comparison with a divider"
   ],
   motions: [
-    "pop with overshoot (scale .6\u21921.06\u21921)",
+    "soft scale-in with a subtle overshoot (scale .92\u21921.02\u21921)",
     "mask wipes revealing elements (clip-path inset)",
     "slow parallax camera pan across layers",
     "cascade: items fall in from the top one after another",
     "card flips (rotateY) revealing the back",
     "lines draw on first and lead the eye to each element",
-    "elastic drop with a small bounce",
+    "elements settle in with a short, controlled ease-out",
     "slide and settle from the screen edge with a slight rotation",
     "zoom-through: the camera pushes into an element to reach the next scene",
-    "typewriter title with a blinking hand-drawn underline"
+    "title reveal with a hairline underline that grows from the centre"
   ],
   details: [
     "black starbursts on card corners",
     "wavy hand-drawn connector lines",
     "dotted arrows",
     "hand-drawn circle or underline around a key word",
-    "tape strips and sticky notes",
-    "small stamps/badges (e.g. '\u062C\u062F\u064A\u062F', '\u066A\u0662\u0660-')",
-    "scribbled sparkles",
-    "price tags on strings"
+    "thin frame lines and hairline rules",
+    "small numbered labels (\u0660\u0661\u060C \u0660\u0662) beside titles",
+    "fine line-art illustrations that draw on",
+    "elegant callout lines pointing at product details"
   ]
 };
 var lastBrief = "";
@@ -63060,10 +63729,79 @@ function pick2(arr, n3) {
   }
   return a.slice(0, n3);
 }
-function variationBrief() {
+var KIND_TEXT = {
+  auto: "",
+  motion: "motion graphics: designed scenes of shapes, cards, type and images moving with purpose (create_design_clip).",
+  animation: "refined animation: line-art or illustrated subjects that draw themselves and move (follow the animation skill; never cartoonish).",
+  product: "product showcase: the product is the hero in every scene, with close-ups, callouts on details, clean backgrounds and premium light.",
+  app: "app / UI promo: phone or laptop mockups with real-looking screens animating inside, taps and transitions between screens.",
+  kinetic: "kinetic typography: the words themselves are the visuals; bold type that reveals, scales and moves to the rhythm, very few images.",
+  infographic: "infographic: numbers, charts and data animating in (counters, growing bars, progress rings), clear labels.",
+  explainer: "explainer: a short step-by-step story (problem, solution, steps, call to action) with icons or illustrations per step.",
+  photo_story: "photo story: a sequence of photos with slow pans and zooms (Ken Burns), elegant captions and soft transitions.",
+  logo: "logo reveal: a short, premium reveal of the brand name or logo (line draw, mask reveal or light sweep), 3\u20136 seconds."
+};
+var VISUALS_TEXT = {
+  auto: "",
+  real_photos: "REAL PHOTOS ONLY. Use search_photos to find real photographs (search in English for best results), look at the results and pick fitting ones, then import_photo them and use them with {{media:<id>}}. Never draw or fake a photo with shapes, never use emoji or icons in place of a photo. Mention the photo credits in your final message.",
+  my_photos: "use ONLY the user's own images and videos already in the project (get_project_info); do not search for or draw replacements. If the project has none, say so and stop before designing.",
+  drawn: "DRAWN BY YOU: illustrate subjects yourself as refined SVG line-art or flat illustration. Do not use stock photos.",
+  none: "no pictures at all: typography, colour, shapes and motion only."
+};
+var TRANSITIONS_TEXT = {
+  auto: "",
+  cut: "hard cuts on the beat",
+  fade: "soft cross-fades or dips",
+  wipe: "mask wipes and shape reveals",
+  zoom: "zoom-through transitions (the camera pushes into the next scene)",
+  slide: "slides and pushes from the edge"
+};
+var CAMERA_TEXT = {
+  auto: "",
+  still: "still frames, the elements move but the frame does not",
+  gentle: "a gentle slow push or pan on every scene",
+  dynamic: "dynamic camera moves (push-ins, pans, slight rotation and parallax depth)"
+};
+var STYLE_TEXT = {
+  auto: "",
+  luxury: "Luxury and elegant: dark or deep base, champagne/gold or one muted metallic accent, refined display type, slow confident motion, lots of negative space, hairline details.",
+  editorial: "Editorial paper: the house paper texture, one strong accent, editorial Arabic titles, hand-drawn black details, real product images.",
+  bold: "Bold and modern: high contrast, very large titles, strong colour blocks, sharp cuts and quick precise motion (still adult and premium, never childish).",
+  minimal: "Minimal and clean: white or light stone base, lots of space, thin lines, one accent used sparingly, calm fades and slides."
+};
+var FONT_TEXT = {
+  auto: "",
+  ruqaa: '"Aref Ruqaa" (calligraphic, luxurious)',
+  amiri: '"Amiri" (classic naskh)',
+  thmanyah: '"Thmanyah" (modern; falls back to Amiri if not installed)'
+};
+var PACE_TEXT = {
+  auto: "",
+  calm: "calm: longer scenes (4\u20135 s), slow eases, few elements at a time",
+  medium: "medium: scenes of 3\u20134 s, balanced motion",
+  lively: "lively: shorter scenes (2\u20133 s), quicker but controlled motion, more cuts"
+};
+function briefText(b) {
+  if (!b) return "";
+  const lines = [
+    KIND_TEXT[b.kind] && `- Type of piece: ${KIND_TEXT[b.kind]}`,
+    VISUALS_TEXT[b.visuals] && `- Pictures: ${VISUALS_TEXT[b.visuals]}`,
+    TRANSITIONS_TEXT[b.transitions] && `- Transitions between scenes: ${TRANSITIONS_TEXT[b.transitions]}.`,
+    CAMERA_TEXT[b.camera] && `- Camera: ${CAMERA_TEXT[b.camera]}.`,
+    STYLE_TEXT[b.style] && `- Style: ${STYLE_TEXT[b.style]}`,
+    b.colors.length ? `- Colours: use exactly this palette (first = main/background unless it is very saturated): ${b.colors.join(", ")}. Do not add other strong colours.` : "",
+    FONT_TEXT[b.headingFont] && `- Titles font: ${FONT_TEXT[b.headingFont]}.`,
+    PACE_TEXT[b.pace] && `- Pace: ${PACE_TEXT[b.pace]}.`,
+    b.durationSec ? `- Total length: about ${b.durationSec} seconds.` : "",
+    b.notes ? `- The user's notes: ${b.notes}` : ""
+  ].filter(Boolean);
+  return lines.length ? `USER DESIGN BRIEF (the user answered these questions before you started; follow them strictly, they override the house style and the variation below where they conflict):
+${lines.join("\n")}` : "";
+}
+function variationBrief(fixedPalette) {
   let brief = "";
   for (let i = 0; i < 5; i++) {
-    const palette = pick2(VARIATION.palettes, 1)[0];
+    const palette = fixedPalette ?? pick2(VARIATION.palettes, 1)[0];
     brief = `House style (keep it): paper grain, one strong accent, editorial Arabic titles, hand-drawn black details, real product images.
 Variation for THIS video (follow it, so it does not look like earlier videos):
 - Palette: ${palette}
@@ -63071,13 +63809,26 @@ Variation for THIS video (follow it, so it does not look like earlier videos):
 - Motion vocabulary: ${pick2(VARIATION.motions, 3).join("; ")}
 - Decorative details: ${pick2(VARIATION.details, 2).join("; ")}
 - Also vary title placement (top, side, bottom) and scene lengths (2.5\u20135 s) so the rhythm is not uniform.`;
-    if (!lastBrief.includes(palette)) break;
+    if (fixedPalette || !lastBrief.includes(palette)) break;
   }
   lastBrief = brief;
   return brief;
 }
-function systemPrompt(mode, projectId, humanTouch, maxTurns, followUp = false, referenceMediaId) {
+function systemPrompt(mode, projectId, humanTouch, maxTurns, followUp = false, referenceMediaId, brief) {
   const common = `You are running inside Ba Studio's "\u0627\u0637\u0644\u0628 \u0645\u0646 Claude" panel, headless: the user cannot answer questions during this run. Do not ask questions; make sensible choices and mention them briefly at the end. The studio is already open, so never call open_studio. First call open_project with id ${projectId}, then get_project_info. You have at most ${maxTurns} turns: plan to finish well within them. Write your final message in Arabic (or the user's language), short: what you made and where it is on the timeline.`;
+  if (mode === "study") {
+    return `${common}
+This run is a DESIGN STUDY ONLY: do not change anything. Call analyze_reference with media_id ${referenceMediaId} and look carefully at every still and the measurements. Describe the design the way a senior motion designer would, so it can be recreated. Reply with ONLY a JSON object, no other text, all strings in Arabic (hex colours stay as #rrggbb):
+{"summary": "one or two sentences: what this design is and its overall style",
+ "layout": "how elements are arranged: grid, centring, margins, where titles sit, use of empty space",
+ "typography": "type style: weight, size contrast, Arabic style (naskh/kufi/ruqaa/geometric), alignment, letter spacing or kashida, any highlighted words",
+ "colors": [{"hex": "#rrggbb", "role": "background / accent / text / detail ..."}],
+ "elements": ["each recurring element: cards, photos, cut-outs, mockups, icons, stickers, drawn lines, textures ..."],
+ "motion": "for video: how things enter and leave, speed, camera moves, transitions, rhythm; for an image: how it could be animated",
+ "textOnScreen": ["the main texts you can read, verbatim"],
+ "mood": "the feeling in a few words",
+ "recipe": ["5\u20138 concrete steps to recreate this style in a new design with different content"]}`;
+  }
   if (mode === "ideas") {
     return `${common}
 This run is for IDEAS ONLY: do not change anything. Look at the project (its media and timeline), then reply with ONLY a JSON array of 6 ideas, no other text: [{"title": "short Arabic title", "prompt": "a complete Arabic instruction the user can send to you to make it"}]. Mix kinds: motion-graphics intro/outro, turning an existing clip into motion graphics (blurred/dimmed media background + typography), animated stats/quotes, lower thirds, a short promo cut from the footage, captions-style text. Only suggest what Ba Studio can do (local motion graphics, cutting/arranging media, text, transitions, music). If the project is empty, suggest ideas that need no footage.`;
@@ -63090,29 +63841,36 @@ This run is for IDEAS ONLY: do not change anything. Look at the project (its med
 REFERENCE: the user wants this video designed in the style of the project video ${referenceMediaId}. First call analyze_reference with that media_id and study its stills and numbers. Follow its system: palette (use its dominant colours), background texture, typography feel, element types (cards, photos, mockups, drawn details), layout habits, scene length (its average shot length) and amount of motion. Use the user's own content, never the reference's text, logos, brand or people, and do not reuse its footage in the new design unless asked. In your final message, say in one or two lines what you took from the reference.` : "";
   const style = followUp ? "\n\nThis is a follow-up in the same conversation: keep the palette, layouts and style you already chose; change only what the user asks now." : referenceMediaId ? reference : mode === "create" ? `
 
-${variationBrief()}` : "";
+${variationBrief(brief?.colors.length ? `the user's colours ${brief.colors.join(" + ")}` : void 0)}` : "";
+  const userBrief = !followUp && mode === "create" ? briefText(brief) : "";
   return `${common}
 ${make}
 ${followUps}
 When done, call generate_preview so the user can watch the result.${humanTouch ? `
 
-${HUMAN_TOUCH}` : ""}${style}${guide ? `
+${HUMAN_TOUCH}` : ""}${userBrief ? `
+
+${userBrief}` : ""}${style}${guide ? `
 
 # Design guide
 ${guide}` : ""}`;
 }
 function designGuide() {
-  let dir = path12.dirname(fileURLToPath3(import.meta.url));
-  for (let i = 0; i < 7; i++) {
-    for (const p of [path12.join(dir, "skills", "design-clips", "SKILL.md"), path12.join(dir, "plugin", "ba-studio", "skills", "design-clips", "SKILL.md")]) {
-      try {
-        return fs12.readFileSync(p, "utf8").replace(/^---[\s\S]*?---\s*/, "");
-      } catch {
+  const read = (skill) => {
+    let dir = path15.dirname(fileURLToPath4(import.meta.url));
+    for (let i = 0; i < 7; i++) {
+      for (const p of [path15.join(dir, "skills", skill, "SKILL.md"), path15.join(dir, "plugin", "ba-studio", "skills", skill, "SKILL.md")]) {
+        try {
+          return fs15.readFileSync(p, "utf8").replace(/^---[\s\S]*?---\s*/, "");
+        } catch {
+        }
       }
+      dir = path15.dirname(dir);
     }
-    dir = path12.dirname(dir);
-  }
-  return null;
+    return null;
+  };
+  const parts = [read("design-clips"), read("animation")].filter(Boolean);
+  return parts.length ? parts.join("\n\n") : null;
 }
 function cmpVersion(a, b) {
   const pa = a.split(".").map((x) => Number.parseInt(x, 10) || 0);
@@ -63126,36 +63884,36 @@ function desktopBundled() {
   const out = [];
   const ls = (d) => {
     try {
-      return fs12.readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => path12.join(d, e.name));
+      return fs15.readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => path15.join(d, e.name));
     } catch {
       return [];
     }
   };
   const codeDirs = [];
-  for (const root of ["Claude-Data", "Claude-3p", "AnthropicClaude"].map((n3) => path12.join(local, n3))) {
-    if (fs12.existsSync(path12.join(root, "claude-code"))) codeDirs.push(path12.join(root, "claude-code"));
-    for (const sub of ls(root)) if (fs12.existsSync(path12.join(sub, "claude-code"))) codeDirs.push(path12.join(sub, "claude-code"));
+  for (const root of ["Claude-Data", "Claude-3p", "AnthropicClaude"].map((n3) => path15.join(local, n3))) {
+    if (fs15.existsSync(path15.join(root, "claude-code"))) codeDirs.push(path15.join(root, "claude-code"));
+    for (const sub of ls(root)) if (fs15.existsSync(path15.join(sub, "claude-code"))) codeDirs.push(path15.join(sub, "claude-code"));
   }
   for (const cd of codeDirs) {
     for (const vdir of ls(cd)) {
       for (const hdir of ls(vdir)) {
-        const exe = path12.join(hdir, "claude.exe");
-        if (fs12.existsSync(exe)) out.push({ file: exe, version: path12.basename(vdir) });
+        const exe = path15.join(hdir, "claude.exe");
+        if (fs15.existsSync(exe)) out.push({ file: exe, version: path15.basename(vdir) });
       }
     }
   }
   return out.sort((a, b) => cmpVersion(a.version, b.version)).map((o) => o.file);
 }
 function findClaude(env = process.env) {
-  if (env.BA_CLAUDE_PATH) return fs12.existsSync(env.BA_CLAUDE_PATH) ? env.BA_CLAUDE_PATH : null;
+  if (env.BA_CLAUDE_PATH) return fs15.existsSync(env.BA_CLAUDE_PATH) ? env.BA_CLAUDE_PATH : null;
   const names = process.platform === "win32" ? ["claude.exe", "claude.cmd"] : ["claude"];
-  for (const dir of (env.PATH ?? env.Path ?? "").split(path12.delimiter).filter(Boolean)) {
-    for (const n3 of names) if (fs12.existsSync(path12.join(dir, n3))) return path12.join(dir, n3);
+  for (const dir of (env.PATH ?? env.Path ?? "").split(path15.delimiter).filter(Boolean)) {
+    for (const n3 of names) if (fs15.existsSync(path15.join(dir, n3))) return path15.join(dir, n3);
   }
   const home = env.USERPROFILE ?? env.HOME;
   if (home) {
-    const native = path12.join(home, ".local", "bin", process.platform === "win32" ? "claude.exe" : "claude");
-    if (fs12.existsSync(native)) return native;
+    const native = path15.join(home, ".local", "bin", process.platform === "win32" ? "claude.exe" : "claude");
+    if (fs15.existsSync(native)) return native;
   }
   return desktopBundled()[0] ?? null;
 }
@@ -63180,13 +63938,27 @@ function claudeVersion(file2) {
 }
 function findMcpEntry() {
   if (process.env.BA_MCP_ENTRY) return process.env.BA_MCP_ENTRY;
-  let dir = path12.dirname(fileURLToPath3(import.meta.url));
+  let dir = path15.dirname(fileURLToPath4(import.meta.url));
   for (let i = 0; i < 6; i++) {
-    const p = path12.join(dir, "packages", "mcp-server", "dist", "mcp.mjs");
-    if (fs12.existsSync(p)) return p;
-    dir = path12.dirname(dir);
+    const p = path15.join(dir, "packages", "mcp-server", "dist", "mcp.mjs");
+    if (fs15.existsSync(p)) return p;
+    dir = path15.dirname(dir);
   }
   return null;
+}
+function parseBreakdown(text) {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0 || end <= start) return null;
+  try {
+    const o = JSON.parse(text.slice(start, end + 1));
+    const str = (v) => typeof v === "string" ? v.slice(0, 1200) : "";
+    const list = (v) => Array.isArray(v) ? v.map((x) => str(x)).filter(Boolean).slice(0, 20) : [];
+    const colors = Array.isArray(o.colors) ? o.colors.filter((c) => typeof c === "object" && c !== null).map((c) => ({ hex: /^#[0-9a-f]{6}$/i.test(String(c.hex)) ? String(c.hex) : "#888888", role: str(c.role) })).slice(0, 10) : [];
+    return { summary: str(o.summary), layout: str(o.layout), typography: str(o.typography), colors, elements: list(o.elements), motion: str(o.motion), textOnScreen: list(o.textOnScreen), mood: str(o.mood), recipe: list(o.recipe) };
+  } catch {
+    return null;
+  }
 }
 function parseIdeas(text) {
   const start = text.indexOf("[");
@@ -63238,7 +64010,8 @@ var AgentService = class {
     if (this.starting || [...this.runs.values()].some((l) => l.run.status === "running")) {
       throw new HttpError(409, "agent_busy", "Claude is already working on a request. Wait for it or stop it first.");
     }
-    if (input2.mode !== "ideas" && !input2.prompt.trim()) throw new HttpError(400, "empty_prompt", "Write what you want Claude to make.");
+    if (input2.mode === "study" && !input2.referenceMediaId) throw new HttpError(400, "reference_needed", "Pick the design to study first.");
+    if (!ONE_SHOT.includes(input2.mode) && !input2.prompt.trim()) throw new HttpError(400, "empty_prompt", "Write what you want Claude to make.");
     this.starting = true;
     try {
       return await this.launch(input2);
@@ -63257,11 +64030,11 @@ var AgentService = class {
     const parent = input2.followUpOf ? this.runs.get(input2.followUpOf)?.run : void 0;
     if (input2.followUpOf) {
       if (!parent || parent.projectId !== input2.projectId) throw new HttpError(404, "run_not_found", "That conversation is no longer available. Start a new request.");
-      if (!parent.sessionId || parent.mode === "ideas") throw new HttpError(409, "cannot_follow_up", "This request cannot be continued. Start a new one.");
+      if (!parent.sessionId || ONE_SHOT.includes(parent.mode)) throw new HttpError(409, "cannot_follow_up", "This request cannot be continued. Start a new one.");
     }
     const mode = parent?.mode ?? input2.mode;
     const maxTurns = MAX_TURNS[mode];
-    const id = crypto5.randomUUID();
+    const id = crypto7.randomUUID();
     const run = {
       id,
       projectId: input2.projectId,
@@ -63276,19 +64049,20 @@ var AgentService = class {
       error: null,
       usage: null,
       ideas: null,
+      breakdown: null,
       maxTurns,
-      sessionId: parent?.sessionId ?? (mode === "ideas" ? null : crypto5.randomUUID()),
+      sessionId: parent?.sessionId ?? (ONE_SHOT.includes(mode) ? null : crypto7.randomUUID()),
       threadId: parent?.threadId ?? id
     };
     const live = { run, child: null, cancelled: false };
     this.runs.set(run.id, live);
     this.trim();
-    await fsp9.mkdir(this.workDir, { recursive: true });
-    const mcpConfig = path12.join(this.workDir, "mcp.json");
-    const sysFile = path12.join(this.workDir, `system-${run.id}.txt`);
-    await fsp9.writeFile(mcpConfig, JSON.stringify({ mcpServers: { [SERVER]: { command: process.execPath, args: [mcp, "--instance", this.instanceName] } } }));
-    await fsp9.writeFile(sysFile, systemPrompt(mode, input2.projectId, input2.humanTouch, maxTurns, Boolean(parent), input2.referenceMediaId));
-    const allowed = mode === "ideas" ? READ_ONLY_TOOLS.map((t) => `mcp__${SERVER}__${t}`) : [`mcp__${SERVER}`];
+    await fsp12.mkdir(this.workDir, { recursive: true });
+    const mcpConfig = path15.join(this.workDir, "mcp.json");
+    const sysFile = path15.join(this.workDir, `system-${run.id}.txt`);
+    await fsp12.writeFile(mcpConfig, JSON.stringify({ mcpServers: { [SERVER]: { command: process.execPath, args: [mcp, "--instance", this.instanceName] } } }));
+    await fsp12.writeFile(sysFile, systemPrompt(mode, input2.projectId, input2.humanTouch, maxTurns, Boolean(parent), input2.referenceMediaId, input2.brief));
+    const allowed = ONE_SHOT.includes(mode) ? READ_ONLY_TOOLS.map((t) => `mcp__${SERVER}__${t}`) : [`mcp__${SERVER}`];
     const args = [
       "-p",
       "--output-format",
@@ -63310,7 +64084,7 @@ var AgentService = class {
       // Ideas are one-shot; real requests keep their session so the user can reply and adjust.
       ...run.sessionId ? parent ? ["--resume", run.sessionId] : ["--session-id", run.sessionId] : ["--no-session-persistence"]
     ];
-    const userPrompt = mode === "ideas" ? `\u0627\u0642\u062A\u0631\u062D \u0623\u0641\u0643\u0627\u0631\u0627\u064B \u0644\u0647\u0630\u0627 \u0627\u0644\u0645\u0634\u0631\u0648\u0639.${input2.prompt ? `
+    const userPrompt = mode === "study" ? "\u062D\u0644\u0651\u0644 \u0647\u0630\u0627 \u0627\u0644\u062A\u0635\u0645\u064A\u0645 \u0628\u0627\u0644\u062A\u0641\u0635\u064A\u0644." : mode === "ideas" ? `\u0627\u0642\u062A\u0631\u062D \u0623\u0641\u0643\u0627\u0631\u0627\u064B \u0644\u0647\u0630\u0627 \u0627\u0644\u0645\u0634\u0631\u0648\u0639.${input2.prompt ? `
 \u0645\u0644\u0627\u062D\u0638\u0629 \u0645\u0646 \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645: ${input2.prompt}` : ""}` : input2.prompt;
     this.log(live, { kind: "info", text: "started" });
     this.publish(run);
@@ -63344,7 +64118,7 @@ var AgentService = class {
     child.on("error", (e) => this.finish(live, "failed", `Could not start Claude Code: ${e.message}`));
     child.on("close", (code) => {
       if (buf.trim()) resultSeen = this.handleLine(live, buf.trim()) || resultSeen;
-      void fsp9.rm(sysFile, { force: true });
+      void fsp12.rm(sysFile, { force: true });
       if (live.cancelled) return this.finish(live, "cancelled", null);
       if (run.status !== "running") return;
       if (resultSeen && !run.error) return this.finish(live, "completed", null);
@@ -63393,6 +64167,7 @@ var AgentService = class {
       const text = typeof ev.result === "string" ? ev.result : "";
       l.run.result = text || null;
       if (l.run.mode === "ideas") l.run.ideas = parseIdeas(text);
+      if (l.run.mode === "study") l.run.breakdown = parseBreakdown(text);
       if (ev.is_error || typeof ev.subtype === "string" && ev.subtype !== "success") {
         l.run.error = ev.subtype === "error_max_turns" ? "max_turns" : text || String(ev.subtype ?? "error");
       }
@@ -63431,11 +64206,11 @@ var AgentService = class {
 };
 
 // src/app.ts
-import path16 from "node:path";
+import path18 from "node:path";
 
 // src/services/timeline-service.ts
-import fsp10 from "node:fs/promises";
-import path13 from "node:path";
+import fsp13 from "node:fs/promises";
+import path16 from "node:path";
 var HISTORY_LIMIT = 200;
 var BACKUP_LIMIT = 30;
 var AUTO_BACKUP_INTERVAL_MS = 5 * 6e4;
@@ -63558,30 +64333,30 @@ var TimelineService = class {
   }
   // ---- backups ---------------------------------------------------------------
   backupDir(projectId) {
-    return path13.join(this.paths.projectsDir, projectId, "backups");
+    return path16.join(this.paths.projectsDir, projectId, "backups");
   }
   async createBackup(projectId, label) {
     const project = this.projects.get(projectId);
     if (!project) throw new HttpError(404, "project_not_found", "Project not found.");
     const { timeline, revision } = this.load(projectId);
     const dir = this.backupDir(projectId);
-    await fsp10.mkdir(dir, { recursive: true });
+    await fsp13.mkdir(dir, { recursive: true });
     const createdAt = (/* @__PURE__ */ new Date()).toISOString();
     const name = `${createdAt.replace(/[:.]/g, "-")}.json`;
     const body = JSON.stringify({ format: "soezy-backup", version: 1, label, createdAt, revision, project, timeline }, null, 2);
-    await fsp10.writeFile(path13.join(dir, `${name}.tmp`), body, "utf8");
-    await fsp10.rename(path13.join(dir, `${name}.tmp`), path13.join(dir, name));
-    const all = (await fsp10.readdir(dir)).filter((f) => f.endsWith(".json")).sort();
-    for (const old of all.slice(0, Math.max(0, all.length - BACKUP_LIMIT))) await fsp10.rm(path13.join(dir, old), { force: true });
+    await fsp13.writeFile(path16.join(dir, `${name}.tmp`), body, "utf8");
+    await fsp13.rename(path16.join(dir, `${name}.tmp`), path16.join(dir, name));
+    const all = (await fsp13.readdir(dir)).filter((f) => f.endsWith(".json")).sort();
+    for (const old of all.slice(0, Math.max(0, all.length - BACKUP_LIMIT))) await fsp13.rm(path16.join(dir, old), { force: true });
     return { name, label, createdAt, sizeBytes: Buffer.byteLength(body) };
   }
   async listBackups(projectId) {
     const dir = this.backupDir(projectId);
-    const files = await fsp10.readdir(dir).catch(() => []);
+    const files = await fsp13.readdir(dir).catch(() => []);
     const out = [];
     for (const f of files.filter((x) => x.endsWith(".json")).sort().reverse()) {
       try {
-        const raw = await fsp10.readFile(path13.join(dir, f), "utf8");
+        const raw = await fsp13.readFile(path16.join(dir, f), "utf8");
         const data = JSON.parse(raw);
         out.push({ name: f, label: data.label ?? "Backup", createdAt: data.createdAt ?? "", sizeBytes: Buffer.byteLength(raw) });
       } catch {
@@ -63592,7 +64367,7 @@ var TimelineService = class {
   /** Restoring is an ordinary (undoable) timeline edit. */
   async restoreBackup(projectId, name) {
     if (!/^[\w-]+\.json$/.test(name)) throw new HttpError(400, "invalid_backup", "Invalid backup name.");
-    const raw = await fsp10.readFile(path13.join(this.backupDir(projectId), name), "utf8").catch(() => {
+    const raw = await fsp13.readFile(path16.join(this.backupDir(projectId), name), "utf8").catch(() => {
       throw new HttpError(404, "backup_not_found", "Backup not found.");
     });
     let data;
@@ -63614,31 +64389,31 @@ var TimelineService = class {
 };
 
 // src/routes/static.ts
-import fs13 from "node:fs";
-import path14 from "node:path";
+import fs16 from "node:fs";
+import path17 from "node:path";
 function registerStaticRoutes(app, root) {
   app.get("/*", async (req, reply) => {
-    if (!root || !fs13.existsSync(path14.join(root, "index.html"))) {
+    if (!root || !fs16.existsSync(path17.join(root, "index.html"))) {
       return reply.code(503).type("text/plain; charset=utf-8").send("Studio UI is not built. Run `npm run build` in the repository root.");
     }
     const urlPath = decodeURIComponent((req.url.split("?")[0] ?? "/").replace(/^\/+/, ""));
-    const candidate = path14.resolve(root, urlPath || "index.html");
-    if (isWithin(root, candidate) && fs13.existsSync(candidate) && fs13.statSync(candidate).isFile()) {
+    const candidate = path17.resolve(root, urlPath || "index.html");
+    if (isWithin(root, candidate) && fs16.existsSync(candidate) && fs16.statSync(candidate).isFile()) {
       const immutable = urlPath.startsWith("assets/");
       return sendFile(req, reply, candidate, { cache: immutable ? "public, max-age=31536000, immutable" : "no-cache" });
     }
     if (urlPath.startsWith("api/")) return reply.code(404).send({ error: "not_found", message: "Unknown API route." });
-    return sendFile(req, reply, path14.join(root, "index.html"));
+    return sendFile(req, reply, path17.join(root, "index.html"));
   });
 }
 
 // src/security/auth.ts
-import crypto6 from "node:crypto";
+import crypto8 from "node:crypto";
 var LAUNCH_CODE_TTL_MS = 2 * 6e4;
 var LaunchCodes = class {
   codes = /* @__PURE__ */ new Map();
   issue() {
-    const code = crypto6.randomBytes(24).toString("base64url");
+    const code = crypto8.randomBytes(24).toString("base64url");
     this.codes.set(code, Date.now() + LAUNCH_CODE_TTL_MS);
     return code;
   }
@@ -63760,339 +64535,8 @@ var EventBus = class {
   }
 };
 
-// src/services/media-service.ts
-import crypto7 from "node:crypto";
-import fs14 from "node:fs";
-import fsp11 from "node:fs/promises";
-import path15 from "node:path";
-import { pipeline } from "node:stream/promises";
-import { Readable, Transform } from "node:stream";
-import dns from "node:dns/promises";
-import net2 from "node:net";
-var MAX_DOWNLOAD = 2 * 1024 ** 3;
-var EXT_BY_TYPE = {
-  "image/png": ".png",
-  "image/jpeg": ".jpg",
-  "image/webp": ".webp",
-  "image/gif": ".gif",
-  "video/mp4": ".mp4",
-  "video/webm": ".webm",
-  "video/quicktime": ".mov",
-  "audio/mpeg": ".mp3",
-  "audio/wav": ".wav",
-  "audio/x-wav": ".wav",
-  "audio/mp4": ".m4a"
-};
-function isPrivateIp(ip) {
-  if (net2.isIPv4(ip)) {
-    const [a, b] = ip.split(".").map(Number);
-    return a === 0 || a === 10 || a === 127 || a === 100 && b >= 64 && b <= 127 || a === 169 && b === 254 || a === 172 && b >= 16 && b <= 31 || a === 192 && b === 168 || a >= 224;
-  }
-  const v = ip.toLowerCase();
-  if (v.startsWith("::ffff:")) return isPrivateIp(v.slice(7));
-  return v === "::" || v === "::1" || v.startsWith("fc") || v.startsWith("fd") || v.startsWith("fe80");
-}
-async function assertPublicHttps(url2) {
-  if (url2.protocol !== "https:") throw new HttpError(400, "bad_url", "Only https links can be imported.");
-  if (url2.username || url2.password) throw new HttpError(400, "bad_url", "Links with credentials are not allowed.");
-  const host = url2.hostname.replace(/^[|]$/g, "");
-  const addrs = net2.isIP(host) ? [{ address: host }] : await dns.lookup(host, { all: true }).catch(() => []);
-  if (!addrs.length) throw new HttpError(400, "bad_url", `Could not resolve ${host}.`);
-  if (addrs.some((a) => isPrivateIp(a.address))) throw new HttpError(400, "bad_url", "Links to local or private network addresses are not allowed.");
-}
-var MediaService = class {
-  constructor(paths, tools, media, projects, folders, events) {
-    this.paths = paths;
-    this.tools = tools;
-    this.media = media;
-    this.projects = projects;
-    this.folders = folders;
-    this.events = events;
-  }
-  /** Probing + thumbnails: light, run a couple at a time. */
-  analyzeQueue = new JobQueue(2);
-  /** Proxy transcodes: heavy, one at a time to keep the machine responsive. */
-  proxyQueue = new JobQueue(1);
-  requireProject(projectId) {
-    if (!this.projects.get(projectId)) throw new HttpError(404, "project_not_found", "Project not found.");
-  }
-  requireMedia(id) {
-    const m = this.media.get(id);
-    if (!m) throw new HttpError(404, "media_not_found", "Media not found.");
-    return m;
-  }
-  publish(m) {
-    if (m) this.events.emit({ type: "media.updated", projectId: m.projectId, media: toPublicMedia(m) });
-  }
-  /** Browser upload: the stream is written into the project workspace (originals elsewhere are never touched). */
-  async upload(projectId, rawName, body) {
-    this.requireProject(projectId);
-    const name = sanitizeFileName(rawName);
-    const kind = mediaKindFromName(name);
-    if (!kind) throw new HttpError(415, "unsupported_type", `Unsupported file type: ${name}`);
-    const dir = path15.join(this.paths.projectsDir, projectId, "media");
-    await fsp11.mkdir(dir, { recursive: true });
-    const dest = path15.join(dir, `${crypto7.randomBytes(4).toString("hex")}-${name}`);
-    const part = `${dest}.part`;
-    try {
-      await pipeline(body, fs14.createWriteStream(part, { flags: "wx" }));
-      await fsp11.rename(part, dest);
-    } catch (e) {
-      await fsp11.rm(part, { force: true });
-      throw new HttpError(400, "upload_failed", `Upload failed: ${e.message}`);
-    }
-    const { size } = await fsp11.stat(dest);
-    if (size === 0) {
-      await fsp11.rm(dest, { force: true });
-      throw new HttpError(400, "empty_file", "The uploaded file is empty.");
-    }
-    const rec = this.media.insert({ projectId, kind, name, path: dest, storage: "uploaded", sizeBytes: size });
-    this.projects.touch(projectId);
-    this.publish(rec);
-    this.analyze(rec.id);
-    return toPublicMedia(rec);
-  }
-  /** Link files in place from approved folders: no copy of large media is made. */
-  async link(projectId, inputPaths) {
-    this.requireProject(projectId);
-    const approved = this.folders.paths();
-    const existing = new Map(this.media.listByProject(projectId).map((m) => [m.path.toLowerCase(), m]));
-    const result = { imported: [], errors: [] };
-    for (const p of inputPaths) {
-      try {
-        const real = await resolveApprovedPath(p, approved);
-        const dup = existing.get(real.toLowerCase());
-        if (dup) {
-          result.imported.push(toPublicMedia(dup));
-          continue;
-        }
-        const { kind, size } = await assertMediaFile(real);
-        const rec = this.media.insert({ projectId, kind, name: path15.basename(real), path: real, storage: "linked", sizeBytes: size });
-        existing.set(real.toLowerCase(), rec);
-        this.publish(rec);
-        this.analyze(rec.id);
-        result.imported.push(toPublicMedia(rec));
-      } catch (e) {
-        result.errors.push({ path: p, error: e.message });
-      }
-    }
-    if (result.imported.length) this.projects.touch(projectId);
-    return result;
-  }
-  /** Queue metadata probe + thumbnail, then a preview proxy when the format needs one. */
-  analyze(mediaId) {
-    this.analyzeQueue.enqueue({ key: mediaId, run: () => this.analyzeNow(mediaId) });
-  }
-  /** Probe + thumbnail right away (used when the caller needs the duration before returning). */
-  async analyzeNow(mediaId) {
-    {
-      {
-        const m = this.media.get(mediaId);
-        if (!m) return;
-        try {
-          const probe = await probeMedia(this.tools, m.path);
-          if (m.kind === "video" && !probe.hasVideo) throw new Error("File contains no video stream.");
-          if (m.kind === "audio" && !probe.hasAudio) throw new Error("File contains no audio stream.");
-          const st = await fsp11.stat(m.path);
-          this.media.update(mediaId, {
-            sizeBytes: st.size,
-            durationSec: probe.durationSec,
-            width: probe.width,
-            height: probe.height,
-            fps: m.kind === "video" ? probe.fps : null,
-            videoCodec: probe.videoCodec,
-            audioCodec: probe.audioCodec,
-            hasAudio: probe.hasAudio
-          });
-          const thumb = path15.join(this.paths.thumbnailsDir, `${mediaId}.jpg`);
-          try {
-            await generateThumbnail(this.tools, m.kind, m.path, thumb, probe.durationSec);
-            this.media.update(mediaId, { thumbnailPath: thumb });
-          } catch {
-          }
-          const proxy = needsProxy(m.kind, m.name, probe);
-          this.publish(this.media.update(mediaId, { status: "ready", error: null, proxyStatus: proxy ? "queued" : "not_needed" }));
-          if (proxy) this.queueProxy(mediaId);
-        } catch (e) {
-          this.publish(this.media.update(mediaId, { status: "error", error: e.message }));
-        }
-      }
-    }
-  }
-  /** A file Ba Studio created inside the project workspace (motion graphics, downloads). */
-  async registerOwned(projectId, filePath, displayName) {
-    this.requireProject(projectId);
-    const kind = mediaKindFromName(filePath);
-    if (!kind) throw new HttpError(415, "unsupported_type", `Unsupported file type: ${path15.basename(filePath)}`);
-    const { size } = await fsp11.stat(filePath);
-    const rec = this.media.insert({ projectId, kind, name: sanitizeFileName(displayName), path: filePath, storage: "uploaded", sizeBytes: size });
-    this.projects.touch(projectId);
-    this.publish(rec);
-    await this.analyzeNow(rec.id);
-    return toPublicMedia(this.requireMedia(rec.id));
-  }
-  /** Workspace folder for a project's own media. */
-  async projectMediaDir(projectId) {
-    const dir = path15.join(this.paths.projectsDir, projectId, "media");
-    await fsp11.mkdir(dir, { recursive: true });
-    return dir;
-  }
-  /**
-   * Download a public https file (for example an image or video made by an AI tool) into the project.
-   * Private and local network addresses are refused, every redirect is re-checked, and size is capped.
-   */
-  async importFromUrl(projectId, rawUrl, rawName) {
-    this.requireProject(projectId);
-    let url2 = new URL(rawUrl);
-    let res = null;
-    for (let hop = 0; hop < 5; hop++) {
-      await assertPublicHttps(url2);
-      res = await fetch(url2, { redirect: "manual", signal: AbortSignal.timeout(12e4) });
-      if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
-        url2 = new URL(res.headers.get("location"), url2);
-        continue;
-      }
-      break;
-    }
-    if (!res || !res.ok || !res.body) throw new HttpError(502, "download_failed", `Download failed (HTTP ${res?.status ?? "?"}).`);
-    const declared = Number(res.headers.get("content-length") ?? 0);
-    if (declared > MAX_DOWNLOAD) throw new HttpError(413, "too_large", "The file is larger than 2 GB.");
-    const type = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
-    let name = sanitizeFileName(rawName || decodeURIComponent(path15.basename(url2.pathname)) || "download");
-    if (!mediaKindFromName(name) && EXT_BY_TYPE[type]) name = `${name.replace(/.[^.]*$/, "")}${EXT_BY_TYPE[type]}`;
-    if (!mediaKindFromName(name)) throw new HttpError(415, "unsupported_type", `The link is not a supported image, video or audio file (${type || "unknown type"}).`);
-    let seen = 0;
-    const limiter = new Transform({
-      transform(chunk, _enc, cb) {
-        seen += chunk.length;
-        cb(seen > MAX_DOWNLOAD ? new Error("The file is larger than 2 GB.") : null, chunk);
-      }
-    });
-    const body = Readable.fromWeb(res.body).pipe(limiter);
-    return this.upload(projectId, name, body);
-  }
-  queueProxy(mediaId) {
-    this.proxyQueue.enqueue({
-      key: mediaId,
-      run: async (signal) => {
-        const m = this.media.get(mediaId);
-        if (!m) return;
-        const out = path15.join(this.paths.proxiesDir, `${mediaId}.mp4`);
-        const tmp = path15.join(this.paths.proxiesDir, `${mediaId}.tmp.mp4`);
-        this.publish(this.media.update(mediaId, { proxyStatus: "running", proxyProgress: 0 }));
-        let lastEmit = 0;
-        try {
-          await generateProxy(this.tools, m.path, tmp, m.durationSec, {
-            signal,
-            onProgress: (f) => {
-              if (Date.now() - lastEmit < 500) return;
-              lastEmit = Date.now();
-              this.publish(this.media.update(mediaId, { proxyProgress: Math.round(f * 1e3) / 1e3 }));
-            }
-          });
-          const check2 = await probeMedia(this.tools, tmp);
-          if (!check2.hasVideo) throw new Error("Proxy verification failed: no video stream.");
-          await fsp11.rename(tmp, out);
-          this.publish(this.media.update(mediaId, { proxyStatus: "ready", proxyPath: out, proxyProgress: 1 }));
-        } catch (e) {
-          await fsp11.rm(tmp, { force: true });
-          if (!this.media.get(mediaId)) return;
-          this.publish(this.media.update(mediaId, { proxyStatus: "failed", proxyProgress: null, error: e.message }));
-        }
-      }
-    });
-  }
-  /** Stat every source file; flag missing ones and restore ones that came back. */
-  async refreshAvailability(projectId) {
-    const list = this.media.listByProject(projectId);
-    await Promise.all(
-      list.map(async (m) => {
-        const exists = await fsp11.stat(m.path).then((s) => s.isFile()).catch(() => false);
-        if (!exists && m.status !== "missing") {
-          this.publish(this.media.update(m.id, { status: "missing", error: "Source file not found on disk." }));
-        } else if (exists && m.status === "missing") {
-          this.media.update(m.id, { status: "processing", error: null });
-          this.analyze(m.id);
-        }
-      })
-    );
-    return this.media.listByProject(projectId);
-  }
-  /** Point a media item at a new file location (e.g. after the user moved it). */
-  async relink(mediaId, newPath) {
-    const m = this.requireMedia(mediaId);
-    const real = await resolveApprovedPath(newPath, this.folders.paths());
-    const { kind, size } = await assertMediaFile(real);
-    if (kind !== m.kind) throw new HttpError(400, "kind_mismatch", `Expected a ${m.kind} file but got a ${kind} file.`);
-    const probe = await probeMedia(this.tools, real).catch(() => null);
-    if (!probe) throw new HttpError(400, "unreadable", "The selected file could not be read as media.");
-    let warning = null;
-    if (m.durationSec && probe.durationSec && Math.abs(m.durationSec - probe.durationSec) > 0.5) {
-      warning = `Duration differs from the original (${m.durationSec.toFixed(1)}s vs ${probe.durationSec.toFixed(1)}s).`;
-    }
-    this.analyzeQueue.cancel(mediaId);
-    this.proxyQueue.cancel(mediaId);
-    await this.removeCaches(m);
-    const updated = this.media.update(mediaId, {
-      path: real,
-      name: path15.basename(real),
-      storage: "linked",
-      sizeBytes: size,
-      status: "processing",
-      error: null,
-      thumbnailPath: null,
-      proxyPath: null,
-      proxyStatus: "none",
-      proxyProgress: null
-    });
-    this.publish(updated);
-    this.analyze(mediaId);
-    return { media: toPublicMedia(updated), warning };
-  }
-  /**
-   * Remove a media item from its project. Linked source files are never touched;
-   * uploaded workspace copies are moved to the instance trash, not deleted.
-   */
-  async remove(mediaId) {
-    const m = this.requireMedia(mediaId);
-    this.analyzeQueue.cancel(mediaId);
-    this.proxyQueue.cancel(mediaId);
-    this.media.delete(mediaId);
-    await this.removeCaches(m);
-    if (m.storage === "uploaded" && this.media.countByPath(m.path) === 0 && fs14.existsSync(m.path)) {
-      const dest = path15.join(this.paths.trashDir, `${Date.now()}-${path15.basename(m.path)}`);
-      await fsp11.rename(m.path, dest).catch(() => void 0);
-    }
-    this.projects.touch(m.projectId);
-    this.events.emit({ type: "media.deleted", projectId: m.projectId, mediaId });
-  }
-  async removeCaches(m) {
-    for (const p of [m.thumbnailPath, m.proxyPath]) if (p) await fsp11.rm(p, { force: true });
-  }
-  /** After a crash or restart, resume interrupted analysis and proxy jobs. */
-  recover() {
-    const pending = this.media.listByStatus(["processing"], "status");
-    pending.forEach((m) => this.analyze(m.id));
-    const proxies = this.media.listByStatus(["queued", "running"], "proxy_status");
-    proxies.forEach((m) => {
-      this.media.update(m.id, { proxyStatus: "queued", proxyProgress: null });
-      this.queueProxy(m.id);
-    });
-    return pending.length + proxies.length;
-  }
-  async idle() {
-    await this.analyzeQueue.idle();
-    await this.proxyQueue.idle();
-    await this.analyzeQueue.idle();
-  }
-  close() {
-    this.analyzeQueue.close();
-    this.proxyQueue.close();
-  }
-};
-
 // src/services/system-service.ts
-import fsp12 from "node:fs/promises";
+import fsp14 from "node:fs/promises";
 import os5 from "node:os";
 async function detectGpus() {
   try {
@@ -64146,7 +64590,7 @@ var SystemService = class {
   }
   async status() {
     await this.ready;
-    const disk = await fsp12.statfs(this.paths.root).then(
+    const disk = await fsp14.statfs(this.paths.root).then(
       (s) => ({ path: this.paths.root, freeBytes: s.bavail * s.bsize, totalBytes: s.blocks * s.bsize }),
       () => null
     );
@@ -64208,7 +64652,7 @@ async function buildApp(opts) {
   const events = new EventBus();
   const auth = {
     token: opts.token,
-    aiToken: opts.aiToken ?? crypto8.randomBytes(32).toString("base64url"),
+    aiToken: opts.aiToken ?? crypto9.randomBytes(32).toString("base64url"),
     port: 0,
     devOrigins: opts.devOrigins ?? []
   };
@@ -64229,7 +64673,7 @@ async function buildApp(opts) {
     system,
     timelines: new TimelineService(db, opts.paths, projects, media, events),
     exports: new ExportService(db, opts.paths, tools, projects, media, folders, system, events),
-    agent: new AgentService(path16.join(opts.paths.root, "agent"), opts.instanceName, events),
+    agent: new AgentService(path18.join(opts.paths.root, "agent"), opts.instanceName, events),
     launchCodes: new LaunchCodes(),
     auth,
     shutdown: (reason) => opts.onShutdownRequest?.(reason)
@@ -64275,6 +64719,8 @@ async function buildApp(opts) {
   registerAiRoutes(app, services);
   registerGenerateRoutes(app, services);
   registerAgentRoutes(app, services);
+  registerLottieRoutes(app, services);
+  registerStockRoutes(app, services);
   registerStaticRoutes(app, opts.studioDir);
   app.addHook("onClose", async () => {
     services.mediaService.close();
@@ -64312,10 +64758,10 @@ async function mintLaunchUrl(session) {
   return (await res.json()).url;
 }
 function resolveStudioDir() {
-  if (process.env.SOEZY_STUDIO_DIR) return path17.resolve(process.env.SOEZY_STUDIO_DIR);
-  const here = path17.dirname(fileURLToPath4(import.meta.url));
-  const candidate = path17.resolve(here, "..", "..", "studio", "dist");
-  return fs15.existsSync(candidate) ? candidate : null;
+  if (process.env.SOEZY_STUDIO_DIR) return path19.resolve(process.env.SOEZY_STUDIO_DIR);
+  const here = path19.dirname(fileURLToPath5(import.meta.url));
+  const candidate = path19.resolve(here, "..", "..", "studio", "dist");
+  return fs17.existsSync(candidate) ? candidate : null;
 }
 async function main() {
   const { values } = parseArgs({
