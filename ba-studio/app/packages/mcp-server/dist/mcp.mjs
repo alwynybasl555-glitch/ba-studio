@@ -36821,6 +36821,7 @@ How to work:
 - Animation: animated SVG illustrations (characters that wave/blink/walk, objects with squash and stretch, kinetic type) and imported Lottie animations (list_lotties, data-lottie) are made with create_design_clip; follow the animation skill. Flat 2D only: no lip-synced cartoon films.
 - When the user wants a design "like" a video (a reference), import it, call analyze_reference to see its stills and measurements, then follow its system (palette, element types, layout, pacing, amount of motion) with new content of their own.
 - Design with a human touch: a restrained palette, editorial typography (Thmanyah for Arabic), clear hierarchy, real margins, staggered timing, subtle grain. Avoid generic AI looks (neon rainbow gradients, glowing everything, centred clich\xE9s). This is about craft, never about hiding that AI was used if the user or a platform asks.
+- Brand: the user can save their logo once (get_brand). When they want their logo, use src="{{brand:logo}}" in create_design_clip: small in a corner on most scenes and large at the end.
 - Video links: import_video_link downloads a YouTube/TikTok/X\u2026 video into the project (only the user's own or permitted videos); then study it with transcribe, analyze_audio, detect_scenes and analyze_reference.
 - Talking videos (free, local): transcribe (word-timed, pick the dialect) \u2192 cut_words (fillers=true, or word indexes: text-based editing) and/or cut_silences \u2192 add_captions (word-synced, fix misheard words with corrections). Arabic narration: voiceover. The designer picks the voice (\u0641\u0647\u062F\u060C \u0645\u0646\u0635\u0648\u0631\u060C \u0639\u0628\u062F\u0627\u0644\u0644\u0647 on ElevenLabs with their own key, or the free local \u0643\u0631\u064A\u0645); use their choice from the brief or Settings. These need the local engines; if a tool says one is missing, tell the user to install it in \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629.
 - Not available yet (do not pretend to do these): automatic highlight detection.`;
@@ -36893,7 +36894,13 @@ var TextClip = external_exports.object({
   boxOpacity: external_exports.number().min(0).max(1).default(0.6),
   /** Text centre position as a fraction of the canvas (0..1). */
   x: external_exports.number().min(0).max(1).default(0.5),
-  y: external_exports.number().min(0).max(1).default(0.85)
+  y: external_exports.number().min(0).max(1).default(0.85),
+  /**
+   * Karaoke captions: each word with the time it is spoken (seconds from the clip start). The
+   * words light up in `highlight` as they are said; the rest stay in `color`.
+   */
+  words: external_exports.array(external_exports.object({ text: external_exports.string().min(1).max(80), t: external_exports.number().min(0) })).max(40).optional(),
+  highlight: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).default("#F5D04C")
 });
 var Clip = external_exports.discriminatedUnion("type", [MediaClip, TextClip]);
 var Timeline = external_exports.object({
@@ -36990,7 +36997,9 @@ var TimelineOp = external_exports.discriminatedUnion("op", [
     start: Time,
     duration: external_exports.number().min(0.04).max(86400),
     trackId: Id.optional(),
-    style: TextStyle.optional()
+    style: TextStyle.optional(),
+    words: external_exports.array(external_exports.object({ text: external_exports.string().min(1).max(80), t: external_exports.number().min(0) })).max(40).optional(),
+    highlight: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).optional()
   }),
   external_exports.object({ op: external_exports.literal("moveClip"), clipId: Id, start: Time, trackId: Id.optional() }),
   external_exports.object({ op: external_exports.literal("trimClip"), clipId: Id, edge: external_exports.enum(["start", "end"]), time: Time }),
@@ -37658,7 +37667,7 @@ function registerTools(server, studio) {
   });
   tool("create_design_clip", {
     title: "Create design clip (HTML)",
-    description: `Render a richly designed animated scene written as HTML + CSS, recorded frame by frame in a local headless browser (no network). Use this for ad-style motion design: rounded cards with shadows, cut-out product images, phone mockups (CSS), hand-drawn SVG squiggles/starbursts/dotted connectors, pop/scale/rotate/slide animations, progress bars, camera-like moves (transform on a wrapper). The canvas is exactly the project size (use px or vw/vh; body is RTL Arabic). Animate ONLY with CSS @keyframes / transitions or the Web Animations API (they are paused and set to each frame's time; Date.now() and setTimeout do not advance). For JS-driven drawing, listen to window 'ba-frame' events (detail = seconds). Fonts: 'Thmanyah' (if installed), 'Amiri', 'Aref Ruqaa' (titles). Add class 'ba-paper' for paper grain. Project images/videos: src="{{media:<media_id>}}". Imported Lottie animations: <div data-lottie="<lottie_id>" style="position:absolute;...;width:..;height:.."></div> (optional data-start, data-speed, data-loop="false", data-fit="cover"; ids from list_lotties). Animated SVG illustration (characters, objects) works too: follow the animation skill. No external URLs (they are blocked). Follow the motion-design skill for the human-touch style. Returns a media item; place it with add_clip or add_to_timeline_at.`,
+    description: `Render a richly designed animated scene written as HTML + CSS, recorded frame by frame in a local headless browser (no network). Use this for ad-style motion design: rounded cards with shadows, cut-out product images, phone mockups (CSS), hand-drawn SVG squiggles/starbursts/dotted connectors, pop/scale/rotate/slide animations, progress bars, camera-like moves (transform on a wrapper). The canvas is exactly the project size (use px or vw/vh; body is RTL Arabic). Animate ONLY with CSS @keyframes / transitions or the Web Animations API (they are paused and set to each frame's time; Date.now() and setTimeout do not advance). For JS-driven drawing, listen to window 'ba-frame' events (detail = seconds). Fonts: 'Thmanyah' (if installed), 'Amiri', 'Aref Ruqaa' (titles). Add class 'ba-paper' for paper grain. Project images/videos: src="{{media:<media_id>}}". The user's own logo (from \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0647\u0648\u064A\u062A\u064A): src="{{brand:logo}}" (transparent PNG; check get_brand first). Imported Lottie animations: <div data-lottie="<lottie_id>" style="position:absolute;...;width:..;height:.."></div> (optional data-start, data-speed, data-loop="false", data-fit="cover"; ids from list_lotties). Animated SVG illustration (characters, objects) works too: follow the animation skill. No external URLs (they are blocked). Follow the motion-design skill for the human-touch style. Returns a media item; place it with add_clip or add_to_timeline_at.`,
     inputSchema: {
       html: external_exports.string().min(1).max(4e5).describe("Scene HTML: <style> plus markup (a full document is also accepted)"),
       duration_sec: external_exports.number().min(0.5).max(60),
@@ -37675,6 +37684,15 @@ function registerTools(server, studio) {
     if (a.add_to_timeline_at === void 0) return text(`Design clip rendered and added to media.${warn}`, compactMedia(r.media));
     const t = await op(pid, { op: "addClip", mediaId: r.media.id, start: a.add_to_timeline_at }, call);
     return timelineReply(`Design clip rendered and placed on the timeline.${warn}`, t, pid, call);
+  });
+  tool("get_brand", {
+    title: "Read the user's brand",
+    description: `The user's saved brand: whether a logo exists (use it in designs as src="{{brand:logo}}") and the brand name. Use the logo when the user asks for their logo or brand, or the brief says so.`,
+    inputSchema: {},
+    annotations: { readOnlyHint: true }
+  }, async (_a3, _e, call) => {
+    const r = await call("GET", "/api/brand");
+    return text(r.hasLogo ? `Logo saved${r.name ? ` for \u201C${r.name}\u201D` : ""}: use src="{{brand:logo}}" in design HTML.` : "No logo saved yet. If the user wants one, ask them to add it under \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0647\u0648\u064A\u062A\u064A.");
   });
   tool("analyze_reference", {
     title: "Analyse a reference video's design",
@@ -37818,10 +37836,12 @@ ${lines.join("\n")}`);
   });
   tool("add_captions", {
     title: "Add word-synced captions",
-    description: "Turn a transcript (run transcribe first) into captions on the timeline, timed to the words and following every cut, as ONE undoable step. Styles: clean (white on a soft dark box), bold (big Thmanyah, no box), highlight (dark text on a yellow box), minimal (small, no box). 2\u20133 words per caption suits short vertical videos; 5\u20137 suits longer talks. Pass corrections to fix misheard words by index (spelling, names, brand). Fillers are skipped unless corrected. Do this AFTER cutting.",
+    description: "Turn a transcript (run transcribe first) into captions on the timeline, timed to the words and following every cut, as ONE undoable step. Styles: karaoke (default: bold white words that light up in the highlight colour as they are spoken, like TikTok), clean (white on a soft dark box), bold (big Thmanyah, no box), highlight (dark text on a yellow box), minimal (small, no box). karaoke=true adds the word-by-word lighting to any style. 2\u20133 words per caption suits short vertical videos; 5\u20137 suits longer talks. Pass corrections to fix misheard words by index (spelling, names, brand). Fillers are skipped unless corrected. Do this AFTER cutting.",
     inputSchema: {
       media_id: external_exports.string().uuid(),
-      style: external_exports.enum(["clean", "bold", "highlight", "minimal"]).default("clean"),
+      style: external_exports.enum(["karaoke", "clean", "bold", "highlight", "minimal"]).default("karaoke"),
+      karaoke: external_exports.boolean().default(true).describe("Words light up in the highlight colour as they are spoken (TikTok style)"),
+      highlight: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).default("#F5D04C").describe("Colour of the spoken word"),
       words_per_caption: external_exports.number().int().min(1).max(8).default(3),
       corrections: external_exports.array(external_exports.object({ i: external_exports.number().int().min(0), text: external_exports.string().max(60) })).max(2e3).default([]),
       color: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe("Text colour override"),
@@ -37838,7 +37858,9 @@ ${lines.join("\n")}`);
       corrections: a.corrections,
       color: a.color,
       y: a.y,
-      dryRun: a.dry_run
+      dryRun: a.dry_run,
+      karaoke: a.karaoke,
+      highlight: a.highlight
     });
     return text(`${r.applied ? "Added" : "Would add"} ${r.captions} captions.${r.applied ? " (one undo step)" : ""}`, r.preview);
   });
