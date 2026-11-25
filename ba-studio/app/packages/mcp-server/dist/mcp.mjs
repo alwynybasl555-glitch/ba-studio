@@ -36822,6 +36822,7 @@ How to work:
 - When the user wants a design "like" a video (a reference), import it, call analyze_reference to see its stills and measurements, then follow its system (palette, element types, layout, pacing, amount of motion) with new content of their own.
 - Design with a human touch: a restrained palette, editorial typography (Thmanyah for Arabic), clear hierarchy, real margins, staggered timing, subtle grain. Avoid generic AI looks (neon rainbow gradients, glowing everything, centred clich\xE9s). This is about craft, never about hiding that AI was used if the user or a platform asks.
 - Brand: the user can save their logo once (get_brand). When they want their logo, use src="{{brand:logo}}" in create_design_clip: small in a corner on most scenes and large at the end.
+- Finishing: tiktok_check scores a project for TikTok (hook, pace, dead air, captions, safe zones, length, ending) with a fix per item; fix the warnings and check again. enhance_media makes a cleaner copy (denoise, sharpen, stabilise, colour, upscale, clean sound); swap it in with the replaceMedia op. split_into_parts cuts a long video into TikTok parts (one project each, labels, karaoke captions, ready post captions); transcribe it first.
 - Video links: import_video_link downloads a YouTube/TikTok/X\u2026 video into the project (only the user's own or permitted videos); then study it with transcribe, analyze_audio, detect_scenes and analyze_reference.
 - Talking videos (free, local): transcribe (word-timed, pick the dialect) \u2192 cut_words (fillers=true, or word indexes: text-based editing) and/or cut_silences \u2192 add_captions (word-synced, fix misheard words with corrections). Arabic narration: voiceover. The designer picks the voice (\u0641\u0647\u062F\u060C \u0645\u0646\u0635\u0648\u0631\u060C \u0639\u0628\u062F\u0627\u0644\u0644\u0647 on ElevenLabs with their own key, or the free local \u0643\u0631\u064A\u0645); use their choice from the brief or Settings. These need the local engines; if a tool says one is missing, tell the user to install it in \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629.
 - Not available yet (do not pretend to do these): automatic highlight detection.`;
@@ -37007,6 +37008,8 @@ var TimelineOp = external_exports.discriminatedUnion("op", [
   external_exports.object({ op: external_exports.literal("splitClip"), clipId: Id, time: Time }),
   external_exports.object({ op: external_exports.literal("deleteClips"), clipIds: external_exports.array(Id).min(1).max(500), ripple: external_exports.boolean().default(false) }),
   external_exports.object({ op: external_exports.literal("duplicateClip"), clipId: Id }),
+  /** Point every clip that uses one file at another (an enhanced copy), keeping cuts and timing. */
+  external_exports.object({ op: external_exports.literal("replaceMedia"), from: Id, to: Id }),
   external_exports.object({ op: external_exports.literal("mergeClips"), clipIds: external_exports.tuple([Id, Id]) }),
   external_exports.object({ op: external_exports.literal("updateClip"), clipId: Id, patch: external_exports.union([MediaClipPatch, TextClipPatch]) }),
   external_exports.object({ op: external_exports.literal("setTransition"), clipId: Id, transition: Transition.nullable() }),
@@ -37685,6 +37688,56 @@ function registerTools(server, studio) {
     if (a.add_to_timeline_at === void 0) return text(`Design clip rendered and added to media.${warn}`, compactMedia(r.media));
     const t = await op(pid, { op: "addClip", mediaId: r.media.id, start: a.add_to_timeline_at }, call);
     return timelineReply(`Design clip rendered and placed on the timeline.${warn}`, t, pid, call);
+  });
+  tool("tiktok_check", {
+    title: "TikTok readiness check",
+    description: "Score the open project for TikTok (0\u2013100) on the signals that drive watch-through: vertical format, length, a hook in the first second (text + an early change), pace (nothing static for more than ~3 s), dead air, captions for muted viewers, text clear of the app buttons, and a short ending that loops. Each item has a concrete fix. Use it when the user asks to make a video ready for TikTok, then fix the warnings (cut_silences / cut_words, add_captions, a stronger first-second text, shorter shots, a shorter ending) and check again.",
+    inputSchema: { project_id: projectIdArg },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("GET", `/api/projects/${pid}/tiktok-check`);
+    const mark = (l) => l === "good" ? "\u2713" : l === "warn" ? "!" : "\u2717";
+    const lines = r.items.map((i) => `${mark(i.level)} ${i.title}${i.detail ? ` \u2014 ${i.detail}` : ""}${i.fix ? `
+   fix: ${i.fix}` : ""}`);
+    return text(`TikTok score: ${r.score}/100 (${r.durationSec}s)
+${lines.join("\n")}`);
+  });
+  tool("enhance_media", {
+    title: "Enhance quality",
+    description: "Make a cleaner copy of a video or sound in the project (the original stays): denoise grainy or dark footage, sharpen, stabilise shaky footage, gentle colour lift, upscale to 1080/1440/2160 (lanczos + adaptive sharpening, not AI invention), and clean the sound (rumble, hiss and background noise removed, levelled). Returns the new media; swap it into the timeline where the old one was if the user wants.",
+    inputSchema: {
+      media_id: external_exports.string().uuid(),
+      denoise: external_exports.boolean().default(true),
+      sharpen: external_exports.boolean().default(true),
+      stabilize: external_exports.boolean().default(false),
+      color: external_exports.boolean().default(true),
+      upscale: external_exports.union([external_exports.literal(0), external_exports.literal(1080), external_exports.literal(1440), external_exports.literal(2160)]).default(0),
+      audio_clean: external_exports.boolean().default(true)
+    }
+  }, async (a, _e, call) => {
+    const r = await call("POST", `/api/media/${a.media_id}/enhance`, { denoise: a.denoise, sharpen: a.sharpen, stabilize: a.stabilize, color: a.color, upscale: a.upscale, audioClean: a.audio_clean });
+    return text("Enhanced copy added to the project media.", compactMedia(r.media));
+  });
+  tool("split_into_parts", {
+    title: "Split a long video into parts",
+    description: "Cut a long video in the project into TikTok parts of about part_sec seconds, at natural pauses (transcribe it first for the best cuts and for captions). Each part becomes its own project with a '\u0627\u0644\u062C\u0632\u0621 k' label, a '\u062A\u0627\u0628\u0639 \u0627\u0644\u062C\u0632\u0621 k+1' teaser at the end, karaoke captions, and a ready post caption with the hashtags. Tell the user the part names and give each caption; offer to improve the captions' wording.",
+    inputSchema: {
+      media_id: external_exports.string().uuid(),
+      part_sec: external_exports.number().min(15).max(600).default(60),
+      labels: external_exports.boolean().default(true),
+      captions: external_exports.boolean().default(true),
+      highlight: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).default("#F5D04C"),
+      hashtags: external_exports.string().trim().max(300).default(""),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/split-parts`, { mediaId: a.media_id, partSec: a.part_sec, labels: a.labels, captions: a.captions, highlight: a.highlight, hashtags: a.hashtags });
+    const lines = r.parts.map((p) => `\u2022 ${p.name} (${p.start}\u2013${p.end}s)
+  caption: ${p.caption.split("\n").join(" / ")}`);
+    return text(`${r.parts.length} parts created${r.transcribed ? "" : " (no transcript: even cuts and no captions; transcribe first for better results)"}:
+${lines.join("\n")}`);
   });
   tool("get_brand", {
     title: "Read the user's brand",
