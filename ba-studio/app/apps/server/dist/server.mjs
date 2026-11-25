@@ -61238,34 +61238,15 @@ async function renderHtmlScene(tools, html, output2, opts) {
   const work = await fsp2.mkdtemp(path2.join(os.tmpdir(), "ba-html-"));
   const scene = path2.join(work, "scene.html");
   await fsp2.writeFile(scene, buildScenePage(html, { ...opts, width: W, height: H }));
-  const userDir = path2.join(work, "profile");
-  await fsp2.mkdir(userDir);
-  let proc = null;
-  let cdp = null;
+  const N2 = Math.max(1, Math.min(opts.workers ?? defaultWorkers(), 6, frames));
+  const workers = [];
   let ff = null;
   const part = `${output2}.part.mp4`;
   try {
-    const launched = await launchBrowser(browser, userDir);
-    proc = launched.proc;
-    cdp = await connect(launched.wsUrl);
-    const { targetId } = await cdp.send("Target.createTarget", { url: "about:blank" });
-    const { sessionId } = await cdp.send("Target.attachToTarget", { targetId, flatten: true });
-    const s = (m, p) => cdp.send(m, p, sessionId);
-    cdp.on((msg) => {
-      if (msg.method !== "Fetch.requestPaused" || msg.sessionId !== sessionId) return;
-      const req = msg.params;
-      const local = /^(file|data|about|blob):/i.test(req.request.url);
-      void s(local ? "Fetch.continueRequest" : "Fetch.failRequest", local ? { requestId: req.requestId } : { requestId: req.requestId, errorReason: "BlockedByClient" }).catch(() => void 0);
-    });
-    await s("Fetch.enable", { patterns: [{ urlPattern: "*" }] });
-    await s("Page.enable");
-    await s("Runtime.enable");
-    await s("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: 1, mobile: false });
-    const loaded = new Promise((resolve) => cdp.on((m) => m.method === "Page.loadEventFired" && m.sessionId === sessionId && resolve()));
-    await s("Page.navigate", { url: pathToFileURL(scene).href });
-    await Promise.race([loaded, new Promise((r) => setTimeout(r, 15e3))]);
-    const ready = await s("Runtime.evaluate", { expression: "window.__baReady()", awaitPromise: true, returnByValue: true });
-    const warnings = (ready.result.value ?? []).map((src) => `Image failed to load: ${src}`);
+    const opened = await Promise.allSettled(Array.from({ length: N2 }, (_, w) => openScenePage(browser, work, w, scene, W, H)));
+    for (const o of opened) if (o.status === "fulfilled") workers.push(o.value);
+    if (!workers.length) throw opened[0].reason;
+    const warnings = workers[0].warnings;
     const lint = [];
     const K = Math.max(1, Math.min(8, Math.round(opts.motionBlur ?? 1)));
     const lintAt = new Set(opts.lint === false ? [] : [0.4, 0.65, 0.9].map((p) => Math.min(frames - 1, Math.round(frames * p))));
@@ -61315,25 +61296,70 @@ async function renderHtmlScene(tools, html, output2, opts) {
     ff.stderr.setEncoding("utf8").on("data", (c) => ffErr = (ffErr + c).slice(-2e3));
     const ffDone = new Promise((r) => ff.on("close", (c) => r(c ?? 1)));
     ff.stdin.on("error", () => void 0);
-    for (let i = 0; i < frames; i++) {
-      for (let k = 0; k < K; k++) {
-        if (opts.signal?.aborted) throw new HtmlRenderError("Cancelled.");
-        const t = (i - (K - 1 - k) / K * 0.5) / opts.fps;
-        await s("Runtime.evaluate", { expression: `window.__baSeek(${Math.max(0, t).toFixed(6)})`, awaitPromise: true });
-        const shot = await s("Page.captureScreenshot", { format: "jpeg", quality: 95, fromSurface: true });
-        const buf = Buffer.from(shot.data, "base64");
-        if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
+    const slots = /* @__PURE__ */ new Map();
+    const slot = (i) => {
+      let x = slots.get(i);
+      if (!x) {
+        let resolve;
+        let reject;
+        const promise2 = new Promise((a, b) => {
+          resolve = a;
+          reject = b;
+        });
+        promise2.catch(() => void 0);
+        x = { promise: promise2, resolve, reject };
+        slots.set(i, x);
       }
-      if (lintAt.has(i)) {
-        const res = await s("Runtime.evaluate", { expression: `window.__baLint(${W}, ${H})`, returnByValue: true });
-        for (const issue2 of res.result.value ?? []) lint.push({ ...issue2, time: Number((i / opts.fps).toFixed(2)) });
+      return x;
+    };
+    let written = 0;
+    let stopped = false;
+    const waiters = [];
+    const ahead = workers.length * 3;
+    const run2 = async (page, w) => {
+      for (let i = w; i < frames && !stopped; i += workers.length) {
+        try {
+          while (i >= written + ahead && !stopped) await new Promise((r) => waiters.push(r));
+          if (opts.signal?.aborted) throw new HtmlRenderError("Cancelled.");
+          const bufs = [];
+          for (let k = 0; k < K; k++) {
+            const t = (i - (K - 1 - k) / K * 0.5) / opts.fps;
+            await page.s("Runtime.evaluate", { expression: `window.__baSeek(${Math.max(0, t).toFixed(6)})`, awaitPromise: true });
+            const shot = await page.s("Page.captureScreenshot", { format: "jpeg", quality: 95, fromSurface: true });
+            bufs.push(Buffer.from(shot.data, "base64"));
+          }
+          if (lintAt.has(i)) {
+            const res = await page.s("Runtime.evaluate", { expression: `window.__baLint(${W}, ${H})`, returnByValue: true });
+            for (const issue2 of res.result.value ?? []) lint.push({ ...issue2, time: Number((i / opts.fps).toFixed(2)) });
+          }
+          slot(i).resolve(bufs);
+        } catch (e) {
+          slot(i).reject(e);
+          return;
+        }
       }
-      opts.onProgress?.((i + 1) / frames);
+    };
+    const running = workers.map((p, w) => run2(p, w));
+    try {
+      for (let i = 0; i < frames; i++) {
+        const bufs = await slot(i).promise;
+        slots.delete(i);
+        for (const buf of bufs) if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
+        written = i + 1;
+        waiters.splice(0).forEach((f) => f());
+        opts.onProgress?.((i + 1) / frames);
+      }
+    } finally {
+      stopped = true;
+      waiters.splice(0).forEach((f) => f());
     }
+    await Promise.allSettled(running);
     ff.stdin.end();
     const code = await ffDone;
     if (code !== 0) throw new HtmlRenderError(`Encoding failed: ${ffErr.trim().slice(-400)}`);
+    await fsp2.rm(output2, { force: true });
     await fsp2.rename(part, output2);
+    lint.sort((a, b) => a.time - b.time);
     const seenIssue = /* @__PURE__ */ new Set();
     const issues = lint.filter((x) => {
       const k = `${x.kind}|${x.text}`;
@@ -61347,13 +61373,51 @@ async function renderHtmlScene(tools, html, output2, opts) {
     await fsp2.rm(part, { force: true });
     throw e instanceof HtmlRenderError ? e : new HtmlRenderError(e.message);
   } finally {
+    await Promise.all(workers.map((p) => p.close()));
+    await fsp2.rm(work, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 }).catch(() => void 0);
+  }
+}
+function defaultWorkers() {
+  return Math.max(1, Math.min(4, Math.floor(os.cpus().length / 3)));
+}
+async function openScenePage(browser, work, w, scene, W, H) {
+  const userDir = path2.join(work, `profile-${w}`);
+  await fsp2.mkdir(userDir, { recursive: true });
+  let proc = null;
+  let cdp = null;
+  const close = async () => {
     await cdp?.send("Browser.close").catch(() => void 0);
     cdp?.close();
     if (proc && proc.exitCode === null) {
       proc.kill();
       await new Promise((r) => setTimeout(r, 300));
     }
-    await fsp2.rm(work, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 }).catch(() => void 0);
+  };
+  try {
+    const launched = await launchBrowser(browser, userDir);
+    proc = launched.proc;
+    cdp = await connect(launched.wsUrl);
+    const { targetId } = await cdp.send("Target.createTarget", { url: "about:blank" });
+    const { sessionId } = await cdp.send("Target.attachToTarget", { targetId, flatten: true });
+    const s = (m, p) => cdp.send(m, p, sessionId);
+    cdp.on((msg) => {
+      if (msg.method !== "Fetch.requestPaused" || msg.sessionId !== sessionId) return;
+      const req = msg.params;
+      const local = /^(file|data|about|blob):/i.test(req.request.url);
+      void s(local ? "Fetch.continueRequest" : "Fetch.failRequest", local ? { requestId: req.requestId } : { requestId: req.requestId, errorReason: "BlockedByClient" }).catch(() => void 0);
+    });
+    await s("Fetch.enable", { patterns: [{ urlPattern: "*" }] });
+    await s("Page.enable");
+    await s("Runtime.enable");
+    await s("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: 1, mobile: false });
+    const loaded = new Promise((resolve) => cdp.on((m) => m.method === "Page.loadEventFired" && m.sessionId === sessionId && resolve()));
+    await s("Page.navigate", { url: pathToFileURL(scene).href });
+    await Promise.race([loaded, new Promise((r) => setTimeout(r, 15e3))]);
+    const ready = await s("Runtime.evaluate", { expression: "window.__baReady()", awaitPromise: true, returnByValue: true });
+    return { s, warnings: (ready.result.value ?? []).map((src) => `Image failed to load: ${src}`), close };
+  } catch (e) {
+    await close();
+    throw e;
   }
 }
 
@@ -62043,7 +62107,7 @@ import net from "node:net";
 import os2 from "node:os";
 import path4 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.5.1";
+var APP_VERSION = "0.5.2";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
