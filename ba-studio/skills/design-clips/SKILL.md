@@ -43,6 +43,78 @@ The user can reply in the same conversation to change the result. Change only wh
 - **Never childish (the user insists):** no cartoon mascots, comic bubbles, stickers, confetti, rainbow colours, toy-like bouncing, or bubbly "kids app" shapes. The work must look adult, premium and editorial. Go playful only on an explicit request, and then tastefully.
 - **Never put `letter-spacing` on Arabic:** it breaks the joined letters. Use kashida (ـ) for width, and letter-spacing only on Latin.
 
+## Sound (a silent video looks unfinished)
+- **Music bed:** use `search_audio` with kind=music and mood words, then `import_audio`, then `add_background_music`. It ducks under speech automatically, and exports are normalised to −14 LUFS.
+- **Accents:** use `search_audio` with kind=sfx (soft whoosh, swipe, subtle hit, riser). Put each one 2–4 frames before the visual hit it marks, keep them quiet (volume 0.4–0.7), and never stack them.
+- **Rhythm:** use `analyze_beats` on the music. Change scenes on downbeats and land impacts on beats, so movement starts 3–4 frames earlier.
+- **Talking-head footage:** use `cut_silences` with dry_run first, then apply it.
+- **Credits:** list the music credits that need attribution.
+
+## Pro craft: what makes people doubt it was AI
+The engine pauses all animations and sets each frame's time, so drive everything with CSS keyframes. Do not use `transition`, `setTimeout`, `Date.now`, or unseeded `Math.random`.
+
+**Built-in helpers.** Use them; do not reinvent them.
+- **Easing:**
+  - `var(--ease-out)` for entrances (fast out, long settle)
+  - `var(--ease-in)` for exits; exits run about 60% as long as entrances
+  - `var(--ease-snap)` for snappy moves
+  - `var(--ease-draw)` for line draws and mask wipes
+  - Never leave the default `ease`, and never use `ease-in-out` on everything.
+- **Depth:** `class="ba-shadow"` gives layered soft shadows tinted warm, never pure black. Use `ba-shadow-lift` for an element that rises.
+- **Finish:** end every scene with `<div class="ba-vignette"></div><div class="ba-grain"></div>`. The grain is live and changes every frame, like film.
+- **Light:** `class="ba-sweep"` (with `--sweep-delay`) gives one light sweep across a hero element. Use it once per hero moment, never on a loop.
+- **Grades:** give every photo in a video the same grade (`ba-grade-warm`, `-cool`, `-film`, `-mono` or `-duo`), so mixed stock sources look like one shoot.
+- **Motion blur:** it is on by default (`motion_blur`), so fast moves smear like a real camera. Keep it on.
+
+**Timing.** Spacing is what reads as human.
+- **Anticipation and overshoot:** write them as keyframe stages, for example `0%{transform:translateY(0)} 18%{transform:translateY(6px) scale(1.02,.97)} 70%{transform:translateY(-104%)} 84%{transform:translateY(-98%)} 100%{transform:translateY(-100%)}`. Keep it subtle and adult.
+- **Overlapping action:** a parent element, its child and a detail start 2–4 frames apart.
+- **Uneven stagger:** use steps like 0, 0.1, 0.17, 0.3, 0.4 s, never a constant step.
+- **Hold** 0.4–0.8 s after each key reveal so it breathes.
+- **Vary scene lengths**, for example 1.8, 0.9, 2.6, 1.4 s. When music has beats (`analyze_beats`), land impacts **on** the beat, so movement starts 3–4 frames earlier.
+
+**Composition**
+- Put the subject on a grid at about 0.618 (the golden section), not dead centre.
+- Keep at least 35–40% negative space.
+- Add one heavy element off-axis to break symmetry.
+- Use at most 3 type sizes, on a ratio of about 1.33.
+
+**Depth and light**
+- **Parallax:** 3–5 planes moving at different speeds (about 0.2×, 0.5×, 1×, 1.4×).
+- **Depth of field:** blur the foreground and background slightly (`filter: blur(2–6px)`) and keep the focus plane sharp.
+- **Rack focus:** animate the blur to move the focus.
+- **Halation on bright highlights:** a blurred, tinted copy of the bright layer with `mix-blend-mode: screen`, at low opacity.
+
+**Typography**
+- **Arabic:**
+  - Never use `letter-spacing`.
+  - Lengthen words with kashida (ـ, U+0640) in Amiri or Aref Ruqaa only, at most one per word, after a joining letter (ب س ص ك ل م ن ه ي).
+  - Reveal by whole words, or by masking the whole line with `clip-path` from the right. Never wrap single letters.
+- **Latin:**
+  - Large headlines: `letter-spacing: -.03em`.
+  - Small uppercase labels: `+.08em`.
+  - Always `font-kerning: normal`.
+
+**Transitions**
+- **Match cuts:** the last shape of a scene sits where the first shape of the next one opens.
+- **Mask reveals:** `clip-path: circle()` or `inset()`.
+- **Zoom-through:** push the camera into an element to reach the next scene.
+
+**Ban list.** These are AI tells:
+- every element on the same fade-up
+- identical durations and constant stagger
+- centred symmetric layouts with gradient blobs or glow
+- pure black shadows
+- more than 4 hues
+- idle floating or pulsing loops
+- Latin text left at default tracking
+- letter-by-letter Arabic
+
+**Quality gate (always)**
+1. After each render, fix every issue in the layout check: clipped, small, low-contrast or overlapping text, and text inside the safe zones.
+2. Then call `review_render`, score its checklist honestly, and fix anything below 7. Do at most 2 passes.
+3. End your message with «التقييم: X/10».
+
 ## Template scene (copy, then change the content)
 ```html
 <style>
@@ -51,33 +123,34 @@ The user can reply in the same conversation to change the result. Change only wh
   .cam{position:absolute;inset:0;animation:cam 4s ease-in-out both}
   @keyframes cam{from{transform:scale(1.06)}to{transform:scale(1)}}
   h1{position:absolute;top:9%;right:8%;left:8%;margin:0;text-align:center;color:var(--ink);
-     font:900 6.2vh/1.25 "Thmanyah","Amiri";animation:up .7s cubic-bezier(.2,.9,.2,1) .15s both}
+     font:900 6.2vh/1.25 "Thmanyah","Amiri";animation:up .8s var(--ease-out) .15s both}
   h1 em{font-family:"Aref Ruqaa";font-style:normal;color:var(--accent)}
   @keyframes up{from{opacity:0;transform:translateY(4vh)}to{opacity:1;transform:none}}
   .card{position:absolute;width:34vw;height:34vw;border-radius:28px;background:var(--accent);
-        box-shadow:0 30px 60px -20px rgba(0,0,0,.35);display:grid;place-items:center;
+        display:grid;place-items:center;
         animation:pop .7s cubic-bezier(.2,1.15,.4,1) both}
   .card img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(0,0,0,.25))}
   @keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
   .phone{position:absolute;width:30vw;aspect-ratio:9/19;border-radius:4.2vw;background:#111;padding:1.1vw;
-         box-shadow:0 40px 70px -25px rgba(0,0,0,.45);animation:slide .8s cubic-bezier(.2,.9,.2,1) both}
+         animation:slide .9s var(--ease-out) both}
   .phone .screen{width:100%;height:100%;border-radius:3.2vw;background:#fff;overflow:hidden}
   @keyframes slide{from{transform:translateY(60vh) rotate(8deg)}to{transform:rotate(-4deg)}}
   .line{fill:none;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-dasharray:1400;
-        animation:draw 1.2s ease .5s both}
+        animation:draw 1.2s var(--ease-draw) .5s both}
   @keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0}}
   .star{position:absolute;width:7vw;animation:pop .5s cubic-bezier(.2,1.15,.4,1) both}
 </style>
 <div class="stage ba-paper"><div class="cam">
   <h1>كل طلباتك <em>بمكان واحد</em></h1>
-  <div class="card" style="right:10%;top:34%;animation-delay:.4s"><img src="{{media:PRODUCT_ID}}"></div>
+  <div class="card ba-shadow" style="right:10%;top:34%;animation-delay:.4s"><img src="{{media:PRODUCT_ID}}"></div>
   <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 1080 1920">
     <path class="line" d="M300 980 C 380 1080, 220 1160, 330 1260 S 470 1420, 380 1520"/>
   </svg>
-  <div class="phone" style="left:12%;top:52%;animation-delay:.7s"><div class="screen"><!-- UI here --></div></div>
+  <div class="phone ba-shadow-lift" style="left:12%;top:52%;animation-delay:.67s"><div class="screen"><!-- UI here --></div></div>
   <svg class="star" style="right:9%;top:32%;animation-delay:.9s" viewBox="0 0 100 100">
     <path d="M50 2 L58 38 L96 30 L64 52 L90 84 L54 66 L44 98 L38 62 L4 74 L32 48 L8 18 L44 34Z" fill="#1b1b1b"/>
   </svg>
+<div class="ba-vignette"></div><div class="ba-grain"></div>
 </div></div>
 ```
 Use `vw`/`vh` so the same scene works for vertical, square and landscape projects.

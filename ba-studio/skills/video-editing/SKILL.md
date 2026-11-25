@@ -41,3 +41,11 @@ Analysis is signal-level: silences, loudness and scene cuts. You cannot see what
 - colour grading
 - automatic highlight detection
 - beat sync
+
+## Talking videos: transcript, fillers, captions, voiceover (free, local)
+
+1. `transcribe` the clip with the speaker's dialect (saudi, gulf, egyptian, levantine, msa). You get every word with its index and time, fillers flagged.
+2. Read the transcript like an editor. Offer to remove fillers (`cut_words` fillers=true), false starts, repeated sentences and off-topic parts (`cut_words` with those word indexes). Always `dry_run` first and say what goes. `cut_silences` tightens the pauses left.
+3. `add_captions` after cutting, so they follow the final timing. Fix misheard words with `corrections` (names, brands, hamza/taa marbuta). 2–3 words per caption for Reels/TikTok, 5–7 for long talks. Styles: clean, bold, highlight, minimal; keep them above the platform buttons (default y).
+4. Narration: `voiceover` in the voice the designer chose (brief or الإعدادات ← الصوت): فهد احترافي، فهد هادي، منصور، عبدالله (ElevenLabs, their own key: write natural white-Saudi or MSA) or كريم (free, local: write fully voweled MSA). Numbers as words, short sentences; then add it to an audio track and let the music duck under it (export does this automatically).
+5. If a tool says an engine is missing, tell the user: الإعدادات ← المحركات المحلية ← تثبيت (free, one-time download).

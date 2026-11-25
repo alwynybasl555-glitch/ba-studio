@@ -36815,11 +36815,14 @@ How to work:
 - Use generate_preview for a quick exact render the user can watch, and export_video for the final file.
 - Creating without footage: for rich ad-style design (cards, product cut-outs, phone mockups, drawn lines, pops and camera moves) use create_design_clip (HTML/CSS scenes); for simple titles and text animation create_motion_graphic is faster. create_motion_graphic renders original motion graphics (titles, intros, animated quotes, stats with counters, lower thirds, end cards, or a stylised version of a project image/video as the background). Build videos from several short scenes, then add_clip them in order and add_transition between them. If the user connected an AI image/video generator, generate there, then bring the file in with import_media_from_url; never claim to generate realistic AI video yourself.
 - Before creating any design or animation, ask the user how they want it (style, colours, title font, pace, length, anything to avoid) in one short message, unless they already said; then follow their answers. Keep everything adult and premium: never childish (no cartoon mascots, comic bubbles, emoji, toy-like bouncing) unless they explicitly ask.
+- Sound: designed videos need sound. Find music with search_audio (kind=music) and accents with kind=sfx (whoosh on transitions, soft hits on reveals), import_audio, place music with add_background_music (auto-ducked under speech; exports are normalised to -14 LUFS), and use analyze_beats to land cuts and accents on the beat. For talking-head footage, cut_silences tightens pauses (dry_run first). Mention music credits.
+- Quality gate: after rendering a design clip, fix every issue its layout check reports, then call review_render, score its checklist honestly and fix anything below 7 (at most 2 passes) before showing the user; give the final score as "\u0627\u0644\u062A\u0642\u064A\u064A\u0645: X/10".
 - Pictures: follow the user's choice exactly. Real photos = search_photos (look at the previews) then import_photo, never drawn fakes; their own photos = only project media; drawn = your own SVG illustration. Mention photo credits that need attribution.
 - Animation: animated SVG illustrations (characters that wave/blink/walk, objects with squash and stretch, kinetic type) and imported Lottie animations (list_lotties, data-lottie) are made with create_design_clip; follow the animation skill. Flat 2D only: no lip-synced cartoon films.
 - When the user wants a design "like" a video (a reference), import it, call analyze_reference to see its stills and measurements, then follow its system (palette, element types, layout, pacing, amount of motion) with new content of their own.
 - Design with a human touch: a restrained palette, editorial typography (Thmanyah for Arabic), clear hierarchy, real margins, staggered timing, subtle grain. Avoid generic AI looks (neon rainbow gradients, glowing everything, centred clich\xE9s). This is about craft, never about hiding that AI was used if the user or a platform asks.
-- Not available yet (do not pretend to do these): transcription/subtitles, colour grading, automatic highlight detection, beat sync.`;
+- Talking videos (free, local): transcribe (word-timed, pick the dialect) \u2192 cut_words (fillers=true, or word indexes: text-based editing) and/or cut_silences \u2192 add_captions (word-synced, fix misheard words with corrections). Arabic narration: voiceover. The designer picks the voice (\u0641\u0647\u062F\u060C \u0645\u0646\u0635\u0648\u0631\u060C \u0639\u0628\u062F\u0627\u0644\u0644\u0647 on ElevenLabs with their own key, or the free local \u0643\u0631\u064A\u0645); use their choice from the brief or Settings. These need the local engines; if a tool says one is missing, tell the user to install it in \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629.
+- Not available yet (do not pretend to do these): automatic highlight detection.`;
 
 // ../timeline/src/schema.ts
 var TrackKind = external_exports.enum(["video", "audio"]);
@@ -37660,12 +37663,14 @@ function registerTools(server, studio) {
       duration_sec: external_exports.number().min(0.5).max(60),
       name: external_exports.string().trim().min(1).max(80).optional(),
       add_to_timeline_at: seconds("If given, also place the clip on the timeline at this time").optional(),
+      motion_blur: external_exports.boolean().default(true).describe("Camera-like motion blur on fast movement (renders about 3\xD7 slower). Keep it on for final clips."),
       project_id: projectIdArg
     }
   }, async (a, _e, call) => {
     const pid = projectId(a.project_id);
-    const r = await call("POST", `/api/projects/${pid}/design`, { html: a.html, durationSec: a.duration_sec, name: a.name });
-    const warn = r.warnings.length ? ` Warnings: ${r.warnings.join("; ")}` : "";
+    const r = await call("POST", `/api/projects/${pid}/design`, { html: a.html, durationSec: a.duration_sec, name: a.name, motionBlur: a.motion_blur });
+    const lint = r.lint.length ? ` LAYOUT CHECK FOUND ${r.lint.length} ISSUE(S), fix them and re-render before showing the user: ${r.lint.map((i) => `[${i.kind} @${i.time}s] \u201C${i.text}\u201D: ${i.detail}`).join("; ")}.` : " Layout check passed (no clipped, tiny, low-contrast or overlapping text; safe zones clear).";
+    const warn = (r.warnings.length ? ` Warnings: ${r.warnings.join("; ")}` : "") + lint;
     if (a.add_to_timeline_at === void 0) return text(`Design clip rendered and added to media.${warn}`, compactMedia(r.media));
     const t = await op(pid, { op: "addClip", mediaId: r.media.id, start: a.add_to_timeline_at }, call);
     return timelineReply(`Design clip rendered and placed on the timeline.${warn}`, t, pid, call);
@@ -37694,6 +37699,178 @@ ${JSON.stringify(summary)}` },
         ...r.frames.filter((f) => f.base64).map((f) => ({ type: "image", data: f.base64, mimeType: "image/jpeg" }))
       ]
     };
+  });
+  tool("review_render", {
+    title: "Review your own render",
+    description: "Look at stills from a finished clip BEFORE showing it to the user: a design clip (media_id) or a preview/export (render_id). Returns the frames as images plus a professional checklist. Score every item 0\u201310 honestly, fix and re-render anything below 7 (at most 2 review passes), then tell the user the final score.",
+    inputSchema: {
+      media_id: external_exports.string().uuid().optional(),
+      render_id: external_exports.string().uuid().optional(),
+      times: external_exports.array(external_exports.number().min(0)).max(12).optional().describe("Specific seconds to inspect (e.g. the end of each entrance). Default: evenly spaced."),
+      count: external_exports.number().int().min(2).max(12).default(6)
+    },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    if (!a.media_id === !a.render_id) return text("Give either media_id or render_id.");
+    const r = await call("POST", "/api/review/frames", {
+      mediaId: a.media_id,
+      exportId: a.render_id,
+      times: a.times,
+      count: a.count
+    });
+    const checklist = `Review ${r.frames.length} stills (times: ${r.frames.map((f) => `${f.time}s`).join(", ")}). Score each 0\u201310:
+1. Hierarchy: one clear focal point per frame; the eye knows where to go.
+2. Composition: real margins, intentional asymmetry, at least ~35% negative space, nothing crammed or dead-centre by default.
+3. Typography: Arabic letters joined and reading right-to-left, no letter-spacing on Arabic, at most 3 sizes, readable on a phone.
+4. Colour: one palette (\u22644 hues), shadows tinted not black, photos graded to one look.
+5. Depth & finish: layered soft shadows, grain, vignette or light where it helps; nothing looks flat or plastic.
+6. Motion (judge from consecutive stills): staggered, uneven timing; holds that let things breathe; no "everything fades up at once".
+7. Brief fit: the user's type, pictures choice, style, colours and font are respected.
+8. Poster test: would each still work as a printed poster?
+AI tells to reject: centred-symmetric everything, gradient blobs/glow, neon, emoji, cartoonish shapes, generic stock phrases, identical animations on every element, broken Arabic.
+If any score is below 7, fix the scene and re-render, then review again (max 2 passes). In your final message give the overall score as "\u0627\u0644\u062A\u0642\u064A\u064A\u0645: X/10".`;
+    return {
+      content: [
+        { type: "text", text: checklist },
+        ...r.frames.map((f) => ({ type: "image", data: f.base64, mimeType: "image/jpeg" }))
+      ]
+    };
+  });
+  tool("cut_silences", {
+    title: "Remove silences",
+    description: "Remove the silent pauses from every clip with sound on the timeline (talking-head tightening), as ONE undoable step. Use dry_run first to tell the user how much will be removed. Keeps a little padding so words are not clipped.",
+    inputSchema: {
+      min_silence_sec: external_exports.number().min(0.2).max(10).default(0.5).describe("Only pauses at least this long"),
+      padding_sec: external_exports.number().min(0).max(1).default(0.12).describe("Silence kept on each side of a cut"),
+      silence_db: external_exports.number().min(-70).max(-15).default(-38).describe("Below this level counts as silence (raise for noisy rooms)"),
+      dry_run: external_exports.boolean().default(false),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/cut-silences`, {
+      minSilenceSec: a.min_silence_sec,
+      paddingSec: a.padding_sec,
+      silenceDb: a.silence_db,
+      dryRun: a.dry_run
+    });
+    if (!r.cuts.length) return text(r.message ?? "No silences long enough to remove.");
+    return text(`${r.applied ? "Removed" : "Would remove"} ${r.cuts.length} pauses, ${r.removedSec}s in total.${r.applied ? " (one undo step)" : ""}`, r.cuts.slice(0, 40));
+  });
+  tool("search_audio", {
+    title: "Find free music or sound effects",
+    description: "Search free music (kind=music, tracks \u226525 s) or sound effects (kind=sfx, \u22648 s: whoosh, swipe, pop, impact, riser, click, camera shutter) under CC0/CC BY licences (commercial use and syncing allowed). Search in English with mood/genre words ('calm piano', 'upbeat corporate', 'arabic oud', 'whoosh'). Then import_audio by id.",
+    inputSchema: {
+      query: external_exports.string().trim().min(1).max(120),
+      kind: external_exports.enum(["music", "sfx"]).default("music"),
+      count: external_exports.number().int().min(1).max(15).default(8)
+    },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const r = await call(
+      "GET",
+      `/api/stock/audio?${new URLSearchParams({ q: a.query, kind: a.kind, count: String(a.count) })}`
+    );
+    if (!r.items.length) return text(`No ${a.kind === "music" ? "music" : "sound effects"} found for \u201C${a.query}\u201D. Try other English words.`);
+    return text(`${r.items.length} result(s):
+${r.items.map((x, i) => `${i + 1}. id=${x.id} \xB7 ${x.durationSec}s \xB7 \u201C${x.title}\u201D by ${x.creator} \xB7 ${x.license}${x.attribution ? " (credit needed)" : ""}${x.tags.length ? ` \xB7 tags: ${x.tags.join(", ")}` : ""}`).join("\n")}`);
+  });
+  tool("import_audio", {
+    title: "Import music or a sound effect",
+    description: "Download a result of search_audio into the project. Place music with add_background_music (it is ducked under speech and the export is loudness-normalised automatically); place sound effects with add_clip on an audio track, 2\u20134 frames before the visual hit they accent.",
+    inputSchema: { audio_id: external_exports.string().min(3).max(120), name: external_exports.string().trim().max(60).optional(), project_id: projectIdArg }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/stock/import-audio`, { audioId: a.audio_id, name: a.name });
+    return text(`Audio imported.${r.credit.attribution ? ` Credit: ${r.credit.attribution}` : ` (${r.credit.license}, no credit required)`}`, compactMedia(r.media));
+  });
+  tool("analyze_beats", {
+    title: "Find the beat",
+    description: "Tempo (BPM), beat times and likely bar starts (downbeats) of a music or video file in the project. Use them to place cuts, scene changes and accent animations ON the beat: an impact lands exactly on a beat, so its motion starts 3\u20134 frames earlier.",
+    inputSchema: { media_id: external_exports.string().uuid() },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const r = await call("POST", `/api/media/${a.media_id}/beats`);
+    if (!r.beats.length) return text("No clear beat found in this file.");
+    return text(`${r.bpm} BPM (confidence ${r.confidence}). ${r.beats.length} beats, ${r.downbeats.length} bar starts.`, { bpm: r.bpm, downbeats: r.downbeats.slice(0, 64), beats: r.beats.slice(0, 160) });
+  });
+  tool("transcribe", {
+    title: "Transcribe speech (Arabic)",
+    description: "Word-by-word transcript of a video or audio file, made on this computer (whisper.cpp, free). Each word has an index i, start/end seconds IN THE FILE and filler=true for hesitations (\u0627\u0645\u0645\u0645\u060C \u0622\u0622\u060C \u064A\u0639\u0646\u064A). Pick the dialect the speaker uses; it steers spelling. The first run of a long file can take a few minutes. Read the result, fix obvious mistakes when you add captions (corrections), and use the indexes for cut_words (text-based editing). If it says the engine is not installed, tell the user to install it under \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629.",
+    inputSchema: {
+      media_id: external_exports.string().uuid(),
+      dialect: external_exports.enum(["saudi", "gulf", "egyptian", "levantine", "msa", "english"]).default("saudi"),
+      force: external_exports.boolean().default(false).describe("Transcribe again even if a transcript exists")
+    },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const r = await call("POST", `/api/media/${a.media_id}/transcribe`, { dialect: a.dialect, force: a.force });
+    if (!r.words.length) return text("No speech found in this file.");
+    const lines = r.words.map((w) => `${w.i}|${w.start.toFixed(2)}-${w.end.toFixed(2)}|${w.text}${w.filler ? "|filler" : ""}`);
+    return text(`${r.words.length} words, ${r.fillers} filler words.${r.truncated ? " (first 4000 words shown)" : ""}
+
+Text:
+${r.text}
+
+Words (index|start-end|word):
+${lines.join("\n")}`);
+  });
+  tool("add_captions", {
+    title: "Add word-synced captions",
+    description: "Turn a transcript (run transcribe first) into captions on the timeline, timed to the words and following every cut, as ONE undoable step. Styles: clean (white on a soft dark box), bold (big Thmanyah, no box), highlight (dark text on a yellow box), minimal (small, no box). 2\u20133 words per caption suits short vertical videos; 5\u20137 suits longer talks. Pass corrections to fix misheard words by index (spelling, names, brand). Fillers are skipped unless corrected. Do this AFTER cutting.",
+    inputSchema: {
+      media_id: external_exports.string().uuid(),
+      style: external_exports.enum(["clean", "bold", "highlight", "minimal"]).default("clean"),
+      words_per_caption: external_exports.number().int().min(1).max(8).default(3),
+      corrections: external_exports.array(external_exports.object({ i: external_exports.number().int().min(0), text: external_exports.string().max(60) })).max(2e3).default([]),
+      color: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe("Text colour override"),
+      y: external_exports.number().min(0.05).max(0.95).optional().describe("Vertical position 0 top \u2013 1 bottom; default sits above platform buttons"),
+      dry_run: external_exports.boolean().default(false),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/captions`, {
+      mediaId: a.media_id,
+      style: a.style,
+      wordsPerCaption: a.words_per_caption,
+      corrections: a.corrections,
+      color: a.color,
+      y: a.y,
+      dryRun: a.dry_run
+    });
+    return text(`${r.applied ? "Added" : "Would add"} ${r.captions} captions.${r.applied ? " (one undo step)" : ""}`, r.preview);
+  });
+  tool("cut_words", {
+    title: "Cut words (text-based editing)",
+    description: "Edit by text: remove words from the timeline by their transcript index (from transcribe), and/or every filler word (fillers=true: \u0627\u0645\u0645\u0645\u060C \u0622\u0622\u060C \u064A\u0639\u0646\u064A\u2026), rippling so no gaps remain, as ONE undoable step. Remove whole phrases (mistakes, repeats, false starts) by passing all their indexes. Use dry_run first and tell the user what will go.",
+    inputSchema: {
+      media_id: external_exports.string().uuid(),
+      words: external_exports.array(external_exports.number().int().min(0)).max(5e3).default([]),
+      fillers: external_exports.boolean().default(false),
+      dry_run: external_exports.boolean().default(false),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/cut-words`, { mediaId: a.media_id, words: a.words, fillers: a.fillers, dryRun: a.dry_run });
+    if (!r.cuts.length) return text(r.message ?? "Nothing to remove.");
+    return text(`${r.applied ? "Removed" : "Would remove"} ${r.cuts.length} pieces, ${r.removedSec}s: ${(r.removedWords ?? []).join("\u060C ")}${r.applied ? " (one undo step)" : ""}`);
+  });
+  tool("voiceover", {
+    title: "Arabic voiceover",
+    description: "Arabic voiceover added to the project's media; then add_clip it to an audio track (music ducks under it on export). Voices: fahad_pro (Saudi, ads and social), fahad_warm (Saudi, calm ads and narration), mansour (Saudi and MSA, expressive), abdullah (Saudi, easy-listening ads) \u2014 ElevenLabs, using the user's own key and credits: write natural text as it should be said (white Saudi or MSA), numbers as words, short sentences. kareem = free local voice: write clear MSA WITH full tashkeel. Leave voice empty to use the designer's choice (the brief, else the default from Settings). If a key or engine is missing, tell the user where: \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0635\u0648\u062A / \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629.",
+    inputSchema: {
+      text: external_exports.string().trim().min(1).max(4e3),
+      speed: external_exports.number().min(0.5).max(2).default(1),
+      name: external_exports.string().trim().min(1).max(60).default("\u062A\u0639\u0644\u064A\u0642 \u0635\u0648\u062A\u064A"),
+      voice: external_exports.enum(["fahad_pro", "fahad_warm", "mansour", "abdullah", "kareem"]).optional(),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/voiceover`, { text: a.text, speed: a.speed, name: a.name, voice: a.voice });
+    return text(`Voiceover (${r.voiceName}) added to the project media.`, compactMedia(r.media));
   });
   tool("search_photos", {
     title: "Search real photos",
