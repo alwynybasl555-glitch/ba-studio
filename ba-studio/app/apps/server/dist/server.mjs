@@ -60312,6 +60312,11 @@ function captionCues(timeline, mediaId, words, opts = {}) {
 }
 
 // ../../packages/video-engine/src/compile.ts
+function audioRole(name, durationSec) {
+  if (/voice ?over|voiceover|تعليق|narrat|vo[-_ ]/i.test(name)) return "voice";
+  if (durationSec !== null && durationSec <= 8) return "sfx";
+  return "music";
+}
 var CompileError = class extends Error {
 };
 var n = (v, digits = 6) => Number(v.toFixed(digits)).toString();
@@ -60535,7 +60540,7 @@ function compileRender({ timeline, media, settings, fonts }) {
     chain2.push(`adelay=delays=${Math.round(clip.start * 1e3)}:all=1`);
     graph.push(`${chain2.join(",")}[a${a}]`);
     audioLabels.push(`[a${a}]`);
-    (m.kind === "audio" ? musicLabels : voiceLabels).push(`[a${a}]`);
+    (m.kind === "audio" && (m.role ?? "music") === "music" ? musicLabels : voiceLabels).push(`[a${a}]`);
     a++;
   }
   graph.push(`anullsrc=r=48000:cl=stereo,atrim=duration=${n(total)}[abase]`);
@@ -62038,7 +62043,7 @@ import net from "node:net";
 import os2 from "node:os";
 import path4 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.5.0";
+var APP_VERSION = "0.5.1";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -63551,7 +63556,7 @@ var ExportService = class {
         continue;
       }
       if (m.status !== "ready") throw new HttpError(409, "media_not_ready", `\u201C${m.name}\u201D is still being analyzed. Try again in a moment.`);
-      mediaMap.set(m.id, { id: m.id, path: m.path, kind: m.kind, hasAudio: m.hasAudio, width: m.width, height: m.height });
+      mediaMap.set(m.id, { id: m.id, path: m.path, kind: m.kind, hasAudio: m.hasAudio, width: m.width, height: m.height, role: m.kind === "audio" ? audioRole(`${m.name} ${path12.basename(m.path)}`, m.durationSec) : void 0 });
     }
     if (missing.length) throw new HttpError(409, "media_missing", `Relink missing media before exporting: ${missing.join(", ")}`);
     const fonts = resolveFonts();
@@ -64006,7 +64011,7 @@ async function searchAudio(query, opts) {
   const u = new URL("https://api.openverse.org/v1/audio/");
   u.searchParams.set("q", opts.kind === "music" ? `${query} music` : query);
   u.searchParams.set("license", "by,cc0");
-  u.searchParams.set("page_size", "40");
+  u.searchParams.set("page_size", "20");
   const j = await getJson(u.href);
   const items = (j.results ?? []).map((r) => {
     const lic = String(r.license ?? "");
