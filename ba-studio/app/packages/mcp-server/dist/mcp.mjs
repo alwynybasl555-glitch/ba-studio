@@ -36821,6 +36821,7 @@ How to work:
 - Animation: animated SVG illustrations (characters that wave/blink/walk, objects with squash and stretch, kinetic type) and imported Lottie animations (list_lotties, data-lottie) are made with create_design_clip; follow the animation skill. Flat 2D only: no lip-synced cartoon films.
 - When the user wants a design "like" a video (a reference), import it, call analyze_reference to see its stills and measurements, then follow its system (palette, element types, layout, pacing, amount of motion) with new content of their own.
 - Design with a human touch: a restrained palette, editorial typography (Thmanyah for Arabic), clear hierarchy, real margins, staggered timing, subtle grain. Avoid generic AI looks (neon rainbow gradients, glowing everything, centred clich\xE9s). This is about craft, never about hiding that AI was used if the user or a platform asks.
+- Video links: import_video_link downloads a YouTube/TikTok/X\u2026 video into the project (only the user's own or permitted videos); then study it with transcribe, analyze_audio, detect_scenes and analyze_reference.
 - Talking videos (free, local): transcribe (word-timed, pick the dialect) \u2192 cut_words (fillers=true, or word indexes: text-based editing) and/or cut_silences \u2192 add_captions (word-synced, fix misheard words with corrections). Arabic narration: voiceover. The designer picks the voice (\u0641\u0647\u062F\u060C \u0645\u0646\u0635\u0648\u0631\u060C \u0639\u0628\u062F\u0627\u0644\u0644\u0647 on ElevenLabs with their own key, or the free local \u0643\u0631\u064A\u0645); use their choice from the brief or Settings. These need the local engines; if a tool says one is missing, tell the user to install it in \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629.
 - Not available yet (do not pretend to do these): automatic highlight detection.`;
 
@@ -37932,6 +37933,20 @@ ${r.photos.map((p, i) => `${i + 1}. id=${p.id} \xB7 ${p.width}\xD7${p.height} \x
     const pid = projectId(a.project_id);
     const m = await call("POST", `/api/projects/${pid}/media/import-url`, { url: a.url, name: a.name });
     return text("Downloaded into the project.", compactMedia(m));
+  });
+  tool("import_video_link", {
+    title: "Import a video from a link (YouTube, TikTok\u2026)",
+    description: "Download a video from a page link (YouTube, TikTok, Instagram, X, Snapchat, Vimeo, Twitch, Facebook, Reddit) into the project, on this computer, so you can watch it through your tools: transcribe it, analyze_audio / detect_scenes, analyze_reference for stills, find the strongest moments, then cut, caption and re-frame them. Only for videos the user owns or has the right to use (their own channel, their streams, permission); say so if unsure. audio_only for a sound or a song the user owns. Up to 3 hours / 2 GB. If it says the downloader is missing, tell the user to install it under \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629.",
+    inputSchema: {
+      url: external_exports.string().min(8).max(500),
+      max_height: external_exports.number().int().min(240).max(2160).default(1080).describe("Highest video quality to fetch (1080 is plenty for vertical edits)"),
+      audio_only: external_exports.boolean().default(false),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/import-link`, { url: a.url, maxHeight: a.max_height, audioOnly: a.audio_only });
+    return text(`Downloaded \u201C${r.title}\u201D into the project.`, compactMedia(r.media));
   });
   tool("add_background_music", {
     title: "Add background music",
