@@ -36955,6 +36955,7 @@ var TextClipPatch = external_exports.object({
   font: TextFont,
   size: external_exports.number().min(0.01).max(0.5),
   color: hex3,
+  highlight: hex3,
   box: external_exports.boolean(),
   boxColor: hex3,
   boxOpacity: fraction,

@@ -59732,6 +59732,7 @@ var TextClipPatch = external_exports.object({
   font: TextFont,
   size: external_exports.number().min(0.01).max(0.5),
   color: hex3,
+  highlight: hex3,
   box: external_exports.boolean(),
   boxColor: hex3,
   boxOpacity: fraction,
@@ -62170,7 +62171,7 @@ import net from "node:net";
 import os2 from "node:os";
 import path4 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.7.0";
+var APP_VERSION = "0.7.1";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -64737,6 +64738,13 @@ function registerSpeechRoutes(app, s) {
       highlight: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).default("#F5D04C"),
       color: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
       y: external_exports.number().min(0.05).max(0.95).optional(),
+      size: external_exports.number().min(0.02).max(0.2).optional(),
+      font: external_exports.enum(["arabic", "thmanyah", "sans", "serif"]).optional(),
+      box: external_exports.boolean().optional(),
+      boxColor: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+      boxOpacity: external_exports.number().min(0).max(1).optional(),
+      /** Remove the captions made earlier (karaoke text clips) before adding the new ones. */
+      replace: external_exports.boolean().default(true),
       dryRun: external_exports.boolean().default(false)
     }).parse(req.body);
     const m = s.mediaService.requireMedia(body.mediaId);
@@ -64748,7 +64756,17 @@ function registerSpeechRoutes(app, s) {
     const state = s.timelines.get(id);
     const cues = captionCues(state.timeline, body.mediaId, words, { wordsPerCaption: body.wordsPerCaption });
     if (!cues.length) throw new HttpError(422, "no_captions", "None of this file's speech is on the timeline.");
-    const style = { ...CAPTION_STYLES[body.style], ...body.color ? { color: body.color } : {}, ...body.y !== void 0 ? { y: body.y } : {} };
+    const style = {
+      ...CAPTION_STYLES[body.style],
+      ...body.color ? { color: body.color } : {},
+      ...body.y !== void 0 ? { y: body.y } : {},
+      ...body.size !== void 0 ? { size: body.size } : {},
+      ...body.font ? { font: body.font } : {},
+      ...body.box !== void 0 ? { box: body.box } : {},
+      ...body.boxColor ? { boxColor: body.boxColor } : {},
+      ...body.boxOpacity !== void 0 ? { boxOpacity: body.boxOpacity } : {}
+    };
+    const old = body.replace ? state.timeline.clips.filter((c) => c.type === "text" && c.words?.length).map((c) => c.id) : [];
     const ops = cues.map((c) => ({
       op: "addText",
       text: c.text,
@@ -64757,6 +64775,7 @@ function registerSpeechRoutes(app, s) {
       style,
       ...body.karaoke && c.words.length ? { words: c.words.slice(0, 40), highlight: body.highlight } : {}
     }));
+    if (old.length) ops.unshift({ op: "deleteClips", clipIds: old });
     const result = s.timelines.applyPlan(id, ops, { dryRun: body.dryRun, label: "Add captions", actor: req.scope === "ai" ? "ai" : "user" });
     return { captions: cues.length, preview: cues.slice(0, 12), applied: !body.dryRun, revision: result.revision };
   });
