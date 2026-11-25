@@ -62171,7 +62171,7 @@ import net from "node:net";
 import os2 from "node:os";
 import path4 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.7.1";
+var APP_VERSION = "0.7.2";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -64960,7 +64960,8 @@ import path19 from "node:path";
 import { pipeline as pipeline3 } from "node:stream/promises";
 import { Readable as Readable3 } from "node:stream";
 var UPDATE_REPO = "alwynybasl555-glitch/ba-studio";
-var MANIFEST = `https://raw.githubusercontent.com/${UPDATE_REPO}/main/ba-studio/.claude-plugin/plugin.json`;
+var MANIFEST = `https://api.github.com/repos/${UPDATE_REPO}/contents/ba-studio/.claude-plugin/plugin.json?ref=main`;
+var MANIFEST_RAW = `https://raw.githubusercontent.com/${UPDATE_REPO}/main/ba-studio/.claude-plugin/plugin.json`;
 var ZIP = `https://codeload.github.com/${UPDATE_REPO}/zip/refs/heads/main`;
 var COMMIT = `https://api.github.com/repos/${UPDATE_REPO}/commits/main`;
 function newer(a, b) {
@@ -64978,10 +64979,12 @@ var Updater = class {
   info = { current: APP_VERSION, latest: null, available: false, canApply: Boolean(pluginInstall()), checkedAt: null, error: null };
   busy = false;
   async check(force = false) {
-    const fresh = this.info.checkedAt && Date.now() - Date.parse(this.info.checkedAt) < 30 * 6e4;
+    const ttl = this.info.available ? 30 * 6e4 : 3 * 6e4;
+    const fresh = this.info.checkedAt && Date.now() - Date.parse(this.info.checkedAt) < ttl;
     if (fresh && !force) return this.info;
     try {
-      const res = await fetch(MANIFEST, { signal: AbortSignal.timeout(1e4), headers: { "cache-control": "no-cache" } });
+      let res = await fetch(MANIFEST, { signal: AbortSignal.timeout(1e4), headers: { accept: "application/vnd.github.raw+json", "user-agent": "BaStudio" } });
+      if (!res.ok) res = await fetch(`${MANIFEST_RAW}?t=${Date.now()}`, { signal: AbortSignal.timeout(1e4), headers: { "cache-control": "no-cache" } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const latest = String((await res.json()).version ?? "");
       this.info = { ...this.info, latest, available: Boolean(latest) && newer(latest, APP_VERSION), checkedAt: (/* @__PURE__ */ new Date()).toISOString(), error: null };
