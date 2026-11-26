@@ -36811,7 +36811,7 @@ How to work:
 - All times are in seconds. Timeline positions ("start", "time") are on the timeline; "in"/"out" are positions inside the source file.
 - For anything more than one or two edits, build a plan: create_editing_plan validates it and shows the result without changing anything; describe it to the user, then apply_editing_plan applies it as a single undo step.
 - Before removing material (delete_clip, cut_clip, destructive plans) make sure the user agrees. Everything you do can be undone (undo_edit), and original media files are never modified.
-- Analysis is local and signal-level: detect_scenes (cuts), analyze_audio (loudness, silences), analyze_video (metadata + scenes). There is no visual content understanding yet, so do not claim to have seen what is in a shot.
+- Analysis is local and signal-level: detect_scenes (cuts), analyze_audio (loudness, silences), analyze_video (metadata + scenes). To see what is in footage, call watch_video (stills as images + what is said + cuts) and describe only what the stills show; never claim to have seen more.
 - Use generate_preview for a quick exact render the user can watch, and export_video for the final file.
 - Creating without footage: for rich ad-style design (cards, product cut-outs, phone mockups, drawn lines, pops and camera moves) use create_design_clip (HTML/CSS scenes); for simple titles and text animation create_motion_graphic is faster. create_motion_graphic renders original motion graphics (titles, intros, animated quotes, stats with counters, lower thirds, end cards, or a stylised version of a project image/video as the background). Build videos from several short scenes, then add_clip them in order and add_transition between them. If the user connected an AI image/video generator, generate there, then bring the file in with import_media_from_url; never claim to generate realistic AI video yourself.
 - Before creating any design or animation, ask the user how they want it (style, colours, title font, pace, length, anything to avoid) in one short message, unless they already said; then follow their answers. Keep everything adult and premium: never childish (no cartoon mascots, comic bubbles, emoji, toy-like bouncing) unless they explicitly ask.
@@ -36825,7 +36825,8 @@ How to work:
 - Finishing: tiktok_check scores a project for TikTok (hook, pace, dead air, captions, safe zones, length, ending) with a fix per item; fix the warnings and check again. enhance_media makes a cleaner copy (denoise, sharpen, stabilise, colour, upscale, clean sound); swap it in with the replaceMedia op. split_into_parts cuts a long video into TikTok parts (one project each, labels, karaoke captions, ready post captions); transcribe it first.
 - Video links: import_video_link downloads a YouTube/TikTok/X\u2026 video into the project (only the user's own or permitted videos); then study it with transcribe, analyze_audio, detect_scenes and analyze_reference.
 - Talking videos (free, local): transcribe (word-timed, pick the dialect) \u2192 cut_words (fillers=true, or word indexes: text-based editing) and/or cut_silences \u2192 add_captions (word-synced, fix misheard words with corrections). Arabic narration: voiceover. The designer picks the voice (\u0641\u0647\u062F\u060C \u0645\u0646\u0635\u0648\u0631\u060C \u0639\u0628\u062F\u0627\u0644\u0644\u0647 on ElevenLabs with their own key, or the free local \u0643\u0631\u064A\u0645); use their choice from the brief or Settings. These need the local engines; if a tool says one is missing, tell the user to install it in \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629.
-- Not available yet (do not pretend to do these): automatic highlight detection.`;
+- Long videos: find_highlights ranks the best moments (energy, laughs, pace, hooks); watch_video the top ones before cutting.
+- New design powers: voice-synced motion (create_design_clip with voice_media_id, then data-say / data-sync), scene transitions (data-ba-tx), 3D, automatic quiet sound design (sfx), remove_background for cut-outs, adapt_formats for every size, and saved styles (save_design_style when the user approves a look; get_design_style to reuse it). Follow the design-clips skill.`;
 
 // ../timeline/src/schema.ts
 var TrackKind = external_exports.enum(["video", "audio"]);
@@ -37671,23 +37672,130 @@ function registerTools(server, studio) {
   });
   tool("create_design_clip", {
     title: "Create design clip (HTML)",
-    description: `Render a richly designed animated scene written as HTML + CSS, recorded frame by frame in a local headless browser (no network). Use this for ad-style motion design: rounded cards with shadows, cut-out product images, phone mockups (CSS), hand-drawn SVG squiggles/starbursts/dotted connectors, pop/scale/rotate/slide animations, progress bars, camera-like moves (transform on a wrapper). Prefer the built-in Motion Kit for movement (spring physics, Arabic word reveals, wipes, counters, line draws, a camera with parallax depth): data-ba="rise|drop|pop|zoom|slide-right|slide-left|tilt|blur|flip|fade" data-at="0.4" data-feel="smooth|gentle|snappy|lively|heavy", data-out (exit), data-ba-words="mask|rise|blur", data-ba-stagger, data-ba-mask="right|left|up|down|circle", data-ba-count="1250" data-digits="ar", data-ba-draw, data-ba-mark="marker|under", data-ba-cam="push|pull|pan-left|pan-right|rise|drift|handheld" with data-depth children; see the design-clips skill and its recipes. The canvas is exactly the project size (use px or vw/vh; body is RTL Arabic). Otherwise animate ONLY with CSS @keyframes / transitions or the Web Animations API (they are paused and set to each frame's time; Date.now() and setTimeout do not advance). For JS-driven drawing, listen to window 'ba-frame' events (detail = seconds). Fonts: 'Thmanyah' (if installed), 'Amiri', 'Aref Ruqaa' (titles). Add class 'ba-paper' for paper grain. Project images/videos: src="{{media:<media_id>}}". The user's own logo (from \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0647\u0648\u064A\u062A\u064A): src="{{brand:logo}}" (transparent PNG; check get_brand first). Imported Lottie animations: <div data-lottie="<lottie_id>" style="position:absolute;...;width:..;height:.."></div> (optional data-start, data-speed, data-loop="false", data-fit="cover"; ids from list_lotties). Animated SVG illustration (characters, objects) works too: follow the animation skill. No external URLs (they are blocked). Follow the motion-design skill for the human-touch style. Returns a media item; place it with add_clip or add_to_timeline_at.`,
+    description: `Render a richly designed animated scene written as HTML + CSS, recorded frame by frame in a local headless browser (no network). Use this for ad-style motion design: rounded cards with shadows, cut-out product images, phone mockups (CSS), hand-drawn SVG squiggles/starbursts/dotted connectors, pop/scale/rotate/slide animations, progress bars, camera-like moves (transform on a wrapper). Prefer the built-in Motion Kit for movement (spring physics, Arabic word reveals, wipes, counters, line draws, a camera with parallax depth): data-ba="rise|drop|pop|zoom|slide-right|slide-left|tilt|blur|flip|fade" data-at="0.4" data-feel="smooth|gentle|snappy|lively|heavy", data-out (exit), data-ba-words="mask|rise|blur", data-ba-stagger, data-ba-mask="right|left|up|down|circle", data-ba-count="1250" data-digits="ar", data-ba-draw, data-ba-mark="marker|under", data-ba-cam="push|pull|pan-left|pan-right|rise|drift|handheld" with data-depth children, 3D (data-ba="spin3d|turn3d", data-ba-turntable, data-ba-sway3d, data-ba-extrude), scene transitions (<div data-ba-tx="paper|ink|slide|blinds|zoom" data-at="cut time">). VOICE SYNC: pass voice_media_id (+ voice_offset_sec = the voice time where this clip starts) and use data-say="word" on an element to start it when that word is spoken, or data-sync on a data-ba-words title so each word appears as it is said. Sound design is automatic and quiet (sfx soft); set sfx off when the user does not want effects. See the design-clips skill and its recipes. The canvas is exactly the project size (use px or vw/vh; body is RTL Arabic). Otherwise animate ONLY with CSS @keyframes / transitions or the Web Animations API (they are paused and set to each frame's time; Date.now() and setTimeout do not advance). For JS-driven drawing, listen to window 'ba-frame' events (detail = seconds). Fonts: 'Thmanyah' (if installed), 'Amiri', 'Aref Ruqaa' (titles). Add class 'ba-paper' for paper grain. Project images/videos: src="{{media:<media_id>}}". The user's own logo (from \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0647\u0648\u064A\u062A\u064A): src="{{brand:logo}}" (transparent PNG; check get_brand first). Imported Lottie animations: <div data-lottie="<lottie_id>" style="position:absolute;...;width:..;height:.."></div> (optional data-start, data-speed, data-loop="false", data-fit="cover"; ids from list_lotties). Animated SVG illustration (characters, objects) works too: follow the animation skill. No external URLs (they are blocked). Follow the motion-design skill for the human-touch style. Returns a media item; place it with add_clip or add_to_timeline_at.`,
     inputSchema: {
       html: external_exports.string().min(1).max(4e5).describe("Scene HTML: <style> plus markup (a full document is also accepted)"),
       duration_sec: external_exports.number().min(0.5).max(60),
       name: external_exports.string().trim().min(1).max(80).optional(),
       add_to_timeline_at: seconds("If given, also place the clip on the timeline at this time").optional(),
       motion_blur: external_exports.boolean().default(true).describe("Camera-like motion blur on fast movement (renders about 3\xD7 slower). Keep it on for final clips."),
+      voice_media_id: external_exports.string().uuid().optional().describe("A voiceover in the project to sync to (data-say / data-sync). It is transcribed once and cached."),
+      voice_offset_sec: external_exports.number().min(0).default(0).describe("Voice time (s) at this clip's start, when the clip covers a later part of the voiceover."),
+      sfx: external_exports.enum(["off", "soft", "normal"]).default("soft").describe("Automatic sound design from the motion (whooshes, ticks, pencil, paper). soft is subtle; off for silence."),
       project_id: projectIdArg
     }
   }, async (a, _e, call) => {
     const pid = projectId(a.project_id);
-    const r = await call("POST", `/api/projects/${pid}/design`, { html: a.html, durationSec: a.duration_sec, name: a.name, motionBlur: a.motion_blur });
+    const r = await call("POST", `/api/projects/${pid}/design`, {
+      html: a.html,
+      durationSec: a.duration_sec,
+      name: a.name,
+      motionBlur: a.motion_blur,
+      sfx: a.sfx,
+      ...a.voice_media_id ? { voice: { mediaId: a.voice_media_id, offset: a.voice_offset_sec } } : {}
+    });
     const lint = r.lint.length ? ` LAYOUT CHECK FOUND ${r.lint.length} ISSUE(S), fix them and re-render before showing the user: ${r.lint.map((i) => `[${i.kind} @${i.time}s] \u201C${i.text}\u201D: ${i.detail}`).join("; ")}.` : " Layout check passed (no clipped, tiny, low-contrast or overlapping text; safe zones clear).";
-    const warn = (r.warnings.length ? ` Warnings: ${r.warnings.join("; ")}` : "") + lint;
+    const extra = `${r.syncedWords ? ` Synced to ${r.syncedWords} spoken words.` : ""}${r.sfxCues ? ` Sound design: ${r.sfxCues} quiet cues.` : ""}`;
+    const warn = extra + (r.warnings.length ? ` Warnings: ${r.warnings.join("; ")}` : "") + lint;
     if (a.add_to_timeline_at === void 0) return text(`Design clip rendered and added to media.${warn}`, compactMedia(r.media));
     const t = await op(pid, { op: "addClip", mediaId: r.media.id, start: a.add_to_timeline_at }, call);
     return timelineReply(`Design clip rendered and placed on the timeline.${warn}`, t, pid, call);
+  });
+  tool("save_design_style", {
+    title: "Save a design style",
+    description: "Save the look of an approved design clip under a name (its CSS, palette, fonts, motion, sound level and the full scene as an example), so later designs can be made in the same style with new content. Use it when the user approves a design or says to keep/remember this style. Saving with an existing name replaces it.",
+    inputSchema: {
+      name: external_exports.string().trim().min(1).max(60).describe('Short name the user will say later, e.g. "SoEzy"'),
+      media_id: external_exports.string().uuid().describe("The approved design clip"),
+      notes: external_exports.string().trim().max(3e3).default("").describe("What makes this style: layout habits, motion choices (kit presets, feels, camera), transitions, type sizes, what the user liked or rejected")
+    }
+  }, async (a, _e, call) => {
+    const st = await call("POST", "/api/styles", { name: a.name, mediaId: a.media_id, notes: a.notes });
+    return text(`Saved style \u201C${st.name}\u201D (palette ${st.palette.join(" ")}; fonts ${st.fonts.join(", ") || "default"}). Later: get_design_style("${st.name}").`);
+  });
+  tool("list_design_styles", {
+    title: "List saved design styles",
+    description: `The user's saved design styles (name, notes, palette). Check this when the user asks for a design "in the X style" or "like last time".`,
+    inputSchema: {},
+    annotations: { readOnlyHint: true }
+  }, async (_a3, _e, call) => {
+    const list = await call("GET", "/api/styles");
+    return text(list.length ? `${list.length} saved style(s).` : "No saved styles yet. When the user approves a design, offer to save its style with save_design_style.", list);
+  });
+  tool("get_design_style", {
+    title: "Get a saved design style",
+    description: "Load a saved style by name: its CSS, notes and a full example scene. Reuse the CSS and the motion habits exactly, but write new content and new layouts for the new message; never copy the old text or images.",
+    inputSchema: { name: external_exports.string().trim().min(1).max(120) },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const st = await call("GET", `/api/styles/${encodeURIComponent(a.name)}`);
+    return text(`Style \u201C${st.name}\u201D. Palette: ${st.palette.join(" ")}. Fonts: ${st.fonts.join(", ")}. Sound: ${st.sfx}.
+Notes: ${st.notes || "(none)"}
+
+CSS to reuse:
+${st.css}
+
+Example scene (structure and motion to learn from, not content to copy):
+${st.sampleHtml.slice(0, 3e4)}`);
+  });
+  tool("watch_video", {
+    title: "Watch a video",
+    description: "Actually look at and listen to a video in the project: stills across a time range (as images), what is said with timestamps (transcribed locally, cached), and where the picture cuts. Use it before editing footage, to choose the strongest opening, the best shots, or to understand a stream. Narrow from/to to look closer at a moment.",
+    inputSchema: {
+      media_id: external_exports.string().uuid(),
+      from: external_exports.number().min(0).default(0),
+      to: external_exports.number().min(0).optional(),
+      count: external_exports.number().int().min(2).max(16).default(10),
+      transcribe: external_exports.boolean().default(true)
+    },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const r = await call("POST", `/api/media/${a.media_id}/watch`, { from: a.from, to: a.to, count: a.count, transcribe: a.transcribe });
+    const said = r.said ? r.said.length ? r.said.map((x) => `[${x.start}\u2013${x.end}s] ${x.text}`).join("\n") : "(no speech in this range)" : "(not transcribed: the speech engine is not installed, see \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A \u2190 \u0627\u0644\u0645\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0645\u062D\u0644\u064A\u0629)";
+    const head = `\u201C${r.name}\u201D ${r.from.toFixed(1)}\u2013${r.to.toFixed(1)}s of ${r.durationSec.toFixed(1)}s. Stills at: ${r.frames.map((f) => f.time + "s").join(", ")}. Cuts: ${r.cuts.length ? r.cuts.slice(0, 60).join(", ") : "none"}.
+What is said:
+${said}
+Describe only what you can see in the stills; do not guess beyond them.`;
+    return { content: [{ type: "text", text: head }, ...r.frames.map((f) => ({ type: "image", data: f.base64, mimeType: "image/jpeg" }))] };
+  });
+  tool("find_highlights", {
+    title: "Find highlights in a long video",
+    description: "Find the best moments of a long video (a stream, podcast or vlog) to cut into shorts: windows of about target_sec that start and end on sentence boundaries, ranked by energy, loud moments (laughs, hype), speech pace, visual change and a natural hook. Then watch_video the top candidates to confirm before cutting; tell the user what each one is about.",
+    inputSchema: {
+      media_id: external_exports.string().uuid(),
+      target_sec: external_exports.number().min(8).max(180).default(35),
+      count: external_exports.number().int().min(1).max(12).default(5)
+    },
+    annotations: { readOnlyHint: true }
+  }, async (a, _e, call) => {
+    const r = await call("POST", `/api/media/${a.media_id}/highlights`, { targetSec: a.target_sec, count: a.count });
+    const lines = r.highlights.map((h, i) => `${i + 1}. ${h.start}\u2013${h.end}s (score ${h.score}): ${h.reasons.join("; ") || "steady"}
+   \u201C${h.text.slice(0, 220)}\u201D`);
+    return text(`${r.highlights.length} candidate highlights${r.transcribed ? "" : " (no transcript: based on sound and picture only)"}:
+${lines.join("\n")}`, r.highlights);
+  });
+  tool("adapt_formats", {
+    title: "Make every size from one design",
+    description: "Make copies of the open project at other sizes (9:16 TikTok/Reels, 4:5 Instagram feed, 1:1 square, 16:9 YouTube). Each size becomes its own project: design clips are re-rendered from their HTML at the new size (they rearrange themselves when written with vw/vh and the html classes ba-vertical / ba-portrait / ba-square / ba-landscape), footage is shared and refitted (cover fills the frame), and the edit is kept. Check the layout issues it reports, fix them in that project, then export each.",
+    inputSchema: {
+      formats: external_exports.array(external_exports.enum(["9:16", "4:5", "1:1", "16:9"])).min(1).max(4),
+      footage: external_exports.enum(["cover", "contain"]).default("cover"),
+      project_id: projectIdArg
+    }
+  }, async (a, _e, call) => {
+    const pid = projectId(a.project_id);
+    const r = await call("POST", `/api/projects/${pid}/adapt`, { formats: a.formats, footage: a.footage });
+    const lines = r.projects.map((p) => `\u2022 ${p.name} (${p.format}, id ${p.projectId}): ${p.rerendered} design clip(s) re-rendered${p.lint.length ? `; LAYOUT ISSUES: ${p.lint.map((l) => `[${l.clip}] ${l.kind} \u201C${l.text}\u201D`).join("; ")}` : "; layout check passed"}`);
+    return text(r.projects.length ? `Made ${r.projects.length} size(s):
+${lines.join("\n")}` : "Nothing to do: the project is already in that size.", r.projects);
+  });
+  tool("remove_background", {
+    title: "Remove a picture's background",
+    description: "Cut the subject (product, person, logo, object) out of a picture in the project, on this computer, as a new transparent PNG (the original stays). Use the result in design clips with {{media:<new id>}}. Look at the result (review it in a design) before relying on it. Needs the background-removal engine (Settings \u2192 Local engines); if missing, tell the user where to install it.",
+    inputSchema: { media_id: external_exports.string().uuid() }
+  }, async (a, _e, call) => {
+    const r = await call("POST", `/api/media/${a.media_id}/remove-bg`, {});
+    return text(`Cut-out ready: \u201C${r.media.name}\u201D (id ${r.media.id}), ${Math.round(r.keptFraction * 100)}% of the picture kept.${r.note ? " " + r.note : ""}`, compactMedia(r.media));
   });
   tool("tiktok_check", {
     title: "TikTok readiness check",

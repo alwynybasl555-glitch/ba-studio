@@ -100,6 +100,36 @@ It runs from `data-at` (default 0) to `data-end` (default the scene's end); `dat
 - 1 for the subject
 - 1.2–1.6 for foreground details
 
+**Voice sync (when there is a voiceover).** Pass `voice_media_id` to `create_design_clip`. If the clip covers a later part of the voice, also pass `voice_offset_sec` = the voice time where this clip starts. Then:
+- `data-say="كلمة"` on any element starts it when that word is spoken. Use `data-say-n="2"` for the second time the word is said, and `data-lead="0.1"` to come in slightly early.
+- `data-sync` on a `data-ba-words` title shows each word as it is said. Words the voice does not say keep the normal rhythm.
+- Spelling differences are tolerated: ة/ه, أ/ا, ى/ي, diacritics, and a leading و/ف/ب/ال.
+- One design clip per voice section is easiest. Put it on the timeline at the same time as the voice offset.
+
+**3D.**
+- `data-ba="spin3d"`: turns in like a card.
+- `data-ba="turn3d"`: tilts up from below in perspective. Good for phones and products.
+- `data-ba-turntable="30"`: degrees per second, a slow continuous turn.
+- `data-ba-sway3d="12"`: a gentle 3D float in degrees, for a hero object.
+- `data-ba-extrude="10"` with `data-color="rgba(…)"`: extruded 3D type that grows in with the entrance.
+
+Keep 3D for one hero element per scene.
+
+**Transitions between scenes.** Place `<div data-ba-tx="paper|ink|slide|blinds" data-at="CUT" data-dur="0.8" data-color="#efe8da"></div>` as the last element of the stage:
+- The overlay covers the frame up to the cut time and opens after it. Switch the scene content at exactly that time.
+- `data-mode="out"` (cover only, at the end of a clip) and `data-mode="in"` (open only, at the start of the next clip) join two separate clips.
+- `paper` is a torn paper sheet: it suits the paper house style.
+- `ink` is an organic ink blot. `data-x` and `data-y` set its centre in %.
+- `zoom` goes on a scene element itself: it zooms through and out.
+
+Use one transition style per video, at most two.
+
+**Sound design is automatic.** The kit's events become quiet, synthesised sounds: a soft whoosh on entrances, ticks on counters, pencil on line draws, paper on the paper transition. They are thinned out, and never more than 3 per second. Leave `sfx: "soft"`, and use `"off"` when the user wants silence or their own effects. The user dislikes loud effects: never set `"normal"` unless they ask.
+
+**Every size.** Write sizes in `vw`/`vh`. Where the layout must change, use the html classes `.ba-vertical`, `.ba-portrait`, `.ba-square` and `.ba-landscape`, for example `.ba-landscape .hero{left:52%;width:40vw}`. `adapt_formats` then re-renders the design at other sizes.
+
+**Saved styles.** When the user approves a design, offer to save it with `save_design_style`. When they ask for "the X style" or "like last time", call `get_design_style` and reuse its CSS and motion habits, with new content and new layouts.
+
 **Rules**
 - The kit writes inline transform, opacity, filter and clip-path. Do not also put a CSS animation on the same property of the same element; put one on a wrapper instead. Elements keep their own inline filter (for example a drop-shadow) and opacity.
 - Combine 2–3 kinds of motion per scene, not all of them.

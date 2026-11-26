@@ -49,3 +49,9 @@ Analysis is signal-level: silences, loudness and scene cuts. You cannot see what
 3. `add_captions` after cutting, so they follow the final timing. Fix misheard words with `corrections` (names, brands, hamza/taa marbuta). 2–3 words per caption for Reels/TikTok, 5–7 for long talks. Styles: clean, bold, highlight, minimal; keep them above the platform buttons (default y).
 4. Narration: `voiceover` in the voice the designer chose (brief or الإعدادات ← الصوت): فهد احترافي، فهد هادي، منصور، عبدالله (ElevenLabs, their own key: write natural white-Saudi or MSA) or كريم (free, local: write fully voweled MSA). Numbers as words, short sentences; then add it to an audio track and let the music duck under it (export does this automatically).
 5. If a tool says an engine is missing, tell the user: الإعدادات ← المحركات المحلية ← تثبيت (free, one-time download).
+
+## Watching footage and finding highlights
+- Before cutting footage, call `watch_video`. It returns stills as images, what is said with timestamps, and where the picture cuts. Describe only what the stills show. Narrow `from`/`to` to look closer.
+- For a long stream or podcast, `find_highlights` ranks windows by energy, loud moments, pace, visual change and a natural hook. Watch the top candidates to confirm them, tell the user what each one is about, then cut (`split_into_parts`, or new projects).
+- `remove_background` cuts a product, person or logo out of a picture as a transparent PNG, for design clips.
+- `adapt_formats` makes 9:16, 4:5, 1:1 and 16:9 versions of a finished project, each as its own project.
