@@ -50,6 +50,64 @@ The user can reply in the same conversation to change the result. Change only wh
 - **Talking-head footage:** use `cut_silences` with dry_run first, then apply it.
 - **Credits:** list the music credits that need attribution.
 
+## Motion Kit (use it first: this is what makes motion feel real)
+Every design clip includes the Ba Motion Kit. It is driven by the scene clock, so it is exact on every frame. Prefer it to hand-written keyframes for entrances, text reveals, numbers, lines and the camera. Hand-written CSS is still fine for anything the kit does not cover.
+
+**Spring entrances.** Real spring physics, not curves:
+- `data-ba="rise|drop|pop|zoom|slide-right|slide-left|tilt|blur|flip|fade"`
+- `data-at="0.4"`: the start time in seconds.
+- `data-feel`:
+  - `smooth` (default): no bounce
+  - `gentle`: slow, soft
+  - `snappy`: quick, a hint of overshoot
+  - `lively`: a little overshoot, for logos and buttons
+  - `heavy`: big, slow objects and backgrounds
+- `data-amount="0.5"`: a smaller or larger move.
+- `data-base="rotate(-4deg)"`: keeps the element's own tilt under the motion.
+- `data-out="3.1"`: the element leaves at that time (ease-in, about 0.35 s).
+
+**Arabic word reveals.** `data-ba-words="mask|rise|blur|pop"` with `data-at` and `data-gap` (default 0.085 s):
+- It splits whole words only, so letters stay joined.
+- The rhythm is uneven, with a longer breath after «،» and «.».
+- `mask` slides each word up from behind its own line: the most premium title reveal.
+- Nested elements (an `<em>` accent word) keep their style.
+
+**Groups.** `data-ba-stagger="rise|pop|tilt|…"` on a container brings its children in one after another with a human, uneven rhythm (`data-gap`, default 0.12). A child can override with its own `data-ba`, `data-at` or `data-feel`.
+
+**Wipes.** `data-ba-mask="right|left|up|down|circle"` with `data-at` and `data-dur`. Use it for hairlines, panels, photos and before/after.
+
+**Counters.** `data-ba-count="1250"`:
+- `data-from`, `data-dur`, `data-dec` (decimals)
+- `data-digits="ar"` for Arabic-Indic digits
+- `data-sep="٬"` (or ",") for thousands
+
+Digits are tabular, so the number never jitters. Put the unit in a sibling element.
+
+**Lines that draw themselves.** Put `data-ba-draw` on an `<svg>` (every path in it) or on one path, with `data-at`, `data-dur` and `data-gap`. Lengths are measured for you: no stroke-dasharray guessing.
+
+**Highlighter.** Put `data-ba-mark="marker|under"` on a word, with `data-color="rgba(…,.25)"`. A hand-marker sweep runs behind it from the right.
+
+**Camera with depth.** Put `data-ba-cam` on the wrapper:
+- `push`: slow zoom in
+- `pull`: settle out
+- `pan-left` or `pan-right`
+- `rise`
+- `drift`: a slow, organic combination
+- `handheld`: a subtle held camera, never a shake
+
+It runs from `data-at` (default 0) to `data-end` (default the scene's end); `data-amount` scales it. Children with `data-depth` become parallax planes:
+- 0.3–0.6 for far backgrounds
+- 1 for the subject
+- 1.2–1.6 for foreground details
+
+**Rules**
+- The kit writes inline transform, opacity, filter and clip-path. Do not also put a CSS animation on the same property of the same element; put one on a wrapper instead. Elements keep their own inline filter (for example a drop-shadow) and opacity.
+- Combine 2–3 kinds of motion per scene, not all of them.
+- The first meaningful change should come by 0.3 s. Hold the final state for 0.4–0.8 s.
+- `window.ba` offers `spring(t, feel)`, `ease.out|in|inOut|soft(p)`, `rand(seed)` (seeded) and `prog(t, at, dur)` for custom JS drawing inside `ba-frame` handlers.
+
+**Scene recipes:** see `recipes.md` in this skill. It holds 8 proven structures: editorial hook, giant stat, product hero with depth, three reasons, before/after, quote, end card, and scene exits. Start from the closest recipe, then make it your own: palette, layout side, timings, content.
+
 ## Pro craft: what makes people doubt it was AI
 The engine pauses all animations and sets each frame's time, so drive everything with CSS keyframes. Do not use `transition`, `setTimeout`, `Date.now`, or unseeded `Math.random`.
 
@@ -120,38 +178,22 @@ The engine pauses all animations and sets each frame's time, so drive everything
 <style>
   :root{--paper:#efe7d8;--accent:#e3a92b;--ink:#1b1b1b}
   .stage{position:absolute;inset:0;background:var(--paper);overflow:hidden}
-  .cam{position:absolute;inset:0;animation:cam 4s ease-in-out both}
-  @keyframes cam{from{transform:scale(1.06)}to{transform:scale(1)}}
-  h1{position:absolute;top:9%;right:8%;left:8%;margin:0;text-align:center;color:var(--ink);
-     font:900 6.2vh/1.25 "Thmanyah","Amiri";animation:up .8s var(--ease-out) .15s both}
+  .cam{position:absolute;inset:0}
+  h1{position:absolute;top:12%;right:8%;left:8%;margin:0;color:var(--ink);font:900 6.4vh/1.25 "Thmanyah","Amiri"}
   h1 em{font-family:"Aref Ruqaa";font-style:normal;color:var(--accent)}
-  @keyframes up{from{opacity:0;transform:translateY(4vh)}to{opacity:1;transform:none}}
-  .card{position:absolute;width:34vw;height:34vw;border-radius:28px;background:var(--accent);
-        display:grid;place-items:center;
-        animation:pop .7s cubic-bezier(.2,1.15,.4,1) both}
+  .card{position:absolute;right:10%;top:36%;width:36vw;height:36vw;border-radius:28px;background:var(--accent);display:grid;place-items:center}
   .card img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 12px 14px rgba(0,0,0,.25))}
-  @keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
-  .phone{position:absolute;width:30vw;aspect-ratio:9/19;border-radius:4.2vw;background:#111;padding:1.1vw;
-         animation:slide .9s var(--ease-out) both}
+  .phone{position:absolute;left:12%;top:50%;width:30vw;aspect-ratio:9/19;border-radius:4.2vw;background:#111;padding:1.1vw}
   .phone .screen{width:100%;height:100%;border-radius:3.2vw;background:#fff;overflow:hidden}
-  @keyframes slide{from{transform:translateY(60vh) rotate(8deg)}to{transform:rotate(-4deg)}}
-  .line{fill:none;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-dasharray:1400;
-        animation:draw 1.2s var(--ease-draw) .5s both}
-  @keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0}}
-  .star{position:absolute;width:7vw;animation:pop .5s cubic-bezier(.2,1.15,.4,1) both}
+  svg.lines{position:absolute;inset:0;width:100%;height:100%}
+  svg.lines path{fill:none;stroke:var(--ink);stroke-width:5;stroke-linecap:round}
 </style>
-<div class="stage ba-paper"><div class="cam">
-  <h1>كل طلباتك <em>بمكان واحد</em></h1>
-  <div class="card ba-shadow" style="right:10%;top:34%;animation-delay:.4s"><img src="{{media:PRODUCT_ID}}"></div>
-  <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 1080 1920">
-    <path class="line" d="M300 980 C 380 1080, 220 1160, 330 1260 S 470 1420, 380 1520"/>
-  </svg>
-  <div class="phone ba-shadow-lift" style="left:12%;top:52%;animation-delay:.67s"><div class="screen"><!-- UI here --></div></div>
-  <svg class="star" style="right:9%;top:32%;animation-delay:.9s" viewBox="0 0 100 100">
-    <path d="M50 2 L58 38 L96 30 L64 52 L90 84 L54 66 L44 98 L38 62 L4 74 L32 48 L8 18 L44 34Z" fill="#1b1b1b"/>
-  </svg>
-<div class="ba-vignette"></div><div class="ba-grain"></div>
-</div></div>
+<div class="stage ba-paper"><div class="cam" data-ba-cam="push" data-amount="0.7">
+  <h1 data-ba-words="mask" data-at="0.1">كل طلباتك <em data-ba-mark="under" data-at="0.9" data-color="#1b1b1b">بمكان واحد</em></h1>
+  <div class="card ba-shadow" data-ba="pop" data-at="0.45" data-feel="snappy" data-depth="1"><img src="{{media:PRODUCT_ID}}"></div>
+  <svg class="lines" viewBox="0 0 1080 1920" data-depth="1.25"><path data-ba-draw data-at="0.8" data-dur="1" d="M300 1000 C 380 1100, 220 1180, 330 1280 S 470 1440, 380 1540"/></svg>
+  <div class="phone ba-shadow-lift" data-ba="tilt" data-at="0.62" data-base="rotate(-4deg)" data-depth="1.1"><div class="screen"><!-- UI here --></div></div>
+</div><div class="ba-vignette"></div><div class="ba-grain"></div></div>
 ```
 Use `vw`/`vh` so the same scene works for vertical, square and landscape projects.
 

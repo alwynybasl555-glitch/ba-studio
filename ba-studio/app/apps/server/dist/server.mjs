@@ -61156,6 +61156,224 @@ import fsp2 from "node:fs/promises";
 import os from "node:os";
 import path2 from "node:path";
 import { pathToFileURL } from "node:url";
+
+// ../../packages/video-engine/src/motion-kit.ts
+var MOTION_KIT_JS = String.raw`
+(() => {
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const num = (v, d) => { const n = parseFloat(v); return Number.isFinite(n) ? n : d; };
+  const FEEL = { smooth: [170, 26], gentle: [120, 20], snappy: [320, 30], lively: [240, 19], heavy: [90, 18] };
+  /** Damped spring step response (mass 1), 0 at t<=0, settling at 1. */
+  const spring = (t, feel) => {
+    if (t <= 0) return 0;
+    const f = FEEL[feel] || FEEL.smooth, w0 = Math.sqrt(f[0]), z = f[1] / (2 * w0);
+    if (z < 1) { const wd = w0 * Math.sqrt(1 - z * z); return 1 - Math.exp(-z * w0 * t) * (Math.cos(wd * t) + (z * w0 / wd) * Math.sin(wd * t)); }
+    return 1 - Math.exp(-w0 * t) * (1 + w0 * t);
+  };
+  const ease = {
+    out: (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p)),
+    in: (p) => p * p * p,
+    inOut: (p) => (p < 0.5 ? 8 * p * p * p * p : 1 - Math.pow(-2 * p + 2, 4) / 2),
+    soft: (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2),
+  };
+  const prog = (t, at, dur) => clamp((t - at) / Math.max(0.001, dur), 0, 1);
+  /** Seeded random (mulberry32), so "random" details are the same on every frame and render. */
+  const rand = (seed) => { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let x = Math.imul(a ^ (a >>> 15), 1 | a); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; };
+  /** Uneven rhythm: human stagger is never a constant step. */
+  const RHYTHM = [1, 0.72, 1.3, 0.86, 1.12, 0.78, 1.22, 0.94];
+
+  let W = 0, H = 0;
+  /** Entrance presets: s is the spring value (0 → 1, may overshoot slightly). */
+  const PRESET = {
+    rise: (s, a) => ({ tf: "translateY(" + ((1 - s) * H * 0.055 * a).toFixed(2) + "px)", op: clamp(s * 1.6, 0, 1) }),
+    drop: (s, a) => ({ tf: "translateY(" + (-(1 - s) * H * 0.055 * a).toFixed(2) + "px)", op: clamp(s * 1.6, 0, 1) }),
+    pop: (s, a) => ({ tf: "scale(" + (1 - (1 - s) * 0.14 * a).toFixed(4) + ")", op: clamp(s * 2, 0, 1) }),
+    zoom: (s, a) => ({ tf: "scale(" + (1 + (1 - s) * 0.22 * a).toFixed(4) + ")", op: clamp(s * 1.5, 0, 1) }),
+    "slide-right": (s, a) => ({ tf: "translateX(" + ((1 - s) * W * 0.6 * a).toFixed(2) + "px)", op: clamp(s * 3, 0, 1) }),
+    "slide-left": (s, a) => ({ tf: "translateX(" + (-(1 - s) * W * 0.6 * a).toFixed(2) + "px)", op: clamp(s * 3, 0, 1) }),
+    tilt: (s, a) => ({ tf: "translateY(" + ((1 - s) * H * 0.08 * a).toFixed(2) + "px) rotate(" + ((1 - s) * 7 * a).toFixed(3) + "deg)", op: clamp(s * 2, 0, 1) }),
+    blur: (s, a) => ({ tf: "translateY(" + ((1 - s) * H * 0.02 * a).toFixed(2) + "px)", op: clamp(s * 1.4, 0, 1), fl: "blur(" + (Math.max(0, 1 - s) * 14 * a).toFixed(2) + "px)" }),
+    flip: (s, a) => ({ tf: "perspective(1400px) rotateX(" + ((1 - s) * -75 * a).toFixed(3) + "deg)", op: clamp(s * 2.2, 0, 1) }),
+    fade: (s) => ({ tf: "", op: clamp(s, 0, 1) }),
+    mask: (s) => ({ tf: "translateY(" + ((1 - s) * 105).toFixed(2) + "%)", op: 1 }),
+  };
+
+  const items = [];      // { el, kind, ... }
+  const touched = new Set();
+  const orig = new Map();
+  let ready = false;
+
+  const textWords = (root, cb) => {
+    const walk = (node) => {
+      for (const child of [...node.childNodes]) {
+        if (child.nodeType === 3) {
+          const parts = child.textContent.split(/(\s+)/);
+          if (parts.length <= 1 && !child.textContent.trim()) continue;
+          const frag = document.createDocumentFragment();
+          for (const part of parts) {
+            if (!part) continue;
+            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); continue; }
+            frag.appendChild(cb(part));
+          }
+          node.replaceChild(frag, child);
+        } else if (child.nodeType === 1 && child.tagName !== "BR" && !child.hasAttribute("data-ba-count")) walk(child);
+      }
+    };
+    walk(root);
+  };
+
+  const init = () => {
+    ready = true;
+    W = window.innerWidth; H = window.innerHeight;
+    // Word reveals: wrap each word (never single letters: Arabic must stay joined).
+    for (const el of document.querySelectorAll("[data-ba-words]")) {
+      const style = el.getAttribute("data-ba-words") || "rise";
+      const at = num(el.dataset.at, 0), gap = num(el.dataset.gap, 0.085), feel = el.dataset.feel || "smooth";
+      let i = 0, t = at;
+      textWords(el, (word) => {
+        const w = document.createElement("span");
+        w.className = "ba-w";
+        w.textContent = word;
+        w.style.display = "inline-block";
+        let host = w;
+        if (style === "mask") {
+          host = document.createElement("span");
+          host.className = "ba-wm";
+          host.style.cssText = "display:inline-block;overflow:hidden;vertical-align:top;padding:0.18em 0.02em;margin:-0.18em -0.02em";
+          host.appendChild(w);
+        }
+        items.push({ el: w, kind: "enter", preset: style, at: t, feel, amount: num(el.dataset.amount, 1) });
+        // Longer breath after punctuation, uneven steps otherwise.
+        t += gap * RHYTHM[i++ % RHYTHM.length] * (/[،,.:؛!؟?]$/.test(word) ? 2.4 : 1);
+        return host;
+      });
+      if (el.dataset.out) items.push({ el, kind: "exit", out: num(el.dataset.out, 1e9), outDur: num(el.dataset.outDur, 0.35) });
+    }
+    for (const el of document.querySelectorAll("[data-ba-stagger]")) {
+      const style = el.getAttribute("data-ba-stagger") || "rise";
+      const at = num(el.dataset.at, 0), gap = num(el.dataset.gap, 0.12), feel = el.dataset.feel || "smooth";
+      let t = at;
+      [...el.children].forEach((c, i) => {
+        items.push({ el: c, kind: "enter", preset: c.dataset.ba || style, at: num(c.dataset.at, t), feel: c.dataset.feel || feel, amount: num(c.dataset.amount, 1), base: c.dataset.base || "" });
+        t += gap * RHYTHM[i % RHYTHM.length];
+      });
+    }
+    for (const el of document.querySelectorAll("[data-ba]")) {
+      if (el.parentElement && el.parentElement.closest("[data-ba-stagger]") === el.parentElement) continue;
+      items.push({ el, kind: "enter", preset: el.dataset.ba, at: num(el.dataset.at, 0), feel: el.dataset.feel || "smooth", amount: num(el.dataset.amount, 1), base: el.dataset.base || "" });
+    }
+    for (const el of document.querySelectorAll("[data-out]")) if (!el.hasAttribute("data-ba-words")) items.push({ el, kind: "exit", out: num(el.dataset.out, 1e9), outDur: num(el.dataset.outDur, 0.35) });
+    for (const el of document.querySelectorAll("[data-ba-mask]")) items.push({ el, kind: "mask", dir: el.dataset.baMask || "right", at: num(el.dataset.at, 0), dur: num(el.dataset.dur, 0.8) });
+    for (const el of document.querySelectorAll("[data-ba-count]")) {
+      const dec = num(el.dataset.dec, 0);
+      el.style.fontVariantNumeric = "tabular-nums";
+      items.push({ el, kind: "count", to: num(el.dataset.baCount, 0), from: num(el.dataset.from, 0), at: num(el.dataset.at, 0), dur: num(el.dataset.dur, 1.4), dec, ar: el.dataset.digits === "ar", sep: el.dataset.sep === undefined ? "" : el.dataset.sep });
+    }
+    for (const el of document.querySelectorAll("[data-ba-draw]")) {
+      const shapes = /^(path|line|polyline|polygon|circle|ellipse|rect)$/i.test(el.tagName) ? [el] : [...el.querySelectorAll("path,line,polyline,polygon,circle,ellipse,rect")];
+      const at = num(el.dataset.at, 0), dur = num(el.dataset.dur, 1), gap = num(el.dataset.gap, 0.15);
+      shapes.forEach((sh, i) => {
+        let len = 0;
+        try { len = sh.getTotalLength(); } catch (e) { len = 0; }
+        if (!len) return;
+        sh.style.strokeDasharray = len + " " + len;
+        items.push({ el: sh, kind: "draw", len, at: at + i * gap * RHYTHM[i % RHYTHM.length], dur });
+      });
+    }
+    for (const el of document.querySelectorAll("[data-ba-mark]")) {
+      const mode = el.dataset.baMark || "marker";
+      el.style.backgroundImage = "linear-gradient(" + (el.dataset.color || "rgba(227,169,43,.55)") + "," + (el.dataset.color || "rgba(227,169,43,.55)") + ")";
+      el.style.backgroundRepeat = "no-repeat";
+      el.style.backgroundPosition = "100% " + (mode === "under" ? "96%" : "82%");
+      el.style.boxDecorationBreak = "clone";
+      el.style.webkitBoxDecorationBreak = "clone";
+      items.push({ el, kind: "mark", h: mode === "under" ? "0.09em" : "0.42em", at: num(el.dataset.at, 0), dur: num(el.dataset.dur, 0.6) });
+    }
+    for (const el of document.querySelectorAll("[data-ba-cam]")) {
+      items.push({ el, kind: "cam", mode: el.dataset.baCam || "push", at: num(el.dataset.at, 0), end: num(el.dataset.end, window.baDuration || 4), amount: num(el.dataset.amount, 1),
+        planes: [...el.querySelectorAll("[data-depth]")].map((p) => ({ el: p, d: num(p.dataset.depth, 1) })) });
+    }
+  };
+
+  const AR = "٠١٢٣٤٥٦٧٨٩";
+  const fmt = (v, it) => {
+    let s = v.toFixed(it.dec);
+    if (it.sep) { const parts = s.split("."); parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, it.sep); s = parts.join(it.ar ? "٫" : "."); }
+    return it.ar ? s.replace(/\d/g, (d) => AR[+d]) : s;
+  };
+  const camAt = (it, t) => {
+    const p = ease.soft(prog(t, it.at, it.end - it.at)), a = it.amount;
+    switch (it.mode) {
+      case "pull": return { x: 0, y: 0, s: 1 + 0.1 * a * (1 - p), r: 0 };
+      case "pan-left": return { x: -W * 0.035 * a * (p - 0.5) * 2, y: 0, s: 1.08, r: 0 };
+      case "pan-right": return { x: W * 0.035 * a * (p - 0.5) * 2, y: 0, s: 1.08, r: 0 };
+      case "rise": return { x: 0, y: -H * 0.03 * a * (p - 0.5) * 2, s: 1.07, r: 0 };
+      case "drift": return { x: W * 0.012 * a * Math.sin(p * 2.2), y: -H * 0.01 * a * p, s: 1.03 + 0.04 * a * p, r: 0.5 * a * (p - 0.5) };
+      case "handheld": {
+        // Smooth pseudo-noise from incommensurate sines: a held camera, not a shake.
+        const n = (f, o) => Math.sin(t * f + o) * 0.6 + Math.sin(t * f * 2.31 + o * 1.7) * 0.4;
+        return { x: W * 0.0035 * a * n(1.3, 0.4), y: H * 0.0025 * a * n(1.1, 2.1), s: 1.025, r: 0.12 * a * n(0.9, 4.2) };
+      }
+      default: return { x: 0, y: 0, s: 1 + 0.08 * a * p, r: 0 };
+    }
+  };
+
+  const seek = (t) => {
+    if (!ready) init();
+    const st = new Map();
+    const get = (el) => { let s = st.get(el); if (!s) { s = { tf: [], op: 1, fl: "", clip: null }; st.set(el, s); } return s; };
+    for (const it of items) {
+      const s = get(it.el);
+      touched.add(it.el);
+      if (it.kind === "enter") {
+        const f = PRESET[it.preset] || PRESET.rise;
+        const v = f(spring(t - it.at, it.feel), it.amount);
+        if (it.base) s.base = it.base;
+        if (v.tf) s.tf.push(v.tf);
+        s.op *= v.op;
+        if (v.fl) s.fl += " " + v.fl;
+      } else if (it.kind === "exit") {
+        const e = ease.in(prog(t, it.out, it.outDur));
+        if (e > 0) { s.tf.push("translateY(" + (-e * H * 0.025).toFixed(2) + "px)"); s.op *= 1 - e; }
+      } else if (it.kind === "mask") {
+        const p = ease.inOut(prog(t, it.at, it.dur)) * 100, q = (100 - p).toFixed(3) + "%";
+        s.clip = it.dir === "left" ? "inset(0 " + q + " 0 0)" : it.dir === "up" ? "inset(" + q + " 0 0 0)" : it.dir === "down" ? "inset(0 0 " + q + " 0)" : it.dir === "circle" ? "circle(" + (p * 0.75).toFixed(3) + "% at 50% 50%)" : "inset(0 0 0 " + q + ")";
+      } else if (it.kind === "count") {
+        it.el.textContent = fmt(it.from + (it.to - it.from) * ease.out(prog(t, it.at, it.dur)), it);
+      } else if (it.kind === "draw") {
+        it.el.style.strokeDashoffset = String(it.len * (1 - ease.inOut(prog(t, it.at, it.dur))));
+      } else if (it.kind === "mark") {
+        it.el.style.backgroundSize = (ease.out(prog(t, it.at, it.dur)) * 100).toFixed(2) + "% " + it.h;
+      } else if (it.kind === "cam") {
+        const c = camAt(it, t);
+        s.tf.push("translate(" + c.x.toFixed(2) + "px," + c.y.toFixed(2) + "px) scale(" + c.s.toFixed(5) + ") rotate(" + c.r.toFixed(4) + "deg)");
+        for (const pl of it.planes) {
+          const ps = get(pl.el);
+          touched.add(pl.el);
+          const k = pl.d - 1;
+          ps.tf.push("translate(" + (c.x * k).toFixed(2) + "px," + (c.y * k).toFixed(2) + "px) scale(" + ((1 + (c.s - 1) * pl.d) / c.s).toFixed(5) + ")");
+        }
+      }
+    }
+    for (const [el, s] of st) {
+      // The element's own inline filter/opacity (a drop shadow, a dimmed layer) stays under the motion.
+      let own = orig.get(el);
+      if (!own) { own = { fl: el.style.filter || "", op: el.style.opacity === "" ? 1 : num(el.style.opacity, 1) }; orig.set(el, own); }
+      const tf = [s.base || "", ...s.tf].join(" ").trim();
+      el.style.transform = tf || "";
+      const op = s.op * own.op;
+      el.style.opacity = op >= 0.9999 ? "" : op.toFixed(4);
+      el.style.filter = (own.fl + " " + s.fl).trim();
+      if (s.clip !== null) el.style.clipPath = s.clip;
+    }
+  };
+
+  window.ba = { spring, ease, rand, clamp, prog };
+  window.__baKit = { seek, init: () => { if (!ready) init(); }, count: () => items.length };
+})();
+`;
+
+// ../../packages/video-engine/src/html-render.ts
 var HtmlRenderError = class extends Error {
 };
 function findBrowser(env = process.env) {
@@ -61218,6 +61436,8 @@ html,body{margin:0;padding:0;width:${opts.width}px;height:${opts.height}px;overf
 </style></head><body>
 ${body}
 ${lottieScripts}
+<script>window.baDuration = ${Number(opts.durationSec) || 4};</script>
+<script>${MOTION_KIT_JS}</script>
 <script>
 (() => {
   window.baTime = 0;
@@ -61238,6 +61458,7 @@ ${lottieScripts}
       const local = Math.max(0, (t - L.start) * L.speed) * L.fr;
       L.anim.goToAndStop(L.loop ? local % L.total : Math.min(local, L.total), true);
     }
+    if (window.__baKit) window.__baKit.seek(t);
     for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; }
     for (const v of document.querySelectorAll("video")) { v.pause(); v.currentTime = t; }
     window.dispatchEvent(new CustomEvent("ba-frame", { detail: t }));
@@ -62221,7 +62442,7 @@ import net from "node:net";
 import os2 from "node:os";
 import path4 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "0.8.0";
+var APP_VERSION = "0.9.0";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -65487,10 +65708,10 @@ ${userBrief}` : ""}${style}${guide ? `
 ${guide}` : ""}`;
 }
 function designGuide() {
-  const read = (skill) => {
+  const read = (skill, file2 = "SKILL.md") => {
     let dir = path21.dirname(fileURLToPath4(import.meta.url));
     for (let i = 0; i < 7; i++) {
-      for (const p of [path21.join(dir, "skills", skill, "SKILL.md"), path21.join(dir, "plugin", "ba-studio", "skills", skill, "SKILL.md")]) {
+      for (const p of [path21.join(dir, "skills", skill, file2), path21.join(dir, "plugin", "ba-studio", "skills", skill, file2)]) {
         try {
           return fs24.readFileSync(p, "utf8").replace(/^---[\s\S]*?---\s*/, "");
         } catch {
@@ -65500,7 +65721,7 @@ function designGuide() {
     }
     return null;
   };
-  const parts = [read("design-clips"), read("animation")].filter(Boolean);
+  const parts = [read("design-clips"), read("design-clips", "recipes.md"), read("animation")].filter(Boolean);
   return parts.length ? parts.join("\n\n") : null;
 }
 function cmpVersion(a, b) {
