@@ -6367,8 +6367,8 @@ var require_req = __commonJS({
       if (req.originalUrl) {
         _req.url = req.originalUrl;
       } else {
-        const path32 = req.path;
-        _req.url = typeof path32 === "string" ? path32 : req.url ? req.url.path || req.url : void 0;
+        const path33 = req.path;
+        _req.url = typeof path33 === "string" ? path33 : req.url ? req.url.path || req.url : void 0;
       }
       if (req.query) {
         _req.query = req.query;
@@ -6538,14 +6538,14 @@ var require_redact = __commonJS({
       }
       return obj;
     }
-    function parsePath(path32) {
+    function parsePath(path33) {
       const parts = [];
       let current = "";
       let inBrackets = false;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path32.length; i++) {
-        const char = path32[i];
+      for (let i = 0; i < path33.length; i++) {
+        const char = path33[i];
         if (!inBrackets && char === ".") {
           if (current) {
             parts.push(current);
@@ -6676,10 +6676,10 @@ var require_redact = __commonJS({
       return current;
     }
     function redactPaths(obj, paths, censor, remove = false) {
-      for (const path32 of paths) {
-        const parts = parsePath(path32);
+      for (const path33 of paths) {
+        const parts = parsePath(path33);
         if (parts.includes("*")) {
-          redactWildcardPath(obj, parts, censor, path32, remove);
+          redactWildcardPath(obj, parts, censor, path33, remove);
         } else {
           if (remove) {
             removeKey(obj, parts);
@@ -6764,8 +6764,8 @@ var require_redact = __commonJS({
           }
         } else {
           if (afterWildcard.includes("*")) {
-            const wrappedCensor = typeof censor === "function" ? (value, path32) => {
-              const fullPath = [...pathArray.slice(0, pathLength), ...path32];
+            const wrappedCensor = typeof censor === "function" ? (value, path33) => {
+              const fullPath = [...pathArray.slice(0, pathLength), ...path33];
               return censor(value, fullPath);
             } : censor;
             redactWildcardPath(current, afterWildcard, wrappedCensor, originalPath, remove);
@@ -6800,8 +6800,8 @@ var require_redact = __commonJS({
         return null;
       }
       const pathStructure = /* @__PURE__ */ new Map();
-      for (const path32 of pathsToClone) {
-        const parts = parsePath(path32);
+      for (const path33 of pathsToClone) {
+        const parts = parsePath(path33);
         let current = pathStructure;
         for (let i = 0; i < parts.length; i++) {
           const part = parts[i];
@@ -6853,24 +6853,24 @@ var require_redact = __commonJS({
       }
       return cloneSelectively(obj, pathStructure);
     }
-    function validatePath(path32) {
-      if (typeof path32 !== "string") {
+    function validatePath(path33) {
+      if (typeof path33 !== "string") {
         throw new Error("Paths must be (non-empty) strings");
       }
-      if (path32 === "") {
+      if (path33 === "") {
         throw new Error("Invalid redaction path ()");
       }
-      if (path32.includes("..")) {
-        throw new Error(`Invalid redaction path (${path32})`);
+      if (path33.includes("..")) {
+        throw new Error(`Invalid redaction path (${path33})`);
       }
-      if (path32.includes(",")) {
-        throw new Error(`Invalid redaction path (${path32})`);
+      if (path33.includes(",")) {
+        throw new Error(`Invalid redaction path (${path33})`);
       }
       let bracketCount = 0;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path32.length; i++) {
-        const char = path32[i];
+      for (let i = 0; i < path33.length; i++) {
+        const char = path33[i];
         if ((char === '"' || char === "'") && bracketCount > 0) {
           if (!inQuotes) {
             inQuotes = true;
@@ -6884,20 +6884,20 @@ var require_redact = __commonJS({
         } else if (char === "]" && !inQuotes) {
           bracketCount--;
           if (bracketCount < 0) {
-            throw new Error(`Invalid redaction path (${path32})`);
+            throw new Error(`Invalid redaction path (${path33})`);
           }
         }
       }
       if (bracketCount !== 0) {
-        throw new Error(`Invalid redaction path (${path32})`);
+        throw new Error(`Invalid redaction path (${path33})`);
       }
     }
     function validatePaths(paths) {
       if (!Array.isArray(paths)) {
         throw new TypeError("paths must be an array");
       }
-      for (const path32 of paths) {
-        validatePath(path32);
+      for (const path33 of paths) {
+        validatePath(path33);
       }
     }
     function slowRedact(options = {}) {
@@ -7067,8 +7067,8 @@ var require_redaction = __commonJS({
         if (shape[k] === null) {
           o[k] = (value) => topCensor(value, [k]);
         } else {
-          const wrappedCensor = typeof censor === "function" ? (value, path32) => {
-            return censor(value, [k, ...path32]);
+          const wrappedCensor = typeof censor === "function" ? (value, path33) => {
+            return censor(value, [k, ...path33]);
           } : censor;
           o[k] = Redact({
             paths: shape[k],
@@ -7286,10 +7286,10 @@ var require_atomic_sleep = __commonJS({
 var require_sonic_boom = __commonJS({
   "../../node_modules/sonic-boom/index.js"(exports, module) {
     "use strict";
-    var fs34 = __require("fs");
+    var fs35 = __require("fs");
     var EventEmitter = __require("events");
     var inherits = __require("util").inherits;
-    var path32 = __require("path");
+    var path33 = __require("path");
     var sleep = require_atomic_sleep();
     var assert2 = __require("assert");
     var BUSY_WRITE_TIMEOUT = 100;
@@ -7343,20 +7343,20 @@ var require_sonic_boom = __commonJS({
       const mode = sonic.mode;
       if (sonic.sync) {
         try {
-          if (sonic.mkdir) fs34.mkdirSync(path32.dirname(file2), { recursive: true });
-          const fd = fs34.openSync(file2, flags, mode);
+          if (sonic.mkdir) fs35.mkdirSync(path33.dirname(file2), { recursive: true });
+          const fd = fs35.openSync(file2, flags, mode);
           fileOpened(null, fd);
         } catch (err) {
           fileOpened(err);
           throw err;
         }
       } else if (sonic.mkdir) {
-        fs34.mkdir(path32.dirname(file2), { recursive: true }, (err) => {
+        fs35.mkdir(path33.dirname(file2), { recursive: true }, (err) => {
           if (err) return fileOpened(err);
-          fs34.open(file2, flags, mode, fileOpened);
+          fs35.open(file2, flags, mode, fileOpened);
         });
       } else {
-        fs34.open(file2, flags, mode, fileOpened);
+        fs35.open(file2, flags, mode, fileOpened);
       }
     }
     function SonicBoom(opts) {
@@ -7397,8 +7397,8 @@ var require_sonic_boom = __commonJS({
         this.flush = flushBuffer;
         this.flushSync = flushBufferSync;
         this._actualWrite = actualWriteBuffer;
-        fsWriteSync = () => fs34.writeSync(this.fd, this._writingBuf);
-        fsWrite = () => fs34.write(this.fd, this._writingBuf, this.release);
+        fsWriteSync = () => fs35.writeSync(this.fd, this._writingBuf);
+        fsWrite = () => fs35.write(this.fd, this._writingBuf, this.release);
       } else if (contentMode === void 0 || contentMode === kContentModeUtf8) {
         this._writingBuf = "";
         this.write = write;
@@ -7407,15 +7407,15 @@ var require_sonic_boom = __commonJS({
         this._actualWrite = actualWrite;
         fsWriteSync = () => {
           if (Buffer.isBuffer(this._writingBuf)) {
-            return fs34.writeSync(this.fd, this._writingBuf);
+            return fs35.writeSync(this.fd, this._writingBuf);
           }
-          return fs34.writeSync(this.fd, this._writingBuf, "utf8");
+          return fs35.writeSync(this.fd, this._writingBuf, "utf8");
         };
         fsWrite = () => {
           if (Buffer.isBuffer(this._writingBuf)) {
-            return fs34.write(this.fd, this._writingBuf, this.release);
+            return fs35.write(this.fd, this._writingBuf, this.release);
           }
-          return fs34.write(this.fd, this._writingBuf, "utf8", this.release);
+          return fs35.write(this.fd, this._writingBuf, "utf8", this.release);
         };
       } else {
         throw new Error(`SonicBoom supports "${kContentModeUtf8}" and "${kContentModeBuffer}", but passed ${contentMode}`);
@@ -7472,7 +7472,7 @@ var require_sonic_boom = __commonJS({
           }
         }
         if (this._fsync) {
-          fs34.fsyncSync(this.fd);
+          fs35.fsyncSync(this.fd);
         }
         const len = this._len;
         if (this._reopening) {
@@ -7586,7 +7586,7 @@ var require_sonic_boom = __commonJS({
       const onDrain = () => {
         if (!this._fsync) {
           try {
-            fs34.fsync(this.fd, (err) => {
+            fs35.fsync(this.fd, (err) => {
               this._flushPending = false;
               cb(err);
             });
@@ -7688,7 +7688,7 @@ var require_sonic_boom = __commonJS({
       const fd = this.fd;
       this.once("ready", () => {
         if (fd !== this.fd) {
-          fs34.close(fd, (err) => {
+          fs35.close(fd, (err) => {
             if (err) {
               return this.emit("error", err);
             }
@@ -7737,7 +7737,7 @@ var require_sonic_boom = __commonJS({
           buf = this._bufs[0];
         }
         try {
-          const n3 = Buffer.isBuffer(buf) ? fs34.writeSync(this.fd, buf) : fs34.writeSync(this.fd, buf, "utf8");
+          const n3 = Buffer.isBuffer(buf) ? fs35.writeSync(this.fd, buf) : fs35.writeSync(this.fd, buf, "utf8");
           const releasedBufObj = releaseWritingBuf(buf, this._len, n3);
           buf = releasedBufObj.writingBuf;
           this._len = releasedBufObj.len;
@@ -7753,7 +7753,7 @@ var require_sonic_boom = __commonJS({
         }
       }
       try {
-        fs34.fsyncSync(this.fd);
+        fs35.fsyncSync(this.fd);
       } catch {
       }
     }
@@ -7774,7 +7774,7 @@ var require_sonic_boom = __commonJS({
           buf = mergeBuf(this._bufs[0], this._lens[0]);
         }
         try {
-          const n3 = fs34.writeSync(this.fd, buf);
+          const n3 = fs35.writeSync(this.fd, buf);
           buf = buf.subarray(n3);
           this._len = Math.max(this._len - n3, 0);
           if (buf.length <= 0) {
@@ -7802,13 +7802,13 @@ var require_sonic_boom = __commonJS({
       this._writingBuf = this._writingBuf.length ? this._writingBuf : this._bufs.shift() || "";
       if (this.sync) {
         try {
-          const written = Buffer.isBuffer(this._writingBuf) ? fs34.writeSync(this.fd, this._writingBuf) : fs34.writeSync(this.fd, this._writingBuf, "utf8");
+          const written = Buffer.isBuffer(this._writingBuf) ? fs35.writeSync(this.fd, this._writingBuf) : fs35.writeSync(this.fd, this._writingBuf, "utf8");
           release(null, written);
         } catch (err) {
           release(err);
         }
       } else {
-        fs34.write(this.fd, this._writingBuf, release);
+        fs35.write(this.fd, this._writingBuf, release);
       }
     }
     function actualWriteBuffer() {
@@ -7817,7 +7817,7 @@ var require_sonic_boom = __commonJS({
       this._writingBuf = this._writingBuf.length ? this._writingBuf : mergeBuf(this._bufs.shift(), this._lens.shift());
       if (this.sync) {
         try {
-          const written = fs34.writeSync(this.fd, this._writingBuf);
+          const written = fs35.writeSync(this.fd, this._writingBuf);
           release(null, written);
         } catch (err) {
           release(err);
@@ -7826,7 +7826,7 @@ var require_sonic_boom = __commonJS({
         if (kCopyBuffer) {
           this._writingBuf = Buffer.from(this._writingBuf);
         }
-        fs34.write(this.fd, this._writingBuf, release);
+        fs35.write(this.fd, this._writingBuf, release);
       }
     }
     function actualClose(sonic) {
@@ -7842,12 +7842,12 @@ var require_sonic_boom = __commonJS({
       sonic._lens = [];
       assert2(typeof sonic.fd === "number", `sonic.fd must be a number, got ${typeof sonic.fd}`);
       try {
-        fs34.fsync(sonic.fd, closeWrapped);
+        fs35.fsync(sonic.fd, closeWrapped);
       } catch {
       }
       function closeWrapped() {
         if (sonic.fd !== 1 && sonic.fd !== 2) {
-          fs34.close(sonic.fd, done);
+          fs35.close(sonic.fd, done);
         } else {
           done();
         }
@@ -8117,7 +8117,7 @@ var require_thread_stream = __commonJS({
     var { EventEmitter } = __require("events");
     var { Worker } = __require("worker_threads");
     var { join } = __require("path");
-    var { pathToFileURL: pathToFileURL2 } = __require("url");
+    var { pathToFileURL: pathToFileURL3 } = __require("url");
     var { wait } = require_wait();
     var {
       WRITE_INDEX,
@@ -8174,7 +8174,7 @@ var require_thread_stream = __commonJS({
         name: opts.workerOpts?.name || "thread-stream",
         trackUnmanagedFds: false,
         workerData: {
-          filename: filename.indexOf("file://") === 0 ? filename : pathToFileURL2(filename).href,
+          filename: filename.indexOf("file://") === 0 ? filename : pathToFileURL3(filename).href,
           dataBuf: stream[kImpl].dataBuf,
           stateBuf: stream[kImpl].stateBuf,
           workerData: {
@@ -8746,15 +8746,15 @@ var require_transport = __commonJS({
       if (!unquoted) {
         return false;
       }
-      let path32 = unquoted;
-      if (path32.startsWith("file://")) {
+      let path33 = unquoted;
+      if (path33.startsWith("file://")) {
         try {
-          path32 = fileURLToPath6(path32);
+          path33 = fileURLToPath6(path33);
         } catch {
           return false;
         }
       }
-      return isAbsolute(path32) && !existsSync(path32);
+      return isAbsolute(path33) && !existsSync(path33);
     }
     function stripQuotes(value) {
       const first = value[0];
@@ -17627,8 +17627,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path32) {
-      let input2 = path32;
+    function removeDotSegments(path33) {
+      let input2 = path33;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -17702,11 +17702,11 @@ var require_utils = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path32) {
-      if (path32 === "" || path32[0] === "/") {
-        return removeDotSegments(path32);
+    function removeDotSegmentsRelative(path33) {
+      if (path33 === "" || path33[0] === "/") {
+        return removeDotSegments(path33);
       }
-      const segments = path32.split("/");
+      const segments = path33.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -18069,8 +18069,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path32 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path32 && path32 !== "/" ? path32 : void 0;
+        const path33 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path33 && path33 !== "/" ? path33 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -23148,8 +23148,8 @@ var require_utils2 = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path32) {
-      let input2 = path32;
+    function removeDotSegments(path33) {
+      let input2 = path33;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -23223,11 +23223,11 @@ var require_utils2 = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path32) {
-      if (path32 === "" || path32[0] === "/") {
-        return removeDotSegments(path32);
+    function removeDotSegmentsRelative(path33) {
+      if (path33 === "" || path33[0] === "/") {
+        return removeDotSegments(path33);
       }
-      const segments = path32.split("/");
+      const segments = path33.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -23647,8 +23647,8 @@ var require_schemes2 = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path32 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path32 && path32 !== "/" ? path32 : void 0;
+        const path33 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path33 && path33 !== "/" ? path33 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -24829,12 +24829,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list2, fs34, exportName) {
+    function addFormats(ajv, list2, fs35, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list2)
-        ajv.addFormat(f, fs34[f]);
+        ajv.addFormat(f, fs35[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -27560,7 +27560,7 @@ const asInteger = serializer.asInteger.bind(serializer)
       if (typeof schema !== "object" || schema === null) return false;
       const values = [schema];
       const depths = [0];
-      const path32 = [];
+      const path33 = [];
       let hasRef = false;
       while (values.length > 0) {
         const value = values.pop();
@@ -27568,11 +27568,11 @@ const asInteger = serializer.asInteger.bind(serializer)
         if (depth > maxDepth * 2) {
           throw schemaDepthError(maxDepth, name);
         }
-        path32.length = depth;
-        if (path32.includes(value)) {
+        path33.length = depth;
+        if (path33.includes(value)) {
           throw new Error("schema contains a circular object reference; use $ref instead");
         }
-        path32.push(value);
+        path33.push(value);
         for (const key in value) {
           const child = value[key];
           if (key === "$ref" && typeof child === "string") {
@@ -33551,8 +33551,8 @@ var require_node = __commonJS({
         return matchSingleCharPrefix;
       }
       if (prefix.length >= LONG_PREFIX_MIN_LENGTH) {
-        return function matchLongPrefix(path32, i) {
-          return path32.indexOf(prefix, i) === i;
+        return function matchLongPrefix(path33, i) {
+          return path33.indexOf(prefix, i) === i;
         };
       }
       const lines = [];
@@ -33603,13 +33603,13 @@ return ${lines.join(" && ")}`);
           this.staticChildrenNodes[index] = node2;
         }
       }
-      findStaticMatchingChild(path32, pathIndex) {
-        const charCode = path32.charCodeAt(pathIndex);
+      findStaticMatchingChild(path33, pathIndex) {
+        const charCode = path33.charCodeAt(pathIndex);
         const charCodes = this.staticChildrenCharCodes;
         for (let i = 0; i < charCodes.length; i++) {
           if (charCodes[i] === charCode) {
             const staticChild = this.staticChildrenNodes[i];
-            if (staticChild.matchPrefix(path32, pathIndex)) {
+            if (staticChild.matchPrefix(path33, pathIndex)) {
               return staticChild;
             }
             return null;
@@ -33617,34 +33617,34 @@ return ${lines.join(" && ")}`);
         }
         return null;
       }
-      getStaticChild(path32, pathIndex = 0) {
-        if (path32.length === pathIndex) {
+      getStaticChild(path33, pathIndex = 0) {
+        if (path33.length === pathIndex) {
           return this;
         }
-        const staticChild = this.findStaticMatchingChild(path32, pathIndex);
+        const staticChild = this.findStaticMatchingChild(path33, pathIndex);
         if (staticChild) {
-          return staticChild.getStaticChild(path32, pathIndex + staticChild.prefix.length);
+          return staticChild.getStaticChild(path33, pathIndex + staticChild.prefix.length);
         }
         return null;
       }
-      createStaticChild(path32) {
-        if (path32.length === 0) {
+      createStaticChild(path33) {
+        if (path33.length === 0) {
           return this;
         }
-        const childIndex = this.staticChildrenCharCodes.indexOf(path32.charCodeAt(0));
+        const childIndex = this.staticChildrenCharCodes.indexOf(path33.charCodeAt(0));
         let staticChild = childIndex === -1 ? void 0 : this.staticChildrenNodes[childIndex];
         if (staticChild) {
           let i = 1;
           for (; i < staticChild.prefix.length; i++) {
-            if (path32.charCodeAt(i) !== staticChild.prefix.charCodeAt(i)) {
+            if (path33.charCodeAt(i) !== staticChild.prefix.charCodeAt(i)) {
               staticChild = staticChild.split(this, i);
               break;
             }
           }
-          return staticChild.createStaticChild(path32.slice(i));
+          return staticChild.createStaticChild(path33.slice(i));
         }
-        const node2 = createStaticNode(path32);
-        this.setStaticChild(path32.charAt(0), node2);
+        const node2 = createStaticNode(path33);
+        this.setStaticChild(path33.charAt(0), node2);
         return node2;
       }
       getParametricChild(regex) {
@@ -33692,8 +33692,8 @@ return ${lines.join(" && ")}`);
       // static child, then the first parametric child, then the wildcard. Every
       // sibling that is skipped over is pushed on nodeStack as a flat triple
       // (node, pathIndex, paramsCount) so lookup can backtrack to it later.
-      getNextNode(path32, pathIndex, nodeStack, paramsCount) {
-        let node2 = this.findStaticMatchingChild(path32, pathIndex);
+      getNextNode(path33, pathIndex, nodeStack, paramsCount) {
+        let node2 = this.findStaticMatchingChild(path33, pathIndex);
         let parametricBrotherNodeIndex = 0;
         if (node2 === null) {
           if (this.parametricChildren.length === 0) {
@@ -33776,62 +33776,62 @@ var require_url_sanitizer = __commonJS({
       return String.fromCharCode(charCode);
     }
     var MIN_NATIVE_SCAN_LENGTH = 12;
-    function safeDecodeURI(path32, useSemicolonDelimiter) {
-      if (path32.length >= MIN_NATIVE_SCAN_LENGTH) {
-        return safeDecodeURINativeScan(path32, useSemicolonDelimiter);
+    function safeDecodeURI(path33, useSemicolonDelimiter) {
+      if (path33.length >= MIN_NATIVE_SCAN_LENGTH) {
+        return safeDecodeURINativeScan(path33, useSemicolonDelimiter);
       }
-      return safeDecodeURICharScan(path32, useSemicolonDelimiter, 1);
+      return safeDecodeURICharScan(path33, useSemicolonDelimiter, 1);
     }
-    function safeDecodeURINativeScan(path32, useSemicolonDelimiter) {
-      const percentIndex = path32.indexOf("%", 1);
-      let delimIndex = path32.indexOf("?", 1);
-      const hashIndex = path32.indexOf("#", 1);
+    function safeDecodeURINativeScan(path33, useSemicolonDelimiter) {
+      const percentIndex = path33.indexOf("%", 1);
+      let delimIndex = path33.indexOf("?", 1);
+      const hashIndex = path33.indexOf("#", 1);
       if (hashIndex !== -1 && (delimIndex === -1 || hashIndex < delimIndex)) {
         delimIndex = hashIndex;
       }
       if (useSemicolonDelimiter) {
-        const semicolonIndex = path32.indexOf(";", 1);
+        const semicolonIndex = path33.indexOf(";", 1);
         if (semicolonIndex !== -1 && (delimIndex === -1 || semicolonIndex < delimIndex)) {
           delimIndex = semicolonIndex;
         }
       }
       if (percentIndex === -1 || delimIndex !== -1 && percentIndex > delimIndex) {
         if (delimIndex === -1) {
-          return { path: path32, querystring: "", shouldDecodeParam: false };
+          return { path: path33, querystring: "", shouldDecodeParam: false };
         }
         return {
-          path: path32.slice(0, delimIndex),
-          querystring: path32.slice(delimIndex + 1),
+          path: path33.slice(0, delimIndex),
+          querystring: path33.slice(delimIndex + 1),
           shouldDecodeParam: false
         };
       }
-      return safeDecodeURIPercentScan(path32, useSemicolonDelimiter, percentIndex);
+      return safeDecodeURIPercentScan(path33, useSemicolonDelimiter, percentIndex);
     }
-    function safeDecodeURICharScan(path32, useSemicolonDelimiter, startIndex) {
-      for (let i = startIndex; i < path32.length; i++) {
-        const charCode = path32.charCodeAt(i);
+    function safeDecodeURICharScan(path33, useSemicolonDelimiter, startIndex) {
+      for (let i = startIndex; i < path33.length; i++) {
+        const charCode = path33.charCodeAt(i);
         if (charCode === 37) {
-          return safeDecodeURIPercentScan(path32, useSemicolonDelimiter, i);
+          return safeDecodeURIPercentScan(path33, useSemicolonDelimiter, i);
         } else if (charCode === 63 || charCode === 35 || charCode === 59 && useSemicolonDelimiter) {
           return {
-            path: path32.slice(0, i),
-            querystring: path32.slice(i + 1),
+            path: path33.slice(0, i),
+            querystring: path33.slice(i + 1),
             shouldDecodeParam: false
           };
         }
       }
-      return { path: path32, querystring: "", shouldDecodeParam: false };
+      return { path: path33, querystring: "", shouldDecodeParam: false };
     }
-    function safeDecodeURIPercentScan(path32, useSemicolonDelimiter, startIndex) {
+    function safeDecodeURIPercentScan(path33, useSemicolonDelimiter, startIndex) {
       let shouldDecode = false;
       let shouldDecodeParam = false;
       let querystring = "";
       let percentIndexes = null;
       let pathEnd = -1;
-      for (let i = startIndex; i < path32.length; i++) {
-        const charCode = path32.charCodeAt(i);
+      for (let i = startIndex; i < path33.length; i++) {
+        const charCode = path33.charCodeAt(i);
         if (charCode === 37) {
-          const componentCharCode = decodeComponentCharCode(path32.charCodeAt(i + 1), path32.charCodeAt(i + 2));
+          const componentCharCode = decodeComponentCharCode(path33.charCodeAt(i + 1), path33.charCodeAt(i + 2));
           if (componentCharCode === 0) {
             shouldDecode = true;
           } else {
@@ -33844,22 +33844,22 @@ var require_url_sanitizer = __commonJS({
             i += 2;
           }
         } else if (charCode === 63 || charCode === 35 || charCode === 59 && useSemicolonDelimiter) {
-          querystring = path32.slice(i + 1);
+          querystring = path33.slice(i + 1);
           pathEnd = i;
           break;
         }
       }
       let decodedPath;
       if (percentIndexes === null) {
-        decodedPath = pathEnd === -1 ? path32 : path32.slice(0, pathEnd);
+        decodedPath = pathEnd === -1 ? path33 : path33.slice(0, pathEnd);
       } else {
         const parts = [];
         let last = 0;
         for (const index of percentIndexes) {
-          parts.push(path32.slice(last, index), "%2525");
+          parts.push(path33.slice(last, index), "%2525");
           last = index + 3;
         }
-        parts.push(path32.slice(last, pathEnd === -1 ? path32.length : pathEnd));
+        parts.push(path33.slice(last, pathEnd === -1 ? path33.length : pathEnd));
         decodedPath = parts.join("");
       }
       if (shouldDecode) decodedPath = decodeURI(decodedPath);
@@ -34377,14 +34377,14 @@ var require_compiler = __commonJS({
     }
     function compileTree(router, root) {
       const sanitized = new TreeCompiler(router, false).compile(root, null);
-      const slow = function findSanitized(path32, derivedConstraints) {
-        return router._findSanitized(sanitized, path32, derivedConstraints);
+      const slow = function findSanitized(path33, derivedConstraints) {
+        return router._findSanitized(sanitized, path33, derivedConstraints);
       };
       if (!supportsRawMatching(router, root)) {
         return {
           find: slow,
-          lookup: function lookupSanitized(path32, derivedConstraints, req, res, ctx) {
-            return router.callHandler(slow(path32, derivedConstraints), req, res, ctx);
+          lookup: function lookupSanitized(path33, derivedConstraints, req, res, ctx) {
+            return router.callHandler(slow(path33, derivedConstraints), req, res, ctx);
           }
         };
       }
@@ -34784,7 +34784,7 @@ var require_find_my_way = __commonJS({
       const byPattern = router._routesByMethodAndPattern.get(method);
       return byPattern === void 0 ? void 0 : byPattern.get(pattern);
     }
-    Router.prototype.on = function on(method, path32, opts, handler, store) {
+    Router.prototype.on = function on(method, path33, opts, handler, store) {
       if (typeof opts === "function") {
         if (handler !== void 0) {
           store = handler;
@@ -34792,34 +34792,34 @@ var require_find_my_way = __commonJS({
         handler = opts;
         opts = {};
       }
-      assert2(typeof path32 === "string", "Path should be a string");
-      assert2(path32.length > 0, "The path could not be empty");
-      assert2(path32[0] === "/" || path32[0] === "*", "The first character of a path should be `/` or `*`");
+      assert2(typeof path33 === "string", "Path should be a string");
+      assert2(path33.length > 0, "The path could not be empty");
+      assert2(path33[0] === "/" || path33[0] === "*", "The first character of a path should be `/` or `*`");
       assert2(typeof handler === "function", "Handler should be a function");
-      const optionalParamMatch = path32.match(OPTIONAL_PARAM_REGEXP);
+      const optionalParamMatch = path33.match(OPTIONAL_PARAM_REGEXP);
       if (optionalParamMatch) {
-        assert2(path32.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
-        const pathFull = path32.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
-        const pathOptional = path32.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
+        assert2(path33.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
+        const pathFull = path33.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
+        const pathOptional = path33.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
         this.on(method, pathFull, opts, handler, store);
         this.on(method, pathOptional, opts, handler, store);
         return;
       }
-      const route = path32;
+      const route = path33;
       if (this.ignoreDuplicateSlashes) {
-        path32 = removeDuplicateSlashes(path32);
+        path33 = removeDuplicateSlashes(path33);
       }
       if (this.ignoreTrailingSlash) {
-        path32 = trimLastSlash(path32);
+        path33 = trimLastSlash(path33);
       }
       const methods = Array.isArray(method) ? method : [method];
       for (const method2 of methods) {
         assert2(typeof method2 === "string", "Method should be a string");
         assert2(httpMethods.includes(method2), `Method '${method2}' is not an http method.`);
-        this._on(method2, path32, opts, handler, store, route);
+        this._on(method2, path33, opts, handler, store, route);
       }
     };
-    Router.prototype._on = function _on(method, path32, opts, handler, store) {
+    Router.prototype._on = function _on(method, path33, opts, handler, store) {
       let constraints = {};
       if (opts.constraints !== void 0) {
         assert2(typeof opts.constraints === "object" && opts.constraints !== null, "Constraints should be an object");
@@ -34834,7 +34834,7 @@ var require_find_my_way = __commonJS({
       if (this.trees[method] === void 0) {
         this.trees[method] = createStaticNode("/");
       }
-      let pattern = path32;
+      let pattern = path33;
       if (pattern === "*" && this.trees[method].prefix.length !== 0) {
         const currentRoot = this.trees[method];
         this.trees[method] = createStaticNode("");
@@ -34949,7 +34949,7 @@ var require_find_my_way = __commonJS({
           }
         }
       }
-      const route = { method, path: path32, pattern, params, opts, handler, store };
+      const route = { method, path: path33, pattern, params, opts, handler, store };
       this.routes.push(route);
       if (sameRoutes !== void 0) {
         sameRoutes.push(route);
@@ -34963,21 +34963,21 @@ var require_find_my_way = __commonJS({
       }
       currentNode.addRoute(route, this.constrainer);
     };
-    Router.prototype.hasRoute = function hasRoute(method, path32, constraints) {
-      const route = this.findRoute(method, path32, constraints);
+    Router.prototype.hasRoute = function hasRoute(method, path33, constraints) {
+      const route = this.findRoute(method, path33, constraints);
       return route !== null;
     };
-    Router.prototype.findRoute = function findNode(method, path32, constraints = {}) {
+    Router.prototype.findRoute = function findNode(method, path33, constraints = {}) {
       if (this.trees[method] === void 0) {
         return null;
       }
       if (this.ignoreDuplicateSlashes) {
-        path32 = removeDuplicateSlashes(path32);
+        path33 = removeDuplicateSlashes(path33);
       }
       if (this.ignoreTrailingSlash) {
-        path32 = trimLastSlash(path32);
+        path33 = trimLastSlash(path33);
       }
-      let pattern = path32;
+      let pattern = path33;
       let currentNode = this.trees[method];
       let parentNodePathIndex = currentNode.prefix.length;
       const params = [];
@@ -35105,39 +35105,39 @@ var require_find_my_way = __commonJS({
       this.routes = [];
       this._routesByMethodAndPattern = /* @__PURE__ */ new Map();
     };
-    Router.prototype.off = function off(method, path32, constraints) {
-      assert2(typeof path32 === "string", "Path should be a string");
-      assert2(path32.length > 0, "The path could not be empty");
-      assert2(path32[0] === "/" || path32[0] === "*", "The first character of a path should be `/` or `*`");
+    Router.prototype.off = function off(method, path33, constraints) {
+      assert2(typeof path33 === "string", "Path should be a string");
+      assert2(path33.length > 0, "The path could not be empty");
+      assert2(path33[0] === "/" || path33[0] === "*", "The first character of a path should be `/` or `*`");
       assert2(
         typeof constraints === "undefined" || typeof constraints === "object" && !Array.isArray(constraints) && constraints !== null,
         "Constraints should be an object or undefined."
       );
-      const optionalParamMatch = path32.match(OPTIONAL_PARAM_REGEXP);
+      const optionalParamMatch = path33.match(OPTIONAL_PARAM_REGEXP);
       if (optionalParamMatch) {
-        assert2(path32.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
-        const pathFull = path32.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
-        const pathOptional = path32.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
+        assert2(path33.length === optionalParamMatch.index + optionalParamMatch[0].length, "Optional Parameter needs to be the last parameter of the path");
+        const pathFull = path33.replace(OPTIONAL_PARAM_REGEXP, "$1$2");
+        const pathOptional = path33.replace(OPTIONAL_PARAM_REGEXP, "$2") || "/";
         this.off(method, pathFull, constraints);
         this.off(method, pathOptional, constraints);
         return;
       }
       if (this.ignoreDuplicateSlashes) {
-        path32 = removeDuplicateSlashes(path32);
+        path33 = removeDuplicateSlashes(path33);
       }
       if (this.ignoreTrailingSlash) {
-        path32 = trimLastSlash(path32);
+        path33 = trimLastSlash(path33);
       }
       const methods = Array.isArray(method) ? method : [method];
       for (const method2 of methods) {
-        this._off(method2, path32, constraints);
+        this._off(method2, path33, constraints);
       }
     };
-    Router.prototype._off = function _off(method, path32, constraints) {
+    Router.prototype._off = function _off(method, path33, constraints) {
       assert2(typeof method === "string", "Method should be a string");
       assert2(httpMethods.includes(method), `Method '${method}' is not an http method.`);
       function matcherWithoutConstraints(route) {
-        return method !== route.method || path32 !== route.path;
+        return method !== route.method || path33 !== route.path;
       }
       function matcherWithConstraints(route) {
         return matcherWithoutConstraints(route) || !deepEqual(constraints, route.opts.constraints || {});
@@ -35174,40 +35174,40 @@ var require_find_my_way = __commonJS({
       if (handle === null) return this._defaultRoute(req, res, ctx);
       return ctx === void 0 ? handle.handler(req, res, handle.params, handle.store, handle.searchParams) : handle.handler.call(ctx, req, res, handle.params, handle.store, handle.searchParams);
     };
-    Router.prototype.find = function find2(method, path32, derivedConstraints) {
+    Router.prototype.find = function find2(method, path33, derivedConstraints) {
       let currentNode = method === "GET" ? this._treeGET : this.trees[method];
       if (currentNode == null) return null;
-      if (path32.charCodeAt(0) !== 47) {
-        const absolutePath = getPathFromAbsoluteUrl(path32);
+      if (path33.charCodeAt(0) !== 47) {
+        const absolutePath = getPathFromAbsoluteUrl(path33);
         if (absolutePath === null) {
-          return this._onBadUrl(path32);
+          return this._onBadUrl(path33);
         }
-        path32 = absolutePath;
+        path33 = absolutePath;
       }
       let sanitizedUrl;
       let querystring2;
       let shouldDecodeParam;
       try {
-        sanitizedUrl = path32.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path32, this.useSemicolonDelimiter) : safeDecodeURICharScan(path32, this.useSemicolonDelimiter, 1);
-        path32 = sanitizedUrl.path;
+        sanitizedUrl = path33.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path33, this.useSemicolonDelimiter) : safeDecodeURICharScan(path33, this.useSemicolonDelimiter, 1);
+        path33 = sanitizedUrl.path;
         querystring2 = sanitizedUrl.querystring;
         shouldDecodeParam = sanitizedUrl.shouldDecodeParam;
       } catch (error62) {
-        return this._onBadUrl(path32);
+        return this._onBadUrl(path33);
       }
       if (this.ignoreDuplicateSlashes) {
-        path32 = removeDuplicateSlashes(path32);
+        path33 = removeDuplicateSlashes(path33);
       }
       if (this.ignoreTrailingSlash) {
-        path32 = trimLastSlash(path32);
+        path33 = trimLastSlash(path33);
       }
-      const originPath = path32;
+      const originPath = path33;
       if (this.caseSensitive === false) {
-        path32 = path32.toLowerCase();
+        path33 = path33.toLowerCase();
       }
       const maxParamLength = this.maxParamLength;
       let pathIndex = currentNode.prefix.length;
-      const pathLen = path32.length;
+      const pathLen = path33.length;
       let paramsCount = 0;
       let param0, param1, param2, param3;
       let extraParams = null;
@@ -35225,7 +35225,7 @@ var require_find_my_way = __commonJS({
             };
           }
         }
-        let node2 = currentNode.getNextNode(path32, pathIndex, brothersNodesStack, paramsCount);
+        let node2 = currentNode.getNextNode(path33, pathIndex, brothersNodesStack, paramsCount);
         if (node2 === null) {
           if (brothersNodesStack.length === 0) {
             if (maxParamLengthExceeded && this.onMaxParamLength) {
@@ -35339,13 +35339,13 @@ var require_find_my_way = __commonJS({
       }
       return compiled;
     };
-    Router.prototype._findCompiled = function _findCompiled(method, path32, derivedConstraints) {
+    Router.prototype._findCompiled = function _findCompiled(method, path33, derivedConstraints) {
       let compiled = method === "GET" ? this._compiledGET : this._compiledTrees[method];
       if (compiled == null) {
         compiled = this._compileTree(method);
         if (compiled === null) return null;
       }
-      return compiled.find(path32, derivedConstraints);
+      return compiled.find(path33, derivedConstraints);
     };
     Router.prototype._lookupCompiled = function _lookupCompiled(req, res, ctx, done) {
       if (typeof ctx === "function" || done !== void 0) {
@@ -35360,42 +35360,42 @@ var require_find_my_way = __commonJS({
       }
       return compiled.lookup(req.url, derivedConstraints, req, res, ctx);
     };
-    Router.prototype._findSanitized = function _findSanitized(matcher, path32, derivedConstraints) {
-      if (path32.charCodeAt(0) !== 47) {
-        const absolutePath = getPathFromAbsoluteUrl(path32);
+    Router.prototype._findSanitized = function _findSanitized(matcher, path33, derivedConstraints) {
+      if (path33.charCodeAt(0) !== 47) {
+        const absolutePath = getPathFromAbsoluteUrl(path33);
         if (absolutePath === null) {
-          return this._onBadUrl(path32);
+          return this._onBadUrl(path33);
         }
-        path32 = absolutePath;
+        path33 = absolutePath;
       }
       let sanitizedUrl;
       let querystring2;
       let shouldDecodeParam;
       try {
-        sanitizedUrl = path32.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path32, this.useSemicolonDelimiter) : safeDecodeURICharScan(path32, this.useSemicolonDelimiter, 1);
-        path32 = sanitizedUrl.path;
+        sanitizedUrl = path33.length >= MIN_NATIVE_SCAN_LENGTH ? safeDecodeURINativeScan(path33, this.useSemicolonDelimiter) : safeDecodeURICharScan(path33, this.useSemicolonDelimiter, 1);
+        path33 = sanitizedUrl.path;
         querystring2 = sanitizedUrl.querystring;
         shouldDecodeParam = sanitizedUrl.shouldDecodeParam;
       } catch (error62) {
-        return this._onBadUrl(path32);
+        return this._onBadUrl(path33);
       }
       if (this.ignoreDuplicateSlashes) {
-        path32 = removeDuplicateSlashes(path32);
+        path33 = removeDuplicateSlashes(path33);
       }
       if (this.ignoreTrailingSlash) {
-        path32 = trimLastSlash(path32);
+        path33 = trimLastSlash(path33);
       }
-      const originPath = path32;
+      const originPath = path33;
       if (this.caseSensitive === false) {
-        path32 = path32.toLowerCase();
+        path33 = path33.toLowerCase();
       }
-      return matcher(path32, originPath, shouldDecodeParam, derivedConstraints, querystring2);
+      return matcher(path33, originPath, shouldDecodeParam, derivedConstraints, querystring2);
     };
     Router.prototype._rebuild = function(routes) {
       this.reset();
       for (const route of routes) {
-        const { method, path: path32, opts, handler, store } = route;
-        this._on(method, path32, opts, handler, store);
+        const { method, path: path33, opts, handler, store } = route;
+        this._on(method, path33, opts, handler, store);
       }
     };
     Router.prototype._defaultRoute = function(req, res, ctx) {
@@ -35406,24 +35406,24 @@ var require_find_my_way = __commonJS({
         res.end();
       }
     };
-    Router.prototype._onBadUrl = function(path32) {
+    Router.prototype._onBadUrl = function(path33) {
       if (this.onBadUrl === null) {
         return null;
       }
       const onBadUrl = this.onBadUrl;
       return {
-        handler: (req, res, ctx) => onBadUrl(path32, req, res),
+        handler: (req, res, ctx) => onBadUrl(path33, req, res),
         params: {},
         store: null
       };
     };
-    Router.prototype._onMaxParamLength = function(path32) {
+    Router.prototype._onMaxParamLength = function(path33) {
       if (this.onMaxParamLength === null) {
         return null;
       }
       const onMaxParamLength = this.onMaxParamLength;
       return {
-        handler: (req, res, ctx) => onMaxParamLength(path32, req, res),
+        handler: (req, res, ctx) => onMaxParamLength(path33, req, res),
         params: {},
         store: null
       };
@@ -35455,12 +35455,12 @@ var require_find_my_way = __commonJS({
       if (!httpMethods.hasOwnProperty(i)) continue;
       const m = httpMethods[i];
       const methodName = m.toLowerCase();
-      Router.prototype[methodName] = function(path32, handler, store) {
-        return this.on(m, path32, handler, store);
+      Router.prototype[methodName] = function(path33, handler, store) {
+        return this.on(m, path33, handler, store);
       };
     }
-    Router.prototype.all = function(path32, handler, store) {
-      this.on(httpMethods, path32, handler, store);
+    Router.prototype.all = function(path33, handler, store) {
+      this.on(httpMethods, path33, handler, store);
     };
     Router.sanitizeUrlPath = function sanitizeUrlPath(url2, useSemicolonDelimiter) {
       const decoded = safeDecodeURI(url2, useSemicolonDelimiter);
@@ -35512,14 +35512,14 @@ var require_find_my_way = __commonJS({
       }
       return url2.slice(pathStart);
     }
-    function removeDuplicateSlashes(path32) {
-      return path32.indexOf("//") !== -1 ? path32.replace(REMOVE_DUPLICATE_SLASHES_REGEXP, "/") : path32;
+    function removeDuplicateSlashes(path33) {
+      return path33.indexOf("//") !== -1 ? path33.replace(REMOVE_DUPLICATE_SLASHES_REGEXP, "/") : path33;
     }
-    function trimLastSlash(path32) {
-      if (path32.length > 1 && path32.charCodeAt(path32.length - 1) === 47) {
-        return path32.slice(0, -1);
+    function trimLastSlash(path33) {
+      if (path33.length > 1 && path33.charCodeAt(path33.length - 1) === 47) {
+        return path33.slice(0, -1);
       }
-      return path32;
+      return path33;
     }
     function trimRegExpStartAndEnd(regexString) {
       if (regexString.charCodeAt(1) === 94) {
@@ -35530,22 +35530,22 @@ var require_find_my_way = __commonJS({
       }
       return regexString;
     }
-    function getClosingParenthensePosition(path32, idx) {
+    function getClosingParenthensePosition(path33, idx) {
       let parentheses = 1;
-      while (idx < path32.length) {
+      while (idx < path33.length) {
         idx++;
-        if (path32.charCodeAt(idx) === 92) {
+        if (path33.charCodeAt(idx) === 92) {
           idx++;
           continue;
         }
-        if (path32.charCodeAt(idx) === 41) {
+        if (path33.charCodeAt(idx) === 41) {
           parentheses--;
-        } else if (path32.charCodeAt(idx) === 40) {
+        } else if (path33.charCodeAt(idx) === 40) {
           parentheses++;
         }
         if (!parentheses) return idx;
       }
-      throw new TypeError('Invalid regexp expression in "' + path32 + '"');
+      throw new TypeError('Invalid regexp expression in "' + path33 + '"');
     }
     function defaultBuildPrettyMeta(route) {
       if (!route) return {};
@@ -35781,12 +35781,12 @@ var require_route = __commonJS({
       function route({ options: options2, isFastify }) {
         throwIfAlreadyStarted("Cannot add route!");
         const opts = { ...options2 };
-        const path32 = opts.url || opts.path || "";
+        const path33 = opts.url || opts.path || "";
         if (!opts.handler) {
-          throw new FST_ERR_ROUTE_MISSING_HANDLER(opts.method, path32);
+          throw new FST_ERR_ROUTE_MISSING_HANDLER(opts.method, path33);
         }
         if (opts.errorHandler !== void 0 && typeof opts.errorHandler !== "function") {
-          throw new FST_ERR_ROUTE_HANDLER_NOT_FN(opts.method, path32);
+          throw new FST_ERR_ROUTE_HANDLER_NOT_FN(opts.method, path33);
         }
         validateBodyLimitOption(opts.bodyLimit);
         validateHandlerTimeoutOption(opts.handlerTimeout);
@@ -35796,22 +35796,22 @@ var require_route = __commonJS({
         if (Array.isArray(opts.method)) {
           for (let i = 0; i < opts.method.length; ++i) {
             opts.method[i] = normalizeAndValidateMethod.call(this, opts.method[i]);
-            validateSchemaBodyOption.call(this, opts.method[i], path32, opts.schema);
+            validateSchemaBodyOption.call(this, opts.method[i], path33, opts.schema);
             isGetRoute = opts.method.includes("GET");
             isHeadRoute = opts.method.includes("HEAD");
           }
         } else {
           opts.method = normalizeAndValidateMethod.call(this, opts.method);
-          validateSchemaBodyOption.call(this, opts.method, path32, opts.schema);
+          validateSchemaBodyOption.call(this, opts.method, path33, opts.schema);
           isGetRoute = opts.method === "GET";
           isHeadRoute = opts.method === "HEAD";
         }
         const headOpts = shouldExposeHead && isGetRoute ? { ...options2 } : null;
         const prefix = this[kRoutePrefix];
-        if (path32 === "/" && prefix.length > 0 && opts.method !== "HEAD") {
+        if (path33 === "/" && prefix.length > 0 && opts.method !== "HEAD") {
           switch (opts.prefixTrailingSlash) {
             case "slash":
-              addNewRoute.call(this, { path: path32, isFastify });
+              addNewRoute.call(this, { path: path33, isFastify });
               break;
             case "no-slash":
               addNewRoute.call(this, { path: "", isFastify });
@@ -35820,20 +35820,20 @@ var require_route = __commonJS({
             default:
               addNewRoute.call(this, { path: "", isFastify });
               if (ignoreTrailingSlash !== true && (ignoreDuplicateSlashes !== true || !prefix.endsWith("/"))) {
-                addNewRoute.call(this, { path: path32, prefixing: true, isFastify });
+                addNewRoute.call(this, { path: path33, prefixing: true, isFastify });
               }
           }
-        } else if (path32[0] === "/" && prefix.endsWith("/")) {
-          addNewRoute.call(this, { path: path32.slice(1), isFastify });
+        } else if (path33[0] === "/" && prefix.endsWith("/")) {
+          addNewRoute.call(this, { path: path33.slice(1), isFastify });
         } else {
-          addNewRoute.call(this, { path: path32, isFastify });
+          addNewRoute.call(this, { path: path33, isFastify });
         }
         return this;
-        function addNewRoute({ path: path33, prefixing = false, isFastify: isFastify2 = false }) {
-          const url2 = prefix + path33;
+        function addNewRoute({ path: path34, prefixing = false, isFastify: isFastify2 = false }) {
+          const url2 = prefix + path34;
           opts.url = url2;
           opts.path = url2;
-          opts.routePath = path33;
+          opts.routePath = path34;
           opts.prefix = prefix;
           opts.logLevel = opts.logLevel || this[kLogLevel];
           validateLogLevelOption(opts.logLevel, opts.method, opts.url, logger);
@@ -35966,7 +35966,7 @@ var require_route = __commonJS({
           });
           if (shouldExposeHead && isGetRoute && !isHeadRoute && !hasHEADHandler) {
             const onSendHandlers = parseHeadOnSendHandlers(headOpts.onSend);
-            prepareRoute.call(this, { method: "HEAD", url: path33, options: { ...headOpts, onSend: onSendHandlers }, isFastify: true });
+            prepareRoute.call(this, { method: "HEAD", url: path34, options: { ...headOpts, onSend: onSendHandlers }, isFastify: true });
           }
         }
       }
@@ -36100,9 +36100,9 @@ var require_route = __commonJS({
       }
       return method;
     }
-    function validateSchemaBodyOption(method, path32, schema) {
+    function validateSchemaBodyOption(method, path33, schema) {
       if (this[kSupportedHTTPMethods].bodyless.has(method) && schema?.body) {
-        throw new FST_ERR_ROUTE_BODY_VALIDATION_SCHEMA_NOT_SUPPORTED(method, path32);
+        throw new FST_ERR_ROUTE_BODY_VALIDATION_SCHEMA_NOT_SUPPORTED(method, path33);
       }
     }
     function validateBodyLimitOption(bodyLimit) {
@@ -36117,11 +36117,11 @@ var require_route = __commonJS({
         throw new FST_ERR_ROUTE_HANDLER_TIMEOUT_OPTION_NOT_INT(handlerTimeout);
       }
     }
-    function validateLogLevelOption(logLevel, method, path32, logger) {
+    function validateLogLevelOption(logLevel, method, path33, logger) {
       if (logLevel == null || logLevel === "") return;
       if (logger?.levels?.values == null) return;
       if (typeof logLevel !== "string" || logger.levels.values[logLevel] === void 0) {
-        throw new FST_ERR_ROUTE_LOG_LEVEL_INVALID(method, path32, logLevel);
+        throw new FST_ERR_ROUTE_LOG_LEVEL_INVALID(method, path33, logLevel);
       }
     }
     function runPreParsing(err, request, reply) {
@@ -36766,14 +36766,14 @@ var require_cookies = __commonJS({
     "use strict";
     var { stringifySetCookie: stringifySetCookie2 } = (init_dist(), __toCommonJS(dist_exports));
     function cookiePathMatches(cookiePath, requestPath) {
-      const path32 = cookiePath || "/";
-      if (requestPath === path32) {
+      const path33 = cookiePath || "/";
+      if (requestPath === path33) {
         return true;
       }
-      if (!requestPath.startsWith(path32)) {
+      if (!requestPath.startsWith(path33)) {
         return false;
       }
-      return path32.endsWith("/") || requestPath.charAt(path32.length) === "/";
+      return path33.endsWith("/") || requestPath.charAt(path33.length) === "/";
     }
     function listCookies(cookies) {
       if (Array.isArray(cookies)) {
@@ -39299,19 +39299,19 @@ var require_fastify = __commonJS({
         }
         fourOhFour.router.lookup(req, res);
       }
-      function onBadUrl(path32, req, res) {
+      function onBadUrl(path33, req, res) {
         if (options.frameworkErrors) {
           const id = getGenReqId(routeEventContext.server, req);
           const childLogger = createChildLogger(routeEventContext, options.logger, req, id);
           const request = new Request(id, null, req, null, childLogger, routeEventContext);
           const reply = new Reply(res, request, childLogger);
           routeEventContext.server[kLogController].incomingRequest(request, reply);
-          return options.frameworkErrors(new FST_ERR_BAD_URL(path32), request, reply);
+          return options.frameworkErrors(new FST_ERR_BAD_URL(path33), request, reply);
         }
         const body = JSON.stringify({
           error: "Bad Request",
           code: "FST_ERR_BAD_URL",
-          message: `'${path32}' is not a valid url component`,
+          message: `'${path33}' is not a valid url component`,
           statusCode: 400
         });
         res.writeHead(400, {
@@ -39320,19 +39320,19 @@ var require_fastify = __commonJS({
         });
         res.end(body);
       }
-      function onMaxParamLength(path32, req, res) {
+      function onMaxParamLength(path33, req, res) {
         if (options.frameworkErrors) {
           const id = getGenReqId(routeEventContext.server, req);
           const childLogger = createChildLogger(routeEventContext, options.logger, req, id);
           const request = new Request(id, null, req, null, childLogger, routeEventContext);
           const reply = new Reply(res, request, childLogger);
           routeEventContext.server[kLogController].incomingRequest(request, reply);
-          return options.frameworkErrors(new FST_ERR_MAX_PARAM_LENGTH(path32), request, reply);
+          return options.frameworkErrors(new FST_ERR_MAX_PARAM_LENGTH(path33), request, reply);
         }
         const body = JSON.stringify({
           error: "Bad Request",
           code: "FST_ERR_MAX_PARAM_LENGTH",
-          message: `'${path32}' is exceeding the max param length`,
+          message: `'${path33}' is exceeding the max param length`,
           statusCode: 414
         });
         res.writeHead(414, {
@@ -39590,14 +39590,14 @@ ${body}`);
 
 // src/main.ts
 import { spawn as spawn15 } from "node:child_process";
-import fs33 from "node:fs";
-import path31 from "node:path";
+import fs34 from "node:fs";
+import path32 from "node:path";
 import { fileURLToPath as fileURLToPath5 } from "node:url";
 import { parseArgs } from "node:util";
 
 // src/app.ts
 var import_fastify = __toESM(require_fastify(), 1);
-import crypto14 from "node:crypto";
+import crypto15 from "node:crypto";
 
 // ../../node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -40416,10 +40416,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path32) {
-  if (!path32)
+function getElementAtPath(obj, path33) {
+  if (!path33)
     return obj;
-  return path32.reduce((acc, key) => acc?.[key], obj);
+  return path33.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -40759,11 +40759,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path32, issues) {
+function prefixIssues(path33, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path32);
+    iss.path.unshift(path33);
     return iss;
   });
 }
@@ -41225,16 +41225,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path32 = []) => {
+  const processError = (error63, path33 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path32, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path33, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path32, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path33, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path32, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path33, ...issue2.path]);
       } else {
-        const fullpath = [...path32, ...issue2.path];
+        const fullpath = [...path33, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -41273,17 +41273,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path32 = []) => {
+  const processError = (error63, path33 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path32, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path33, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path32, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path33, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path32, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path33, ...issue2.path]);
       } else {
-        const fullpath = [...path32, ...issue2.path];
+        const fullpath = [...path33, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -41322,8 +41322,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path32 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path32) {
+  const path33 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path33) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -58461,13 +58461,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path32 = ref.slice(1).split("/").filter(Boolean);
-  if (path32.length === 0) {
+  const path33 = ref.slice(1).split("/").filter(Boolean);
+  if (path33.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path32[0] === defsKey) {
-    const key = path32[1] === void 0 ? void 0 : decodeJSONPointerSegment(path32[1]);
+  if (path33[0] === defsKey) {
+    const key = path33[1] === void 0 ? void 0 : decodeJSONPointerSegment(path33[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -62686,8 +62686,8 @@ var MediaRepo = class {
     this.db.prepare("DELETE FROM media WHERE id = ?").run(id);
   }
   /** Whether another media record still references the same source file. */
-  countByPath(path32) {
-    const row = this.db.prepare("SELECT COUNT(*) AS n FROM media WHERE path = ?").get(path32);
+  countByPath(path33) {
+    const row = this.db.prepare("SELECT COUNT(*) AS n FROM media WHERE path = ?").get(path33);
     return row.n;
   }
 };
@@ -62718,11 +62718,11 @@ var FolderRepo = class {
   paths() {
     return this.list().map((f) => f.path);
   }
-  add(path32) {
-    const existing = this.list().find((f) => f.path.toLowerCase() === path32.toLowerCase());
+  add(path33) {
+    const existing = this.list().find((f) => f.path.toLowerCase() === path33.toLowerCase());
     if (existing) return existing;
     const id = crypto.randomUUID();
-    this.db.prepare("INSERT INTO approved_folders (id, path, created_at) VALUES (?, ?, ?)").run(id, path32, now());
+    this.db.prepare("INSERT INTO approved_folders (id, path, created_at) VALUES (?, ?, ?)").run(id, path33, now());
     return this.list().find((f) => f.id === id);
   }
   remove(id) {
@@ -62754,7 +62754,7 @@ import net from "node:net";
 import os3 from "node:os";
 import path6 from "node:path";
 var APP_NAME = "Ba Studio";
-var APP_VERSION = "1.0.0";
+var APP_VERSION = "1.1.0";
 var DEFAULT_PORT = 3737;
 var PORT_SCAN_RANGE = 50;
 function dataRoot(env = process.env) {
@@ -63600,11 +63600,11 @@ function registerEditingRoutes(app, s) {
 }
 
 // src/routes/generate.ts
-import crypto6 from "node:crypto";
-import fs17 from "node:fs";
+import crypto7 from "node:crypto";
+import fs18 from "node:fs";
 import fsp13 from "node:fs/promises";
 import os5 from "node:os";
-import path16 from "node:path";
+import path17 from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // src/routes/lottie.ts
@@ -64491,21 +64491,93 @@ function registerBrandRoutes(app, s) {
   });
 }
 
+// src/routes/live.ts
+import crypto6 from "node:crypto";
+import fs17 from "node:fs";
+import path16 from "node:path";
+import { pathToFileURL as pathToFileURL2 } from "node:url";
+var lives = /* @__PURE__ */ new Map();
+var TTL = 20 * 6e4;
+var MIME2 = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".mov": "video/quicktime",
+  ".m4v": "video/mp4",
+  ".woff2": "font/woff2",
+  ".woff": "font/woff",
+  ".ttf": "font/ttf",
+  ".otf": "font/otf",
+  ".js": "text/javascript"
+};
+var PLAYER = `<script>(() => {
+  const D = window.baDuration || 4, HOLD = 0.8;
+  let t0 = 0;
+  const tick = (now) => { if (!t0) t0 = now; const t = ((now - t0) / 1000) % (D + HOLD); if (window.__baSeek) window.__baSeek(Math.min(t, D - 0.001)); requestAnimationFrame(tick); };
+  document.fonts.ready.then(() => requestAnimationFrame(tick));
+})();</script>`;
+function createLive(html, opts, extraFiles = []) {
+  for (const [k, v] of lives) if (v.expires < Date.now()) lives.delete(k);
+  const token = crypto6.randomBytes(18).toString("base64url");
+  let page = buildScenePage(html, opts);
+  const files = [.../* @__PURE__ */ new Set([...opts.media?.values() ?? [], ...(opts.fonts ?? []).map((f) => f.file), ...opts.lottiePlayer ? [opts.lottiePlayer] : [], ...extraFiles])];
+  files.forEach((f, i) => {
+    page = page.split(pathToFileURL2(f).href).join(`/live/${token}/f/${i}${path16.extname(f).toLowerCase()}`);
+  });
+  page = page.replace(/<\/body><\/html>\s*$/, `${PLAYER}</body></html>`);
+  lives.set(token, { page, files, expires: Date.now() + TTL });
+  return token;
+}
+function dropLive(token) {
+  const l = lives.get(token);
+  if (l) l.expires = Math.min(l.expires, Date.now() + 6e4);
+}
+function registerLiveRoutes(app, _s) {
+  app.get("/live/:token", async (req, reply) => {
+    const { token } = external_exports.object({ token: external_exports.string().regex(/^[\w-]{20,40}$/) }).parse(req.params);
+    const l = lives.get(token);
+    if (!l || l.expires < Date.now()) return reply.code(404).type("text/plain; charset=utf-8").send("\u0627\u0646\u062A\u0647\u062A \u0627\u0644\u0645\u0639\u0627\u064A\u0646\u0629.");
+    return reply.type("text/html; charset=utf-8").header("cache-control", "no-store").send(l.page);
+  });
+  app.get("/live/:token/f/:file", async (req, reply) => {
+    const { token, file: file2 } = external_exports.object({ token: external_exports.string().regex(/^[\w-]{20,40}$/), file: external_exports.string().regex(/^\d{1,4}(\.[a-z0-9]{1,5})?$/) }).parse(req.params);
+    const l = lives.get(token);
+    const f = l && l.expires >= Date.now() ? l.files[Number(file2.split(".")[0])] : void 0;
+    if (!f || !fs17.existsSync(f)) return reply.code(404).send();
+    const size = fs17.statSync(f).size;
+    const type = MIME2[path16.extname(f).toLowerCase()] ?? "application/octet-stream";
+    reply.header("access-control-allow-origin", "*").header("cache-control", "no-store").header("accept-ranges", "bytes").type(type);
+    const range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range ?? ""));
+    if (range && range[1]) {
+      const start = Number(range[1]);
+      const end = range[2] ? Math.min(size - 1, Number(range[2])) : size - 1;
+      if (start >= size) return reply.code(416).header("content-range", `bytes */${size}`).send();
+      return reply.code(206).header("content-range", `bytes ${start}-${end}/${size}`).header("content-length", end - start + 1).send(fs17.createReadStream(f, { start, end }));
+    }
+    return reply.header("content-length", size).send(fs17.createReadStream(f));
+  });
+}
+
 // src/routes/generate.ts
 var IdParams5 = external_exports.object({ id: external_exports.string().uuid() });
 function designFonts() {
   const out = [];
-  let dir2 = path16.dirname(fileURLToPath3(import.meta.url));
+  let dir2 = path17.dirname(fileURLToPath3(import.meta.url));
   for (let i = 0; i < 6; i++) {
-    const assets = path16.join(dir2, "apps", "studio", "dist", "assets");
-    if (fs17.existsSync(assets)) {
-      for (const f of fs17.readdirSync(assets)) {
+    const assets = path17.join(dir2, "apps", "studio", "dist", "assets");
+    if (fs18.existsSync(assets)) {
+      for (const f of fs18.readdirSync(assets)) {
         const m = /^(amiri|aref-ruqaa)-arabic-(400|700)-normal-.*\.woff2$/.exec(f);
-        if (m) out.push({ family: m[1] === "amiri" ? "Amiri" : "Aref Ruqaa", weight: Number(m[2]), file: path16.join(assets, f) });
+        if (m) out.push({ family: m[1] === "amiri" ? "Amiri" : "Aref Ruqaa", weight: Number(m[2]), file: path17.join(assets, f) });
       }
       break;
     }
-    dir2 = path16.dirname(dir2);
+    dir2 = path17.dirname(dir2);
   }
   const weights = { light: 300, regular: 400, bold: 700, black: 900 };
   for (const [w, file2] of Object.entries(detectThmanyah())) if (file2) out.push({ family: "Thmanyah", weight: weights[w], file: file2 });
@@ -64522,16 +64594,16 @@ function norm(x) {
   return x.replace(/[\u064B-\u065F\u0670\u0640]/g, "").replace(/[إأآٱ]/g, "\u0627").replace(/ى/g, "\u064A").replace(/ة/g, "\u0647").replace(/[^\p{L}\p{N}]/gu, "").toLowerCase();
 }
 function designSourcePath(s, mediaId) {
-  return path16.join(s.paths.root, "cache", "designs", `${mediaId}.json`);
+  return path17.join(s.paths.root, "cache", "designs", `${mediaId}.json`);
 }
 async function saveDesignSource(s, mediaId, src) {
   const file2 = designSourcePath(s, mediaId);
-  await fsp13.mkdir(path16.dirname(file2), { recursive: true });
+  await fsp13.mkdir(path17.dirname(file2), { recursive: true });
   await fsp13.writeFile(file2, JSON.stringify(src));
 }
 function readDesignSource(s, mediaId) {
   try {
-    return JSON.parse(fs17.readFileSync(designSourcePath(s, mediaId), "utf8"));
+    return JSON.parse(fs18.readFileSync(designSourcePath(s, mediaId), "utf8"));
   } catch {
     return null;
   }
@@ -64566,7 +64638,7 @@ function registerGenerateRoutes(app, s) {
     const fonts = { thmanyah: detectThmanyah(), arabic: base.arabic, sans: base.sans, serif: base.serif, mono: base.mono };
     const media = /* @__PURE__ */ new Map();
     for (const m of s.media.listByProject(id)) {
-      if ((m.kind === "image" || m.kind === "video") && m.status === "ready" && fs17.existsSync(m.path)) media.set(m.id, { id: m.id, path: m.path, kind: m.kind });
+      if ((m.kind === "image" || m.kind === "video") && m.status === "ready" && fs18.existsSync(m.path)) media.set(m.id, { id: m.id, path: m.path, kind: m.kind });
     }
     let compiled;
     try {
@@ -64577,8 +64649,8 @@ function registerGenerateRoutes(app, s) {
     }
     const item = await serial(async () => {
       const dir2 = await s.mediaService.projectMediaDir(id);
-      const file2 = path16.join(dir2, `${crypto6.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
-      const work = await fsp13.mkdtemp(path16.join(os5.tmpdir(), "ba-motion-"));
+      const file2 = path17.join(dir2, `${crypto7.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
+      const work = await fsp13.mkdtemp(path17.join(os5.tmpdir(), "ba-motion-"));
       try {
         const res = await runRender(s.tools, compiled, work, file2);
         return await s.mediaService.registerOwned(id, res.outputPath, `${body.name}.mp4`);
@@ -64616,21 +64688,42 @@ function registerGenerateRoutes(app, s) {
       words = tr.words.map((w) => ({ text: w.text, t: Number((w.start - off).toFixed(3)) })).filter((w) => w.t > -1 && w.t < body.durationSec + 1);
     }
     const media = /* @__PURE__ */ new Map();
-    for (const m of s.media.listByProject(id)) if (m.kind !== "audio" && m.status === "ready" && fs17.existsSync(m.path)) media.set(m.id.toLowerCase(), m.path);
+    for (const m of s.media.listByProject(id)) if (m.kind !== "audio" && m.status === "ready" && fs18.existsSync(m.path)) media.set(m.id.toLowerCase(), m.path);
     const html = withBrand(s, body.html, media);
+    const liveOpts = { width: project.width, height: project.height, fps: project.fps, durationSec: body.durationSec, fonts: designFonts(), media, lotties: lottieFiles(s, id), lottiePlayer: lottiePlayer() ?? void 0, words };
+    let token = "";
+    try {
+      token = createLive(html, liveOpts);
+    } catch {
+    }
+    const live = (phase, progress, extra = {}) => {
+      if (token) s.events.emit({ type: "design.live", projectId: id, token, name: body.name, width: project.width, height: project.height, durationSec: body.durationSec, phase, progress, ...extra });
+    };
+    live("rendering", 0);
+    let lastPct = 0;
     const res = await serial(async () => {
       const dir2 = await s.mediaService.projectMediaDir(id);
-      const file2 = path16.join(dir2, `${crypto6.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
+      const file2 = path17.join(dir2, `${crypto7.randomBytes(4).toString("hex")}-${sanitizeFileName(body.name)}.mp4`);
       try {
-        const r = await renderHtmlScene(s.tools, html, file2, { width: project.width, height: project.height, fps: project.fps, durationSec: body.durationSec, fonts: designFonts(), media, lotties: lottieFiles(s, id), lottiePlayer: lottiePlayer() ?? void 0, motionBlur: body.motionBlur ? 3 : 1, words });
+        const r = await renderHtmlScene(s.tools, html, file2, { ...liveOpts, motionBlur: body.motionBlur ? 3 : 1, onProgress: (p) => {
+          const pct = Math.floor(p * 20) * 5;
+          if (pct > lastPct) {
+            lastPct = pct;
+            live("rendering", p * 0.95);
+          }
+        } });
         const cues = planSfx(r.events, r.durationSec, body.sfx);
-        if (cues.length) await addSfxToClip(s.tools, r.outputPath, cues, await ensureSfxLibrary(s.tools, path16.join(s.paths.root, "cache", "sfx")));
+        if (cues.length) await addSfxToClip(s.tools, r.outputPath, cues, await ensureSfxLibrary(s.tools, path17.join(s.paths.root, "cache", "sfx")));
         const item = await s.mediaService.registerOwned(id, r.outputPath, `${body.name}.mp4`);
         await saveDesignSource(s, item.id, { html: body.html, durationSec: body.durationSec, name: body.name, motionBlur: body.motionBlur, voice: body.voice, sfx: body.sfx });
         const sayMissing = words ? [...body.html.matchAll(/data-say\s*=\s*["']([^"']+)["']/g)].map((m) => m[1]).filter((w) => !words.some((x) => norm(x.text) === norm(w))) : [];
+        live("done", 1, { mediaId: item.id });
+        if (token) dropLive(token);
         return { media: item, warnings: [...r.warnings, ...sayMissing.map((w) => `data-say \u201C${w}\u201D was not found in the voiceover (it kept its data-at).`)], lint: r.lint, sfxCues: cues.length, syncedWords: words?.length ?? 0 };
       } catch (e) {
         await fsp13.rm(file2, { force: true });
+        live("failed", 0, { error: e.message.slice(0, 200) });
+        if (token) dropLive(token);
         if (e instanceof HtmlRenderError && /not an image or video|not imported|Lottie player/.test(e.message)) throw new HttpError(422, "design_invalid", e.message);
         throw new HttpError(500, "render_failed", `Design render failed: ${e.message.slice(0, 300)}`);
       }
@@ -64642,14 +64735,14 @@ function registerGenerateRoutes(app, s) {
     const { inline } = external_exports.object({ inline: external_exports.coerce.boolean().default(false) }).parse(req.query ?? {});
     const m = s.mediaService.requireMedia(id);
     if (m.kind === "audio") throw new HttpError(422, "not_visual", "Pick a video or an image as the reference.");
-    if (!fs17.existsSync(m.path)) throw new HttpError(404, "file_missing", "The clip's file is missing.");
-    const dir2 = path16.join(s.paths.root, "cache", "reference", id);
-    const cacheFile = path16.join(dir2, "analysis.json");
+    if (!fs18.existsSync(m.path)) throw new HttpError(404, "file_missing", "The clip's file is missing.");
+    const dir2 = path17.join(s.paths.root, "cache", "reference", id);
+    const cacheFile = path17.join(dir2, "analysis.json");
     const mtime = (await fsp13.stat(m.path)).mtimeMs;
     let analysis = null;
     try {
       const cached2 = JSON.parse(await fsp13.readFile(cacheFile, "utf8"));
-      if (cached2.mtime === mtime && cached2.analysis.frames.every((f) => fs17.existsSync(f.file))) analysis = cached2.analysis;
+      if (cached2.mtime === mtime && cached2.analysis.frames.every((f) => fs18.existsSync(f.file))) analysis = cached2.analysis;
     } catch {
     }
     if (!analysis) {
@@ -64670,8 +64763,8 @@ function registerGenerateRoutes(app, s) {
   app.get("/api/media/:id/reference/frames/:n", AI6, async (req, reply) => {
     const { id, n: n3 } = external_exports.object({ id: external_exports.string().uuid(), n: external_exports.coerce.number().int().min(0).max(20) }).parse(req.params);
     s.mediaService.requireMedia(id);
-    const file2 = path16.join(s.paths.root, "cache", "reference", id, `frame_${n3}.jpg`);
-    if (!fs17.existsSync(file2)) throw new HttpError(404, "frame_missing", "Analyse the clip first.");
+    const file2 = path17.join(s.paths.root, "cache", "reference", id, `frame_${n3}.jpg`);
+    if (!fs18.existsSync(file2)) throw new HttpError(404, "frame_missing", "Analyse the clip first.");
     return sendFile(req, reply, file2);
   });
   app.post("/api/review/frames", AI6, async (req) => {
@@ -64694,17 +64787,17 @@ function registerGenerateRoutes(app, s) {
       if (ex.status !== "completed") throw new HttpError(409, "render_not_ready", "The render has not finished yet.");
       file2 = ex.outputPath;
     }
-    if (!fs17.existsSync(file2)) throw new HttpError(404, "file_missing", "The file is missing.");
+    if (!fs18.existsSync(file2)) throw new HttpError(404, "file_missing", "The file is missing.");
     const probe = await probeMedia(s.tools, file2);
     const D = probe.durationSec ?? 0;
     const times = body.times?.length ? body.times.filter((t) => !D || t <= D) : D > 0 ? Array.from({ length: body.count }, (_, i) => Number(((i + 0.5) / body.count * D).toFixed(2))) : [0];
-    const work = await fsp13.mkdtemp(path16.join(os5.tmpdir(), "ba-review-"));
+    const work = await fsp13.mkdtemp(path17.join(os5.tmpdir(), "ba-review-"));
     try {
       const frames = [];
       for (const [i, t] of times.entries()) {
-        const out = path16.join(work, `f${i}.jpg`);
+        const out = path17.join(work, `f${i}.jpg`);
         const res = await runTool(s.tools.ffmpeg, ["-hide_banner", "-v", "error", "-y", ...D ? ["-ss", t.toFixed(3)] : [], "-i", file2, "-frames:v", "1", "-vf", "scale='min(540,iw)':-2", "-q:v", "4", out], { timeoutMs: 6e4 });
-        if (res.code === 0 && fs17.existsSync(out)) frames.push({ time: t, base64: (await fsp13.readFile(out)).toString("base64") });
+        if (res.code === 0 && fs18.existsSync(out)) frames.push({ time: t, base64: (await fsp13.readFile(out)).toString("base64") });
       }
       return { durationSec: D, width: probe.width, height: probe.height, frames };
     } finally {
@@ -64745,9 +64838,9 @@ function registerAgentRoutes(app, s) {
 }
 
 // src/services/stock.ts
-import fs18 from "node:fs";
+import fs19 from "node:fs";
 import fsp14 from "node:fs/promises";
-import path17 from "node:path";
+import path18 from "node:path";
 var UA = "BaStudio/0.5 (local video editor)";
 var seen = /* @__PURE__ */ new Map();
 async function getJson(url2, headers = {}) {
@@ -64832,10 +64925,10 @@ async function thumbnail(p) {
     return null;
   }
 }
-var creditsFile = (projectsDir, projectId) => path17.join(projectsDir, projectId, "credits.json");
+var creditsFile = (projectsDir, projectId) => path18.join(projectsDir, projectId, "credits.json");
 function readCredits(projectsDir, projectId) {
   try {
-    return JSON.parse(fs18.readFileSync(creditsFile(projectsDir, projectId), "utf8"));
+    return JSON.parse(fs19.readFileSync(creditsFile(projectsDir, projectId), "utf8"));
   } catch {
     return [];
   }
@@ -64919,7 +65012,7 @@ function registerStockRoutes(app, s) {
 }
 
 // src/routes/audio.ts
-import fs19 from "node:fs";
+import fs20 from "node:fs";
 var AI8 = { config: { ai: true } };
 var IdParams7 = external_exports.object({ id: external_exports.string().uuid() });
 function registerAudioRoutes(app, s) {
@@ -64936,7 +65029,7 @@ function registerAudioRoutes(app, s) {
     const used = new Set(state.timeline.clips.flatMap((c) => c.type === "media" ? [c.mediaId] : []));
     for (const mediaId of used) {
       const m = s.media.get(mediaId);
-      if (!m || !m.hasAudio || !fs19.existsSync(m.path)) continue;
+      if (!m || !m.hasAudio || !fs20.existsSync(m.path)) continue;
       const a = await analyzeAudio(s.tools, m.path, m.durationSec, { silenceDb: body.silenceDb, minSilenceSec: body.minSilenceSec });
       spans.set(mediaId, a.silences);
     }
@@ -64965,13 +65058,13 @@ function registerAudioRoutes(app, s) {
 }
 
 // src/routes/speech.ts
-import fs22 from "node:fs";
+import fs23 from "node:fs";
 
 // src/services/engines.ts
 import { spawn as spawn8 } from "node:child_process";
-import fs20 from "node:fs";
+import fs21 from "node:fs";
 import fsp15 from "node:fs/promises";
-import path18 from "node:path";
+import path19 from "node:path";
 import { pipeline as pipeline2 } from "node:stream/promises";
 import { Readable as Readable2, Transform as Transform2 } from "node:stream";
 var WHISPER_BIN = {
@@ -65037,9 +65130,9 @@ var ENGINES = {
 };
 var ALLOWED_HOSTS = [/^cdn\.jsdelivr\.net$/, /^github\.com$/, /^objects\.githubusercontent\.com$/, /^release-assets\.githubusercontent\.com$/, /^huggingface\.co$/, /\.hf\.co$/, /^cdn-lfs.*\.huggingface\.co$/];
 function findFile(dir2, file2, depth = 3) {
-  if (!fs20.existsSync(dir2)) return null;
-  for (const e of fs20.readdirSync(dir2, { withFileTypes: true })) {
-    const p = path18.join(dir2, e.name);
+  if (!fs21.existsSync(dir2)) return null;
+  for (const e of fs21.readdirSync(dir2, { withFileTypes: true })) {
+    const p = path19.join(dir2, e.name);
     if (e.isFile() && e.name.toLowerCase() === file2.toLowerCase()) return p;
     if (e.isDirectory() && depth > 0) {
       const r = findFile(p, file2, depth - 1);
@@ -65055,23 +65148,23 @@ var EngineService = class {
   }
   jobs = /* @__PURE__ */ new Map();
   dir(name) {
-    return path18.join(this.root, name);
+    return path19.join(this.root, name);
   }
   /** Paths needed to run an engine, or null when it is not installed. */
   paths(name) {
     const dir2 = this.dir(name);
-    if (!fs20.existsSync(path18.join(dir2, "installed.json"))) return null;
+    if (!fs21.existsSync(path19.join(dir2, "installed.json"))) return null;
     const exe = findFile(dir2, name === "whisper" ? "whisper-cli.exe" : name === "piper" ? "piper.exe" : name === "matting" ? "ort.wasm.min.js" : "yt-dlp.exe");
     if (exe && name === "ytdlp") return { exe, model: exe };
-    const model = path18.join(dir2, name === "whisper" ? "model.bin" : name === "matting" ? "model.onnx" : "voice.onnx");
-    return exe && fs20.existsSync(model) ? { exe, model } : null;
+    const model = path19.join(dir2, name === "whisper" ? "model.bin" : name === "matting" ? "model.onnx" : "voice.onnx");
+    return exe && fs21.existsSync(model) ? { exe, model } : null;
   }
   status() {
     return Object.keys(ENGINES).map((name) => {
       const e = ENGINES[name];
       let variant = null;
       try {
-        variant = JSON.parse(fs20.readFileSync(path18.join(this.dir(name), "installed.json"), "utf8")).variant;
+        variant = JSON.parse(fs21.readFileSync(path19.join(this.dir(name), "installed.json"), "utf8")).variant;
       } catch {
       }
       const job = this.jobs.get(name);
@@ -65104,7 +65197,7 @@ var EngineService = class {
         const total = variant.files.reduce((t, f) => t + f.bytes, 0);
         let done = 0;
         for (const f of variant.files) {
-          const target = path18.join(tmp, f.name);
+          const target = path19.join(tmp, f.name);
           await this.download(f.url, target, (n3) => {
             done += n3;
             const p = Math.min(0.99, done / total);
@@ -65118,7 +65211,7 @@ var EngineService = class {
             await fsp15.rm(target, { force: true });
           }
         }
-        await fsp15.writeFile(path18.join(tmp, "installed.json"), JSON.stringify({ variant: variantId, at: (/* @__PURE__ */ new Date()).toISOString() }));
+        await fsp15.writeFile(path19.join(tmp, "installed.json"), JSON.stringify({ variant: variantId, at: (/* @__PURE__ */ new Date()).toISOString() }));
         await fsp15.rm(dir2, { recursive: true, force: true });
         await fsp15.rename(tmp, dir2);
         if (!this.paths(name)) throw new Error("The download finished but the engine files were not found.");
@@ -65136,7 +65229,7 @@ var EngineService = class {
   async download(url2, target, onBytes) {
     let lastError = null;
     for (let attempt = 0; attempt < 8; attempt++) {
-      const have = fs20.existsSync(target) ? fs20.statSync(target).size : 0;
+      const have = fs21.existsSync(target) ? fs21.statSync(target).size : 0;
       try {
         let u = new URL(url2);
         let res = null;
@@ -65153,7 +65246,7 @@ var EngineService = class {
           break;
         }
         if (res && res.status === 416 && have > 0) return;
-        if (!res || !res.ok || !res.body) throw new Error(`Download failed (HTTP ${res?.status ?? "?"}) for ${path18.basename(target)}.`);
+        if (!res || !res.ok || !res.body) throw new Error(`Download failed (HTTP ${res?.status ?? "?"}) for ${path19.basename(target)}.`);
         const resumed = have > 0 && res.status === 206;
         if (have > 0 && !resumed) onBytes(-have);
         const count = new Transform2({
@@ -65162,7 +65255,7 @@ var EngineService = class {
             cb(null, chunk);
           }
         });
-        await pipeline2(Readable2.fromWeb(res.body), count, fs20.createWriteStream(target, { flags: resumed ? "a" : "w" }));
+        await pipeline2(Readable2.fromWeb(res.body), count, fs21.createWriteStream(target, { flags: resumed ? "a" : "w" }));
         return;
       } catch (e) {
         lastError = e;
@@ -65170,29 +65263,29 @@ var EngineService = class {
         await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       }
     }
-    throw new Error(`Download of ${path18.basename(target)} failed: ${lastError?.message ?? "unknown error"}. Check the internet connection and try again.`);
+    throw new Error(`Download of ${path19.basename(target)} failed: ${lastError?.message ?? "unknown error"}. Check the internet connection and try again.`);
   }
 };
 function extractZip(zip, dest) {
   const win = process.platform === "win32";
-  const cmd = win ? path18.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe") : "unzip";
+  const cmd = win ? path19.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe") : "unzip";
   const args = win ? ["-xf", zip, "-C", dest] : ["-o", "-q", zip, "-d", dest];
   return new Promise((resolve, reject) => {
     const p = spawn8(cmd, args, { windowsHide: true, stdio: ["ignore", "ignore", "pipe"] });
     let err = "";
     p.stderr.setEncoding("utf8").on("data", (c) => err += c);
     p.on("error", reject);
-    p.on("close", (code) => code === 0 ? resolve() : reject(new Error(`Could not extract ${path18.basename(zip)}: ${err.slice(-200)}`)));
+    p.on("close", (code) => code === 0 ? resolve() : reject(new Error(`Could not extract ${path19.basename(zip)}: ${err.slice(-200)}`)));
   });
 }
 
 // src/services/speech.ts
 import { spawn as spawn9 } from "node:child_process";
-import crypto7 from "node:crypto";
-import fs21 from "node:fs";
+import crypto8 from "node:crypto";
+import fs22 from "node:fs";
 import fsp16 from "node:fs/promises";
 import os6 from "node:os";
-import path19 from "node:path";
+import path20 from "node:path";
 var DIALECT_PROMPT = {
   msa: "\u0645\u0631\u062D\u0628\u064B\u0627 \u0628\u0643\u0645\u060C \u0633\u0646\u062A\u062D\u062F\u062B \u0627\u0644\u064A\u0648\u0645 \u0639\u0646 \u0645\u0648\u0636\u0648\u0639 \u0645\u0647\u0645.",
   saudi: "\u0647\u0644\u0627 \u0648\u0627\u0644\u0644\u0647\u060C \u0648\u0634 \u0627\u0644\u0623\u062E\u0628\u0627\u0631\u061F \u0627\u0644\u064A\u0648\u0645 \u0628\u0646\u062A\u0643\u0644\u0645 \u0639\u0646 \u0634\u064A \u0645\u0647\u0645 \u0645\u0631\u0629.",
@@ -65221,7 +65314,7 @@ function run(exe, args, opts = {}) {
     p.on("close", (code) => {
       clearTimeout(timer);
       if (code === 0) resolve({ stdout, stderr });
-      else reject(new Error(`${path19.basename(exe)} failed (${code}): ${stderr.trim().split("\n").slice(-3).join(" ")}`));
+      else reject(new Error(`${path20.basename(exe)} failed (${code}): ${stderr.trim().split("\n").slice(-3).join(" ")}`));
     });
     if (opts.input !== void 0) p.stdin.end(opts.input, "utf8");
   });
@@ -65255,18 +65348,18 @@ var SpeechService = class {
     this.projectsDir = projectsDir;
   }
   cacheFile(projectId, mediaId) {
-    return path19.join(this.projectsDir, projectId, "transcripts", `${mediaId}.json`);
+    return path20.join(this.projectsDir, projectId, "transcripts", `${mediaId}.json`);
   }
   cached(projectId, mediaId) {
     try {
-      return JSON.parse(fs21.readFileSync(this.cacheFile(projectId, mediaId), "utf8"));
+      return JSON.parse(fs22.readFileSync(this.cacheFile(projectId, mediaId), "utf8"));
     } catch {
       return null;
     }
   }
   async saveTranscript(projectId, t) {
     const f = this.cacheFile(projectId, t.mediaId);
-    await fsp16.mkdir(path19.dirname(f), { recursive: true });
+    await fsp16.mkdir(path20.dirname(f), { recursive: true });
     await fsp16.writeFile(f, JSON.stringify(t));
   }
   async transcribe(projectId, mediaId, file2, dialect, opts = {}) {
@@ -65276,13 +65369,13 @@ var SpeechService = class {
     }
     const w = this.engines.paths("whisper");
     if (!w) throw new HttpError(409, "engine_missing", "The speech engine is not installed. Install it in Ba Studio under Settings, Local engines (free, runs on this computer).");
-    const tmp = await fsp16.mkdtemp(path19.join(os6.tmpdir(), "ba-stt-"));
+    const tmp = await fsp16.mkdtemp(path20.join(os6.tmpdir(), "ba-stt-"));
     try {
-      const wav = path19.join(tmp, "audio.wav");
+      const wav = path20.join(tmp, "audio.wav");
       await run(this.tools.ffmpeg, ["-hide_banner", "-v", "error", "-y", "-i", file2, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", wav]);
-      const base = path19.join(tmp, "out");
+      const base = path20.join(tmp, "out");
       const threads = String(Math.max(2, Math.min(8, os6.cpus().length - 1)));
-      await run(w.exe, ["-m", w.model, "-f", wav, "-l", dialect === "english" ? "en" : "ar", "-oj", "-of", base, "-ml", "1", "-sow", "-t", threads, "-np", "--prompt", DIALECT_PROMPT[dialect]], { cwd: path19.dirname(w.exe) });
+      await run(w.exe, ["-m", w.model, "-f", wav, "-l", dialect === "english" ? "en" : "ar", "-oj", "-of", base, "-ml", "1", "-sow", "-t", threads, "-np", "--prompt", DIALECT_PROMPT[dialect]], { cwd: path20.dirname(w.exe) });
       const parsed = parseWhisperJson(await fsp16.readFile(`${base}.json`, "utf8"));
       const words = parsed.words.map((x, i) => ({ ...x, i, filler: isFiller(x.text) }));
       const t = { mediaId, dialect, language: parsed.language, text: words.map((x) => x.text).join(" "), words, createdAt: (/* @__PURE__ */ new Date()).toISOString() };
@@ -65296,10 +65389,10 @@ var SpeechService = class {
   async voiceover(dir2, text, speed) {
     const p = this.engines.paths("piper");
     if (!p) throw new HttpError(409, "engine_missing", "The voice engine is not installed. Install it in Ba Studio under Settings, Local engines (free, runs on this computer).");
-    const out = path19.join(dir2, `voiceover-${crypto7.randomBytes(4).toString("hex")}.wav`);
+    const out = path20.join(dir2, `voiceover-${crypto8.randomBytes(4).toString("hex")}.wav`);
     const lengthScale = (1 / Math.min(2, Math.max(0.5, speed))).toFixed(2);
-    await run(p.exe, ["-m", p.model, "-f", out, "--length_scale", lengthScale, "--sentence_silence", "0.35"], { input: text.replace(/\s+/g, " ").trim() + "\n", cwd: path19.dirname(p.exe), signalMs: 5 * 6e4 });
-    if (!fs21.existsSync(out) || fs21.statSync(out).size < 1e3) throw new Error("The voice engine produced no audio.");
+    await run(p.exe, ["-m", p.model, "-f", out, "--length_scale", lengthScale, "--sentence_silence", "0.35"], { input: text.replace(/\s+/g, " ").trim() + "\n", cwd: path20.dirname(p.exe), signalMs: 5 * 6e4 });
+    if (!fs22.existsSync(out) || fs22.statSync(out).size < 1e3) throw new Error("The voice engine produced no audio.");
     return out;
   }
 };
@@ -65321,9 +65414,9 @@ async function elevenVoiceover(dir2, text, apiKey, voiceId, speed) {
     if (/quota|credit|limit/i.test(detail) || res.status === 429) throw new HttpError(429, "eleven_quota", "The ElevenLabs account is out of credits or busy. Try later, or use the free local voice Kareem.");
     throw new HttpError(502, "eleven_failed", `ElevenLabs did not answer (HTTP ${res.status}).`);
   }
-  const out = path19.join(dir2, `voiceover-${crypto7.randomBytes(4).toString("hex")}.mp3`);
+  const out = path20.join(dir2, `voiceover-${crypto8.randomBytes(4).toString("hex")}.mp3`);
   await fsp16.writeFile(out, Buffer.from(await res.arrayBuffer()));
-  if (fs21.statSync(out).size < 1e3) throw new Error("ElevenLabs returned no audio.");
+  if (fs22.statSync(out).size < 1e3) throw new Error("ElevenLabs returned no audio.");
   return out;
 }
 
@@ -65354,7 +65447,7 @@ function registerSpeechRoutes(app, s) {
     const body = external_exports.object({ dialect: Dialect.default("saudi"), force: external_exports.boolean().default(false) }).parse(req.body ?? {});
     const m = s.mediaService.requireMedia(id);
     if (!m.hasAudio) throw new HttpError(422, "no_audio", "This file has no sound to transcribe.");
-    if (!fs22.existsSync(m.path)) throw new HttpError(409, "media_missing", "The file is missing on disk.");
+    if (!fs23.existsSync(m.path)) throw new HttpError(409, "media_missing", "The file is missing on disk.");
     const t = await s.speech.transcribe(m.projectId, id, m.path, body.dialect, { force: body.force });
     return { ...t, words: t.words.slice(0, 4e3), truncated: t.words.length > 4e3, fillers: t.words.filter((w) => w.filler).length };
   });
@@ -65487,9 +65580,9 @@ function registerSpeechRoutes(app, s) {
 
 // src/routes/links.ts
 import { spawn as spawn10 } from "node:child_process";
-import fs23 from "node:fs";
+import fs24 from "node:fs";
 import fsp17 from "node:fs/promises";
-import path20 from "node:path";
+import path21 from "node:path";
 var AI10 = { config: { ai: true } };
 var IdParams9 = external_exports.object({ id: external_exports.string().uuid() });
 var ALLOWED = /(^|\.)(youtube\.com|youtu\.be|tiktok\.com|instagram\.com|x\.com|twitter\.com|snapchat\.com|vimeo\.com|twitch\.tv|facebook\.com|fb\.watch|dailymotion\.com|streamable\.com|reddit\.com|redd\.it)$/i;
@@ -65521,7 +65614,7 @@ function registerLinkRoutes(app, s) {
     if (!y) throw new HttpError(409, "engine_missing", "The link downloader is not installed. Install it in Ba Studio under Settings, Local engines (free).");
     if (!s.projects.get(id)) throw new HttpError(404, "project_not_found", "Project not found.");
     const dir2 = await s.mediaService.projectMediaDir(id);
-    const tmp = await fsp17.mkdtemp(path20.join(dir2, ".link-"));
+    const tmp = await fsp17.mkdtemp(path21.join(dir2, ".link-"));
     try {
       const h = body.maxHeight;
       const format = body.audioOnly ? "ba[ext=m4a]/ba" : `bv*[height<=${h}][ext=mp4]+ba[ext=m4a]/b[height<=${h}][ext=mp4]/bv*[height<=${h}]+ba/b[height<=${h}]/b`;
@@ -65537,7 +65630,7 @@ function registerLinkRoutes(app, s) {
         format,
         ...body.audioOnly ? [] : ["--merge-output-format", "mp4"],
         "--ffmpeg-location",
-        path20.dirname(s.tools.ffmpeg),
+        path21.dirname(s.tools.ffmpeg),
         "--max-filesize",
         "2G",
         "--match-filter",
@@ -65546,7 +65639,7 @@ function registerLinkRoutes(app, s) {
         "--print",
         "before_dl:TITLE	%(title)s",
         "-o",
-        path20.join(tmp, "media.%(ext)s")
+        path21.join(tmp, "media.%(ext)s")
       ];
       const out = await new Promise((resolve, reject) => {
         const p = spawn10(y.exe, args, { windowsHide: true, env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUTF8: "1" }, stdio: ["ignore", "pipe", "pipe"] });
@@ -65570,13 +65663,13 @@ function registerLinkRoutes(app, s) {
         });
       });
       const title = /TITLE\t(.+)/.exec(out)?.[1]?.trim() ?? "video";
-      const file2 = fs23.readdirSync(tmp).find((f) => /^media\.(mp4|webm|mkv|m4a|mp3|opus|mov)$/i.test(f));
+      const file2 = fs24.readdirSync(tmp).find((f) => /^media\.(mp4|webm|mkv|m4a|mp3|opus|mov)$/i.test(f));
       if (!file2) throw new HttpError(422, "link_no_video", "Nothing was downloaded (the video may be filtered out: longer than 3 hours or bigger than 2 GB).");
-      const ext = path20.extname(file2);
-      let target = path20.join(dir2, `${safeTitle(title)}${ext}`);
-      for (let i = 2; fs23.existsSync(target); i++) target = path20.join(dir2, `${safeTitle(title)} (${i})${ext}`);
-      await fsp17.rename(path20.join(tmp, file2), target);
-      const media = await s.mediaService.registerOwned(id, target, path20.basename(target));
+      const ext = path21.extname(file2);
+      let target = path21.join(dir2, `${safeTitle(title)}${ext}`);
+      for (let i = 2; fs24.existsSync(target); i++) target = path21.join(dir2, `${safeTitle(title)} (${i})${ext}`);
+      await fsp17.rename(path21.join(tmp, file2), target);
+      const media = await s.mediaService.registerOwned(id, target, path21.basename(target));
       return reply.code(201).send({ media, title, source: link.href });
     } finally {
       await fsp17.rm(tmp, { recursive: true, force: true }).catch(() => void 0);
@@ -65586,10 +65679,10 @@ function registerLinkRoutes(app, s) {
 
 // src/services/updater.ts
 import { spawn as spawn11 } from "node:child_process";
-import fs24 from "node:fs";
+import fs25 from "node:fs";
 import fsp18 from "node:fs/promises";
 import os7 from "node:os";
-import path21 from "node:path";
+import path22 from "node:path";
 import { pipeline as pipeline3 } from "node:stream/promises";
 import { Readable as Readable3 } from "node:stream";
 var UPDATE_REPO = "alwynybasl555-glitch/ba-studio";
@@ -65606,7 +65699,7 @@ function newer(a, b) {
 function pluginInstall(entry = process.argv[1] ?? "") {
   const m = /^(.*[\\/]\.claude[\\/]plugins)[\\/]cache[\\/]ba-studio[\\/]ba-studio[\\/]([^\\/]+)[\\/]app[\\/]/.exec(entry);
   if (!m) return null;
-  return { cacheRoot: path21.join(m[1], "cache", "ba-studio", "ba-studio"), version: m[2], registry: path21.join(m[1], "installed_plugins.json") };
+  return { cacheRoot: path22.join(m[1], "cache", "ba-studio", "ba-studio"), version: m[2], registry: path22.join(m[1], "installed_plugins.json") };
 }
 var Updater = class {
   info = { current: APP_VERSION, latest: null, available: false, canApply: Boolean(pluginInstall()), checkedAt: null, error: null };
@@ -65634,29 +65727,29 @@ var Updater = class {
     const info = await this.check(true);
     if (!info.latest || !info.available) throw new HttpError(409, "up_to_date", "You already have the latest version.");
     this.busy = true;
-    const tmp = await fsp18.mkdtemp(path21.join(os7.tmpdir(), "ba-update-"));
+    const tmp = await fsp18.mkdtemp(path22.join(os7.tmpdir(), "ba-update-"));
     try {
-      const zip = path21.join(tmp, "repo.zip");
+      const zip = path22.join(tmp, "repo.zip");
       const res = await fetch(ZIP, { signal: AbortSignal.timeout(12e4) });
       if (!res.ok || !res.body) throw new Error(`Download failed (HTTP ${res.status}).`);
-      await pipeline3(Readable3.fromWeb(res.body), fs24.createWriteStream(zip));
+      await pipeline3(Readable3.fromWeb(res.body), fs25.createWriteStream(zip));
       await new Promise((resolve, reject) => {
-        const tar = process.platform === "win32" ? path21.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe") : "tar";
+        const tar = process.platform === "win32" ? path22.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe") : "tar";
         const p = spawn11(tar, ["-xf", zip, "-C", tmp], { windowsHide: true, stdio: "ignore" });
         p.on("error", reject);
         p.on("close", (c) => c === 0 ? resolve() : reject(new Error("Could not unpack the update.")));
       });
-      const top = fs24.readdirSync(tmp).find((d) => d.startsWith("ba-studio-"));
-      const src = top ? path21.join(tmp, top, "ba-studio") : "";
-      const manifest = path21.join(src, ".claude-plugin", "plugin.json");
-      if (!src || !fs24.existsSync(manifest)) throw new Error("The downloaded update looks incomplete.");
-      const version2 = String(JSON.parse(fs24.readFileSync(manifest, "utf8")).version);
+      const top = fs25.readdirSync(tmp).find((d) => d.startsWith("ba-studio-"));
+      const src = top ? path22.join(tmp, top, "ba-studio") : "";
+      const manifest = path22.join(src, ".claude-plugin", "plugin.json");
+      if (!src || !fs25.existsSync(manifest)) throw new Error("The downloaded update looks incomplete.");
+      const version2 = String(JSON.parse(fs25.readFileSync(manifest, "utf8")).version);
       if (!/^\d+\.\d+\.\d+$/.test(version2)) throw new Error("The update has no valid version.");
-      const target = path21.join(install.cacheRoot, version2);
+      const target = path22.join(install.cacheRoot, version2);
       await fsp18.rm(target, { recursive: true, force: true });
       await fsp18.cp(src, target, { recursive: true });
-      const serverEntry = path21.join(target, "app", "apps", "server", "dist", "server.mjs");
-      if (!fs24.existsSync(serverEntry)) throw new Error("The update has no studio server.");
+      const serverEntry = path22.join(target, "app", "apps", "server", "dist", "server.mjs");
+      if (!fs25.existsSync(serverEntry)) throw new Error("The update has no studio server.");
       let sha = "";
       try {
         const r = await fetch(COMMIT, { signal: AbortSignal.timeout(1e4), headers: { accept: "application/vnd.github+json", "user-agent": "BaStudio" } });
@@ -65664,7 +65757,7 @@ var Updater = class {
       } catch {
       }
       try {
-        const reg = JSON.parse(fs24.readFileSync(install.registry, "utf8"));
+        const reg = JSON.parse(fs25.readFileSync(install.registry, "utf8"));
         for (const e of reg.plugins?.["ba-studio@ba-studio"] ?? []) {
           e.installPath = target;
           e.version = version2;
@@ -65698,18 +65791,18 @@ var Updater = class {
 };
 
 // src/routes/styles.ts
-import crypto8 from "node:crypto";
-import fs25 from "node:fs";
+import crypto9 from "node:crypto";
+import fs26 from "node:fs";
 import fsp19 from "node:fs/promises";
-import path22 from "node:path";
+import path23 from "node:path";
 import { spawn as spawn12 } from "node:child_process";
 var AI11 = { config: { ai: true } };
 function dir(s) {
-  return path22.join(s.paths.root, "styles");
+  return path23.join(s.paths.root, "styles");
 }
 function list(s) {
   try {
-    return fs25.readdirSync(dir(s)).filter((f) => f.endsWith(".json")).map((f) => JSON.parse(fs25.readFileSync(path22.join(dir(s), f), "utf8"))).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return fs26.readdirSync(dir(s)).filter((f) => f.endsWith(".json")).map((f) => JSON.parse(fs26.readFileSync(path23.join(dir(s), f), "utf8"))).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   } catch {
     return [];
   }
@@ -65743,8 +65836,8 @@ function registerStyleRoutes(app, s) {
   });
   app.get("/api/styles/:id/cover", async (req, reply) => {
     const { id } = external_exports.object({ id: external_exports.string().regex(/^[a-f0-9]{16}$/) }).parse(req.params);
-    const file2 = path22.join(dir(s), `${id}.jpg`);
-    if (!fs25.existsSync(file2)) throw new HttpError(404, "no_cover", "No cover for this style.");
+    const file2 = path23.join(dir(s), `${id}.jpg`);
+    if (!fs26.existsSync(file2)) throw new HttpError(404, "no_cover", "No cover for this style.");
     return sendFile(req, reply, file2, { cache: "private, max-age=600", contentType: "image/jpeg" });
   });
   app.post("/api/styles", AI11, async (req, reply) => {
@@ -65765,7 +65858,7 @@ function registerStyleRoutes(app, s) {
       html = src.html;
       sfx = body.sfx ?? src.sfx;
       const m = s.media.get(body.mediaId);
-      if (m && fs25.existsSync(m.path)) {
+      if (m && fs26.existsSync(m.path)) {
         video = m.path;
         duration3 = m.durationSec ?? src.durationSec;
       }
@@ -65773,30 +65866,30 @@ function registerStyleRoutes(app, s) {
     if (!html) throw new HttpError(400, "nothing_to_save", "Give a design clip (mediaId) or CSS.");
     const { css, palette, fonts } = extractStyle(html);
     const old = list(s).find((x) => x.name.toLowerCase() === body.name.toLowerCase());
-    const id = old?.id ?? crypto8.randomBytes(8).toString("hex");
+    const id = old?.id ?? crypto9.randomBytes(8).toString("hex");
     await fsp19.mkdir(dir(s), { recursive: true });
     let hasCover = false;
     if (video) {
-      await still(s.tools.ffmpeg, video, Math.max(0, duration3 * 0.7), path22.join(dir(s), `${id}.jpg`));
-      hasCover = fs25.existsSync(path22.join(dir(s), `${id}.jpg`));
+      await still(s.tools.ffmpeg, video, Math.max(0, duration3 * 0.7), path23.join(dir(s), `${id}.jpg`));
+      hasCover = fs26.existsSync(path23.join(dir(s), `${id}.jpg`));
     }
     const style = { id, name: body.name, notes: body.notes, css, sampleHtml: html.slice(0, 12e4), palette, fonts, sfx, createdAt: (/* @__PURE__ */ new Date()).toISOString(), hasCover };
-    await fsp19.writeFile(path22.join(dir(s), `${id}.json`), JSON.stringify(style));
+    await fsp19.writeFile(path23.join(dir(s), `${id}.json`), JSON.stringify(style));
     return reply.code(201).send(style);
   });
   app.delete("/api/styles/:id", async (req) => {
     const { id } = external_exports.object({ id: external_exports.string().regex(/^[a-f0-9]{16}$/) }).parse(req.params);
-    await fsp19.rm(path22.join(dir(s), `${id}.json`), { force: true });
-    await fsp19.rm(path22.join(dir(s), `${id}.jpg`), { force: true });
+    await fsp19.rm(path23.join(dir(s), `${id}.json`), { force: true });
+    await fsp19.rm(path23.join(dir(s), `${id}.jpg`), { force: true });
     return { ok: true };
   });
 }
 
 // src/routes/watch.ts
-import fs26 from "node:fs";
+import fs27 from "node:fs";
 import fsp20 from "node:fs/promises";
 import os8 from "node:os";
-import path23 from "node:path";
+import path24 from "node:path";
 var AI12 = { config: { ai: true } };
 async function loudnessPerSecond(ffmpeg, file2) {
   const res = await runTool(
@@ -65883,18 +65976,18 @@ function registerWatchRoutes(app, s) {
     const body = external_exports.object({ from: external_exports.number().min(0).default(0), to: external_exports.number().min(0).optional(), count: external_exports.number().int().min(2).max(16).default(10), transcribe: external_exports.boolean().default(true), dialect: external_exports.string().default("saudi") }).parse(req.body ?? {});
     const m = s.mediaService.requireMedia(id);
     if (m.kind !== "video") throw new HttpError(422, "not_video", "Pick a video.");
-    if (!fs26.existsSync(m.path)) throw new HttpError(404, "file_missing", "The clip's file is missing.");
+    if (!fs27.existsSync(m.path)) throw new HttpError(404, "file_missing", "The clip's file is missing.");
     const D = m.durationSec ?? 0;
     const to = Math.min(D, body.to ?? D);
     const from = Math.min(body.from, Math.max(0, to - 0.5));
-    const tmp = await fsp20.mkdtemp(path23.join(os8.tmpdir(), "ba-watch-"));
+    const tmp = await fsp20.mkdtemp(path24.join(os8.tmpdir(), "ba-watch-"));
     try {
       const frames = [];
       for (let i = 0; i < body.count; i++) {
         const t = from + (i + 0.5) / body.count * (to - from);
-        const out = path23.join(tmp, `${i}.jpg`);
+        const out = path24.join(tmp, `${i}.jpg`);
         const r = await runTool(s.tools.ffmpeg, ["-hide_banner", "-v", "error", "-y", "-ss", t.toFixed(3), "-i", m.path, "-frames:v", "1", "-vf", "scale='min(420,iw)':-2", "-q:v", "5", out], { timeoutMs: 6e4 });
-        if (r.code === 0 && fs26.existsSync(out)) frames.push({ time: Number(t.toFixed(2)), base64: (await fsp20.readFile(out)).toString("base64") });
+        if (r.code === 0 && fs27.existsSync(out)) frames.push({ time: Number(t.toFixed(2)), base64: (await fsp20.readFile(out)).toString("base64") });
       }
       const words = await transcriptOf(m.projectId, id, m.path, body.dialect, body.transcribe);
       const said = words ? sentences(words.filter((w) => w.end >= from && w.start <= to)).map((x) => ({ start: Number(x.start.toFixed(2)), end: Number(x.end.toFixed(2)), text: x.text })) : null;
@@ -65922,10 +66015,10 @@ function registerWatchRoutes(app, s) {
 }
 
 // src/routes/formats.ts
-import crypto9 from "node:crypto";
-import fs27 from "node:fs";
+import crypto10 from "node:crypto";
+import fs28 from "node:fs";
 import fsp21 from "node:fs/promises";
-import path24 from "node:path";
+import path25 from "node:path";
 var AI13 = { config: { ai: true } };
 var FORMATS = {
   "9:16": { w: 1080, h: 1920, label: "\u0637\u0648\u0644\u064A 9:16" },
@@ -65947,11 +66040,11 @@ function registerFormatRoutes(app, s) {
     const project = s.projects.get(id);
     if (!project) throw new HttpError(404, "project_not_found", "Project not found.");
     const source = s.timelines.get(id).timeline;
-    const media = s.media.listByProject(id).filter((m) => m.status === "ready" && fs27.existsSync(m.path));
+    const media = s.media.listByProject(id).filter((m) => m.status === "ready" && fs28.existsSync(m.path));
     const designs = media.filter((m) => readDesignSource(s, m.id));
     if (designs.length && !findBrowser()) throw new HttpError(424, "browser_missing", "Re-rendering design clips needs Microsoft Edge or Google Chrome.");
     const results = [];
-    const sourceMap = new Map(s.media.listByProject(id).filter((m) => m.kind !== "audio" && fs27.existsSync(m.path)).map((m) => [m.id.toLowerCase(), m.path]));
+    const sourceMap = new Map(s.media.listByProject(id).filter((m) => m.kind !== "audio" && fs28.existsSync(m.path)).map((m) => [m.id.toLowerCase(), m.path]));
     for (const key of body.formats) {
       const F = FORMATS[key];
       if (Math.abs(F.w / F.h - project.width / project.height) < 0.01) continue;
@@ -65963,8 +66056,8 @@ function registerFormatRoutes(app, s) {
       let rerendered = 0;
       for (const m of media) {
         const src = readDesignSource(s, m.id);
-        const base = `${crypto9.randomBytes(4).toString("hex")}-${sanitizeFileName(path24.basename(m.path))}`;
-        const out = path24.join(dir2, base);
+        const base = `${crypto10.randomBytes(4).toString("hex")}-${sanitizeFileName(path25.basename(m.path))}`;
+        const out = path25.join(dir2, base);
         if (src) {
           const map2 = new Map(sourceMap);
           const html = withBrand(s, src.html, map2);
@@ -65975,10 +66068,10 @@ function registerFormatRoutes(app, s) {
           }
           const r = await renderHtmlScene(s.tools, html, out.replace(/\.[^.]+$/, ".mp4"), { width: F.w, height: F.h, fps: project.fps, durationSec: src.durationSec, fonts: designFonts(), media: map2, lotties: lottieFiles(s, id), lottiePlayer: lottiePlayer() ?? void 0, motionBlur: src.motionBlur ? 3 : 1, words });
           const cues = planSfx(r.events, r.durationSec, src.sfx);
-          if (cues.length) await addSfxToClip(s.tools, r.outputPath, cues, await ensureSfxLibrary(s.tools, path24.join(s.paths.root, "cache", "sfx")));
+          if (cues.length) await addSfxToClip(s.tools, r.outputPath, cues, await ensureSfxLibrary(s.tools, path25.join(s.paths.root, "cache", "sfx")));
           const item = await s.mediaService.registerOwned(np.id, r.outputPath, m.name);
-          await fsp21.mkdir(path24.join(s.paths.root, "cache", "designs"), { recursive: true });
-          await fsp21.writeFile(path24.join(s.paths.root, "cache", "designs", `${item.id}.json`), JSON.stringify(src));
+          await fsp21.mkdir(path25.join(s.paths.root, "cache", "designs"), { recursive: true });
+          await fsp21.writeFile(path25.join(s.paths.root, "cache", "designs", `${item.id}.json`), JSON.stringify(src));
           ids.set(m.id, item.id);
           for (const l of r.lint) lint.push({ ...l, clip: m.name });
           rerendered++;
@@ -65992,8 +66085,8 @@ function registerFormatRoutes(app, s) {
         }
       }
       for (const [, nid] of ids) {
-        const f = path24.join(s.paths.root, "cache", "designs", `${nid}.json`);
-        if (!fs27.existsSync(f)) continue;
+        const f = path25.join(s.paths.root, "cache", "designs", `${nid}.json`);
+        if (!fs28.existsSync(f)) continue;
         const d = JSON.parse(await fsp21.readFile(f, "utf8"));
         if (d.voice && ids.has(d.voice.mediaId)) {
           d.voice.mediaId = ids.get(d.voice.mediaId);
@@ -66009,8 +66102,8 @@ function registerFormatRoutes(app, s) {
 }
 
 // src/routes/phone.ts
-import crypto10 from "node:crypto";
-import fs28 from "node:fs";
+import crypto11 from "node:crypto";
+import fs29 from "node:fs";
 import http2 from "node:http";
 import os9 from "node:os";
 
@@ -67669,7 +67762,7 @@ var PhoneShare = class {
   timer = null;
   async share(file2, title) {
     this.prune();
-    const token = crypto10.randomBytes(18).toString("base64url");
+    const token = crypto11.randomBytes(18).toString("base64url");
     const expires = Date.now() + TTL_MS;
     this.shares.set(token, { file: file2, title, expires });
     if (!this.server) await this.start();
@@ -67719,7 +67812,7 @@ var PhoneShare = class {
     }
     let size;
     try {
-      size = fs28.statSync(share.file).size;
+      size = fs29.statSync(share.file).size;
     } catch {
       res.writeHead(404).end();
       return;
@@ -67734,10 +67827,10 @@ var PhoneShare = class {
         return;
       }
       res.writeHead(206, { "content-type": type, "content-length": end - start + 1, "content-range": `bytes ${start}-${end}/${size}`, "accept-ranges": "bytes" });
-      fs28.createReadStream(share.file, { start, end }).pipe(res);
+      fs29.createReadStream(share.file, { start, end }).pipe(res);
     } else {
       res.writeHead(200, { "content-type": type, "content-length": size, "accept-ranges": "bytes" });
-      fs28.createReadStream(share.file).pipe(res);
+      fs29.createReadStream(share.file).pipe(res);
     }
   }
 };
@@ -67750,12 +67843,12 @@ function registerPhoneRoutes(app, s) {
     let title;
     if (body.exportId) {
       const e = s.exports.get(body.exportId);
-      if (e.status !== "completed" || !fs28.existsSync(e.outputPath)) throw new HttpError(404, "file_missing", "The rendered file is not available.");
+      if (e.status !== "completed" || !fs29.existsSync(e.outputPath)) throw new HttpError(404, "file_missing", "The rendered file is not available.");
       file2 = e.outputPath;
       title = e.projectId ? s.projects.get(e.projectId)?.name ?? "\u0645\u0639\u0627\u064A\u0646\u0629" : "\u0645\u0639\u0627\u064A\u0646\u0629";
     } else if (body.mediaId) {
       const m = s.mediaService.requireMedia(body.mediaId);
-      if (m.kind !== "video" || !fs28.existsSync(m.path)) throw new HttpError(422, "not_video", "Pick a video.");
+      if (m.kind !== "video" || !fs29.existsSync(m.path)) throw new HttpError(422, "not_video", "Pick a video.");
       file2 = m.path;
       title = m.name;
     } else throw new HttpError(400, "nothing_to_share", "Choose a render to preview.");
@@ -67772,10 +67865,10 @@ function registerPhoneRoutes(app, s) {
 }
 
 // src/routes/matting.ts
-import crypto11 from "node:crypto";
-import fs29 from "node:fs";
+import crypto12 from "node:crypto";
+import fs30 from "node:fs";
 import fsp22 from "node:fs/promises";
-import path25 from "node:path";
+import path26 from "node:path";
 var AI14 = { config: { ai: true } };
 var busy = Promise.resolve();
 function registerMattingRoutes(app, s) {
@@ -67783,13 +67876,13 @@ function registerMattingRoutes(app, s) {
     const { id } = external_exports.object({ id: external_exports.string().uuid() }).parse(req.params);
     const m = s.mediaService.requireMedia(id);
     if (m.kind !== "image") throw new HttpError(422, "not_image", "Background removal works on pictures. For a video, take a still first.");
-    if (!fs29.existsSync(m.path)) throw new HttpError(404, "file_missing", "The picture's file is missing.");
+    if (!fs30.existsSync(m.path)) throw new HttpError(404, "file_missing", "The picture's file is missing.");
     const eng = s.engines.paths("matting");
     if (!eng) throw new HttpError(424, "engine_missing", "Background removal is not installed. Install it once from Settings \u2192 Local engines (\u0625\u0632\u0627\u0644\u0629 \u0627\u0644\u062E\u0644\u0641\u064A\u0629).");
     const dir2 = await s.mediaService.projectMediaDir(m.projectId);
     const stem = m.name.replace(/\.[^.]+$/, "");
-    const out = path25.join(dir2, `${crypto11.randomBytes(4).toString("hex")}-${sanitizeFileName(stem)}-cutout.png`);
-    const job = busy.then(() => removeBackground({ ortDir: path25.dirname(eng.exe), model: eng.model }, m.path, out));
+    const out = path26.join(dir2, `${crypto12.randomBytes(4).toString("hex")}-${sanitizeFileName(stem)}-cutout.png`);
+    const job = busy.then(() => removeBackground({ ortDir: path26.dirname(eng.exe), model: eng.model }, m.path, out));
     busy = job.catch(() => void 0);
     let r;
     try {
@@ -67806,10 +67899,10 @@ function registerMattingRoutes(app, s) {
 
 // src/routes/finishing.ts
 import { spawn as spawn13 } from "node:child_process";
-import fs30 from "node:fs";
+import fs31 from "node:fs";
 import fsp23 from "node:fs/promises";
 import os10 from "node:os";
-import path26 from "node:path";
+import path27 from "node:path";
 var AI15 = { config: { ai: true } };
 var IdParams10 = external_exports.object({ id: external_exports.string().uuid() });
 function registerFinishingRoutes(app, s) {
@@ -67823,7 +67916,7 @@ function registerFinishingRoutes(app, s) {
     let hasSpeech = false;
     for (const mediaId of new Set(state.timeline.clips.flatMap((c) => c.type === "media" ? [c.mediaId] : []))) {
       const m = s.media.get(mediaId);
-      if (!m || !m.hasAudio || !fs30.existsSync(m.path)) continue;
+      if (!m || !m.hasAudio || !fs31.existsSync(m.path)) continue;
       const a = await analyzeAudio(s.tools, m.path, m.durationSec, { silenceDb: -38, minSilenceSec: 0.8 });
       spans.set(mediaId, a.silences);
       const silent = a.silences.reduce((n3, x) => n3 + (x.end - x.start), 0);
@@ -67844,12 +67937,12 @@ function registerFinishingRoutes(app, s) {
       audioClean: external_exports.boolean().default(true)
     }).parse(req.body ?? {});
     const m = s.mediaService.requireMedia(id);
-    if (!fs30.existsSync(m.path)) throw new HttpError(409, "media_missing", "The file is missing on disk.");
+    if (!fs31.existsSync(m.path)) throw new HttpError(409, "media_missing", "The file is missing on disk.");
     if (m.kind === "image") throw new HttpError(422, "not_video", "Enhancement works on videos and sounds.");
     const isAudio = m.kind === "audio";
     const { video, audio } = enhanceFilters(isAudio ? { ...o, stabilize: false } : o, m.width, m.height);
     if (isAudio && !audio.length) throw new HttpError(422, "nothing_to_do", "Choose sound cleaning for an audio file.");
-    const tmp = await fsp23.mkdtemp(path26.join(os10.tmpdir(), "ba-enh-"));
+    const tmp = await fsp23.mkdtemp(path27.join(os10.tmpdir(), "ba-enh-"));
     const run2 = (args) => new Promise((resolve, reject) => {
       const p = spawn13(s.tools.ffmpeg, ["-hide_banner", "-v", "error", "-y", ...args], { cwd: tmp, windowsHide: true, stdio: ["ignore", "ignore", "pipe"] });
       let err = "";
@@ -67861,7 +67954,7 @@ function registerFinishingRoutes(app, s) {
       if (!isAudio && o.stabilize) await run2(["-i", m.path, "-vf", "vidstabdetect=shakiness=6:accuracy=12:result=transforms.trf", "-f", "null", "-"]);
       const dir2 = await s.mediaService.projectMediaDir(m.projectId);
       const base = m.name.replace(/\.[^.]+$/, "");
-      const out = path26.join(dir2, `${base} (\u0645\u062D\u0633\u0651\u0646)-${Date.now().toString(36)}.${isAudio ? "m4a" : "mp4"}`);
+      const out = path27.join(dir2, `${base} (\u0645\u062D\u0633\u0651\u0646)-${Date.now().toString(36)}.${isAudio ? "m4a" : "mp4"}`);
       const args = isAudio ? ["-i", m.path, "-vn", "-af", audio.join(","), "-c:a", "aac", "-b:a", "192k", out] : ["-i", m.path, "-vf", video.join(","), ...m.hasAudio ? audio.length ? ["-af", audio.join(",")] : [] : ["-an"], "-c:v", "libx264", "-preset", "medium", "-crf", "17", ...m.hasAudio ? ["-c:a", "aac", "-b:a", "192k"] : [], "-movflags", "+faststart", out];
       await run2(args);
       const media = await s.mediaService.registerOwned(m.projectId, out, `${base} (\u0645\u062D\u0633\u0651\u0646).${isAudio ? "m4a" : "mp4"}`);
@@ -67923,7 +68016,7 @@ function registerSplitRoute(app, s) {
     const project = s.projects.get(id);
     if (!project) throw new HttpError(404, "project_not_found", "Project not found.");
     const m = s.mediaService.requireMedia(body.mediaId);
-    if (m.projectId !== id || m.kind !== "video" || !m.durationSec || !fs30.existsSync(m.path)) throw new HttpError(422, "not_video", "Choose a video from this project.");
+    if (m.projectId !== id || m.kind !== "video" || !m.durationSec || !fs31.existsSync(m.path)) throw new HttpError(422, "not_video", "Choose a video from this project.");
     if (m.durationSec < body.partSec * 1.4) throw new HttpError(422, "too_short", "This video is short enough for one part.");
     const transcript = s.speech.cached(id, m.id);
     const words = transcript?.words.filter((w) => !w.filler) ?? [];
@@ -67939,7 +68032,7 @@ function registerSplitRoute(app, s) {
       const name = `${project.name} \u2013 \u0627\u0644\u062C\u0632\u0621 ${k + 1} \u0645\u0646 ${n3}`.slice(0, 120);
       const part = s.projects.create({ name, description: "", width: project.width, height: project.height, fps: project.fps });
       const dir2 = await s.mediaService.projectMediaDir(part.id);
-      const file2 = path26.join(dir2, `part-${k + 1}.mp4`);
+      const file2 = path27.join(dir2, `part-${k + 1}.mp4`);
       await new Promise((resolve, reject) => {
         const p = spawn13(s.tools.ffmpeg, ["-hide_banner", "-v", "error", "-y", "-ss", String(start), "-i", m.path, "-t", String(len), "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", file2], { windowsHide: true, stdio: ["ignore", "ignore", "pipe"] });
         let err = "";
@@ -67973,10 +68066,10 @@ function registerSplitRoute(app, s) {
 }
 
 // src/services/agent-service.ts
-import crypto12 from "node:crypto";
-import fs31 from "node:fs";
+import crypto13 from "node:crypto";
+import fs32 from "node:fs";
 import fsp24 from "node:fs/promises";
-import path27 from "node:path";
+import path28 from "node:path";
 import { spawn as spawn14 } from "node:child_process";
 import { fileURLToPath as fileURLToPath4 } from "node:url";
 var MAX_TURNS = { create: 40, edit: 30, ideas: 6, study: 6 };
@@ -68178,15 +68271,15 @@ ${guide}` : ""}`;
 }
 function designGuide() {
   const read = (skill, file2 = "SKILL.md") => {
-    let dir2 = path27.dirname(fileURLToPath4(import.meta.url));
+    let dir2 = path28.dirname(fileURLToPath4(import.meta.url));
     for (let i = 0; i < 7; i++) {
-      for (const p of [path27.join(dir2, "skills", skill, file2), path27.join(dir2, "plugin", "ba-studio", "skills", skill, file2)]) {
+      for (const p of [path28.join(dir2, "skills", skill, file2), path28.join(dir2, "plugin", "ba-studio", "skills", skill, file2)]) {
         try {
-          return fs31.readFileSync(p, "utf8").replace(/^---[\s\S]*?---\s*/, "");
+          return fs32.readFileSync(p, "utf8").replace(/^---[\s\S]*?---\s*/, "");
         } catch {
         }
       }
-      dir2 = path27.dirname(dir2);
+      dir2 = path28.dirname(dir2);
     }
     return null;
   };
@@ -68205,36 +68298,36 @@ function desktopBundled() {
   const out = [];
   const ls = (d) => {
     try {
-      return fs31.readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => path27.join(d, e.name));
+      return fs32.readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => path28.join(d, e.name));
     } catch {
       return [];
     }
   };
   const codeDirs = [];
-  for (const root of ["Claude-Data", "Claude-3p", "AnthropicClaude"].map((n3) => path27.join(local, n3))) {
-    if (fs31.existsSync(path27.join(root, "claude-code"))) codeDirs.push(path27.join(root, "claude-code"));
-    for (const sub of ls(root)) if (fs31.existsSync(path27.join(sub, "claude-code"))) codeDirs.push(path27.join(sub, "claude-code"));
+  for (const root of ["Claude-Data", "Claude-3p", "AnthropicClaude"].map((n3) => path28.join(local, n3))) {
+    if (fs32.existsSync(path28.join(root, "claude-code"))) codeDirs.push(path28.join(root, "claude-code"));
+    for (const sub of ls(root)) if (fs32.existsSync(path28.join(sub, "claude-code"))) codeDirs.push(path28.join(sub, "claude-code"));
   }
   for (const cd of codeDirs) {
     for (const vdir of ls(cd)) {
       for (const hdir of ls(vdir)) {
-        const exe = path27.join(hdir, "claude.exe");
-        if (fs31.existsSync(exe)) out.push({ file: exe, version: path27.basename(vdir) });
+        const exe = path28.join(hdir, "claude.exe");
+        if (fs32.existsSync(exe)) out.push({ file: exe, version: path28.basename(vdir) });
       }
     }
   }
   return out.sort((a, b) => cmpVersion(a.version, b.version)).map((o) => o.file);
 }
 function findClaude(env = process.env) {
-  if (env.BA_CLAUDE_PATH) return fs31.existsSync(env.BA_CLAUDE_PATH) ? env.BA_CLAUDE_PATH : null;
+  if (env.BA_CLAUDE_PATH) return fs32.existsSync(env.BA_CLAUDE_PATH) ? env.BA_CLAUDE_PATH : null;
   const names = process.platform === "win32" ? ["claude.exe", "claude.cmd"] : ["claude"];
-  for (const dir2 of (env.PATH ?? env.Path ?? "").split(path27.delimiter).filter(Boolean)) {
-    for (const n3 of names) if (fs31.existsSync(path27.join(dir2, n3))) return path27.join(dir2, n3);
+  for (const dir2 of (env.PATH ?? env.Path ?? "").split(path28.delimiter).filter(Boolean)) {
+    for (const n3 of names) if (fs32.existsSync(path28.join(dir2, n3))) return path28.join(dir2, n3);
   }
   const home = env.USERPROFILE ?? env.HOME;
   if (home) {
-    const native = path27.join(home, ".local", "bin", process.platform === "win32" ? "claude.exe" : "claude");
-    if (fs31.existsSync(native)) return native;
+    const native = path28.join(home, ".local", "bin", process.platform === "win32" ? "claude.exe" : "claude");
+    if (fs32.existsSync(native)) return native;
   }
   return desktopBundled()[0] ?? null;
 }
@@ -68259,11 +68352,11 @@ function claudeVersion(file2) {
 }
 function findMcpEntry() {
   if (process.env.BA_MCP_ENTRY) return process.env.BA_MCP_ENTRY;
-  let dir2 = path27.dirname(fileURLToPath4(import.meta.url));
+  let dir2 = path28.dirname(fileURLToPath4(import.meta.url));
   for (let i = 0; i < 6; i++) {
-    const p = path27.join(dir2, "packages", "mcp-server", "dist", "mcp.mjs");
-    if (fs31.existsSync(p)) return p;
-    dir2 = path27.dirname(dir2);
+    const p = path28.join(dir2, "packages", "mcp-server", "dist", "mcp.mjs");
+    if (fs32.existsSync(p)) return p;
+    dir2 = path28.dirname(dir2);
   }
   return null;
 }
@@ -68355,7 +68448,7 @@ var AgentService = class {
     }
     const mode = parent?.mode ?? input2.mode;
     const maxTurns = MAX_TURNS[mode];
-    const id = crypto12.randomUUID();
+    const id = crypto13.randomUUID();
     const run2 = {
       id,
       projectId: input2.projectId,
@@ -68372,15 +68465,15 @@ var AgentService = class {
       ideas: null,
       breakdown: null,
       maxTurns,
-      sessionId: parent?.sessionId ?? (ONE_SHOT.includes(mode) ? null : crypto12.randomUUID()),
+      sessionId: parent?.sessionId ?? (ONE_SHOT.includes(mode) ? null : crypto13.randomUUID()),
       threadId: parent?.threadId ?? id
     };
     const live = { run: run2, child: null, cancelled: false };
     this.runs.set(run2.id, live);
     this.trim();
     await fsp24.mkdir(this.workDir, { recursive: true });
-    const mcpConfig = path27.join(this.workDir, "mcp.json");
-    const sysFile = path27.join(this.workDir, `system-${run2.id}.txt`);
+    const mcpConfig = path28.join(this.workDir, "mcp.json");
+    const sysFile = path28.join(this.workDir, `system-${run2.id}.txt`);
     await fsp24.writeFile(mcpConfig, JSON.stringify({ mcpServers: { [SERVER]: { command: process.execPath, args: [mcp, "--instance", this.instanceName] } } }));
     await fsp24.writeFile(sysFile, systemPrompt(mode, input2.projectId, input2.humanTouch, maxTurns, Boolean(parent), input2.referenceMediaId, input2.brief));
     const allowed = ONE_SHOT.includes(mode) ? READ_ONLY_TOOLS.map((t) => `mcp__${SERVER}__${t}`) : [`mcp__${SERVER}`];
@@ -68527,11 +68620,11 @@ var AgentService = class {
 };
 
 // src/app.ts
-import path30 from "node:path";
+import path31 from "node:path";
 
 // src/services/timeline-service.ts
 import fsp25 from "node:fs/promises";
-import path28 from "node:path";
+import path29 from "node:path";
 var HISTORY_LIMIT = 200;
 var BACKUP_LIMIT = 30;
 var AUTO_BACKUP_INTERVAL_MS = 5 * 6e4;
@@ -68654,7 +68747,7 @@ var TimelineService = class {
   }
   // ---- backups ---------------------------------------------------------------
   backupDir(projectId) {
-    return path28.join(this.paths.projectsDir, projectId, "backups");
+    return path29.join(this.paths.projectsDir, projectId, "backups");
   }
   async createBackup(projectId, label) {
     const project = this.projects.get(projectId);
@@ -68665,10 +68758,10 @@ var TimelineService = class {
     const createdAt = (/* @__PURE__ */ new Date()).toISOString();
     const name = `${createdAt.replace(/[:.]/g, "-")}.json`;
     const body = JSON.stringify({ format: "soezy-backup", version: 1, label, createdAt, revision, project, timeline }, null, 2);
-    await fsp25.writeFile(path28.join(dir2, `${name}.tmp`), body, "utf8");
-    await fsp25.rename(path28.join(dir2, `${name}.tmp`), path28.join(dir2, name));
+    await fsp25.writeFile(path29.join(dir2, `${name}.tmp`), body, "utf8");
+    await fsp25.rename(path29.join(dir2, `${name}.tmp`), path29.join(dir2, name));
     const all = (await fsp25.readdir(dir2)).filter((f) => f.endsWith(".json")).sort();
-    for (const old of all.slice(0, Math.max(0, all.length - BACKUP_LIMIT))) await fsp25.rm(path28.join(dir2, old), { force: true });
+    for (const old of all.slice(0, Math.max(0, all.length - BACKUP_LIMIT))) await fsp25.rm(path29.join(dir2, old), { force: true });
     return { name, label, createdAt, sizeBytes: Buffer.byteLength(body) };
   }
   async listBackups(projectId) {
@@ -68677,7 +68770,7 @@ var TimelineService = class {
     const out = [];
     for (const f of files.filter((x) => x.endsWith(".json")).sort().reverse()) {
       try {
-        const raw = await fsp25.readFile(path28.join(dir2, f), "utf8");
+        const raw = await fsp25.readFile(path29.join(dir2, f), "utf8");
         const data = JSON.parse(raw);
         out.push({ name: f, label: data.label ?? "Backup", createdAt: data.createdAt ?? "", sizeBytes: Buffer.byteLength(raw) });
       } catch {
@@ -68688,7 +68781,7 @@ var TimelineService = class {
   /** Restoring is an ordinary (undoable) timeline edit. */
   async restoreBackup(projectId, name) {
     if (!/^[\w-]+\.json$/.test(name)) throw new HttpError(400, "invalid_backup", "Invalid backup name.");
-    const raw = await fsp25.readFile(path28.join(this.backupDir(projectId), name), "utf8").catch(() => {
+    const raw = await fsp25.readFile(path29.join(this.backupDir(projectId), name), "utf8").catch(() => {
       throw new HttpError(404, "backup_not_found", "Backup not found.");
     });
     let data;
@@ -68710,31 +68803,31 @@ var TimelineService = class {
 };
 
 // src/routes/static.ts
-import fs32 from "node:fs";
-import path29 from "node:path";
+import fs33 from "node:fs";
+import path30 from "node:path";
 function registerStaticRoutes(app, root) {
   app.get("/*", async (req, reply) => {
-    if (!root || !fs32.existsSync(path29.join(root, "index.html"))) {
+    if (!root || !fs33.existsSync(path30.join(root, "index.html"))) {
       return reply.code(503).type("text/plain; charset=utf-8").send("Studio UI is not built. Run `npm run build` in the repository root.");
     }
     const urlPath = decodeURIComponent((req.url.split("?")[0] ?? "/").replace(/^\/+/, ""));
-    const candidate = path29.resolve(root, urlPath || "index.html");
-    if (isWithin(root, candidate) && fs32.existsSync(candidate) && fs32.statSync(candidate).isFile()) {
+    const candidate = path30.resolve(root, urlPath || "index.html");
+    if (isWithin(root, candidate) && fs33.existsSync(candidate) && fs33.statSync(candidate).isFile()) {
       const immutable = urlPath.startsWith("assets/");
       return sendFile(req, reply, candidate, { cache: immutable ? "public, max-age=31536000, immutable" : "no-cache" });
     }
     if (urlPath.startsWith("api/")) return reply.code(404).send({ error: "not_found", message: "Unknown API route." });
-    return sendFile(req, reply, path29.join(root, "index.html"));
+    return sendFile(req, reply, path30.join(root, "index.html"));
   });
 }
 
 // src/security/auth.ts
-import crypto13 from "node:crypto";
+import crypto14 from "node:crypto";
 var LAUNCH_CODE_TTL_MS = 2 * 6e4;
 var LaunchCodes = class {
   codes = /* @__PURE__ */ new Map();
   issue() {
-    const code = crypto13.randomBytes(24).toString("base64url");
+    const code = crypto14.randomBytes(24).toString("base64url");
     this.codes.set(code, Date.now() + LAUNCH_CODE_TTL_MS);
     return code;
   }
@@ -68803,6 +68896,7 @@ function registerAuth(app, ctx, codes, aiGuard2 = () => void 0) {
     }
     const url2 = req.url.split("?")[0] ?? "";
     if (url2 === "/api/health" || url2 === "/auth" || url2 === "/favicon.png" || url2 === "/logo.png") return;
+    if (method === "GET" && /^\/live\/[\w-]{20,40}(\/f\/[\w.]+)?$/.test(url2)) return;
     const scope = resolveScope(req, ctx);
     if (scope === "owner") {
       req.scope = scope;
@@ -68973,11 +69067,11 @@ async function buildApp(opts) {
   const events = new EventBus();
   const auth = {
     token: opts.token,
-    aiToken: opts.aiToken ?? crypto14.randomBytes(32).toString("base64url"),
+    aiToken: opts.aiToken ?? crypto15.randomBytes(32).toString("base64url"),
     port: 0,
     devOrigins: opts.devOrigins ?? []
   };
-  const engines = new EngineService(process.env.BA_ENGINES_DIR ?? path30.join(dataRoot(), "engines"), events);
+  const engines = new EngineService(process.env.BA_ENGINES_DIR ?? path31.join(dataRoot(), "engines"), events);
   const system = new SystemService(opts.paths, tools, { instance: opts.instanceName, port: () => auth.port });
   const services = {
     instanceName: opts.instanceName,
@@ -68995,7 +69089,7 @@ async function buildApp(opts) {
     system,
     timelines: new TimelineService(db, opts.paths, projects, media, events),
     exports: new ExportService(db, opts.paths, tools, projects, media, folders, system, events),
-    agent: new AgentService(path30.join(opts.paths.root, "agent"), opts.instanceName, events),
+    agent: new AgentService(path31.join(opts.paths.root, "agent"), opts.instanceName, events),
     engines,
     speech: new SpeechService(engines, tools, opts.paths.projectsDir),
     updater: new Updater(),
@@ -69003,12 +69097,18 @@ async function buildApp(opts) {
     auth,
     shutdown: (reason) => opts.onShutdownRequest?.(reason)
   };
-  app.addHook("onSend", async (_req, reply) => {
-    reply.header("x-frame-options", "DENY");
+  app.addHook("onSend", async (req, reply) => {
     reply.header("referrer-policy", "no-referrer");
+    if (req.url.startsWith("/live/")) {
+      const self = `http://${req.headers.host ?? "127.0.0.1"}`;
+      reply.header("x-frame-options", "SAMEORIGIN");
+      reply.header("content-security-policy", `sandbox allow-scripts; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src ${self} data: blob:; media-src ${self} blob:; font-src ${self} data:; connect-src 'none'; frame-ancestors 'self'`);
+      return;
+    }
+    reply.header("x-frame-options", "DENY");
     reply.header(
       "content-security-policy",
-      "default-src 'self'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'"
+      "default-src 'self'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'"
     );
   });
   app.setErrorHandler((err, req, reply) => {
@@ -69055,6 +69155,7 @@ async function buildApp(opts) {
   registerFormatRoutes(app, services);
   registerPhoneRoutes(app, services);
   registerMattingRoutes(app, services);
+  registerLiveRoutes(app, services);
   registerFinishingRoutes(app, services);
   registerSplitRoute(app, services);
   app.get("/api/update", async (req) => services.updater.check(req.query.force === "1"));
@@ -69096,10 +69197,10 @@ async function mintLaunchUrl(session) {
   return (await res.json()).url;
 }
 function resolveStudioDir() {
-  if (process.env.SOEZY_STUDIO_DIR) return path31.resolve(process.env.SOEZY_STUDIO_DIR);
-  const here = path31.dirname(fileURLToPath5(import.meta.url));
-  const candidate = path31.resolve(here, "..", "..", "studio", "dist");
-  return fs33.existsSync(candidate) ? candidate : null;
+  if (process.env.SOEZY_STUDIO_DIR) return path32.resolve(process.env.SOEZY_STUDIO_DIR);
+  const here = path32.dirname(fileURLToPath5(import.meta.url));
+  const candidate = path32.resolve(here, "..", "..", "studio", "dist");
+  return fs34.existsSync(candidate) ? candidate : null;
 }
 async function main() {
   const { values } = parseArgs({
